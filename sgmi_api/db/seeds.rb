@@ -156,3 +156,15 @@ paises.each do |pais|
 end
 puts "Paises creados correctamente"
 puts "Total: #{Pais.count}"
+
+# Crear usuario admin
+admin_email  = ENV["ADMIN_EMAIL"]
+admin_pass   = ENV["ADMIN_PASSWORD"]
+if User.find_by(email: "admin@utn.com").nil?
+  User.create!(
+    email: admin_email,
+    password: admin_pass,
+    password_confirmation: admin_pass,
+    role: "admin"
+  )
+end
