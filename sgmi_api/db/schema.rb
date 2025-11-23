@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_23_194544) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_23_212406) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -56,6 +56,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_23_194544) do
     t.integer "horas_semanales"
     t.string "nombre", limit: 45, null: false
     t.string "object_type", limit: 45, null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "users", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.string "password_digest", null: false
+    t.string "role", null: false
     t.datetime "updated_at", null: false
   end
 
