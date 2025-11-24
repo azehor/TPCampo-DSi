@@ -11,6 +11,10 @@ Rails.application.routes.draw do
     resources :grupo_de_investigacions
     resources :pais
     resources :patentes
+    resources :revista
+    resources :trabajo_en_revista
+    resources :articulo_de_divulgacions
+    resources :publicacion_en_libros
     # Cambiar contraseña
     patch "/change_password", to: "users#change_password"
   end
