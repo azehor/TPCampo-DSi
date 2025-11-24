@@ -13,12 +13,12 @@ class GrupoDeInvestigacionsController < ApplicationController
 
   def show
   grupo = GrupoDeInvestigacion.find(params[:id])
-  render json: grupo.as_json(
-    include: {
-      director: {},
-      vicedirector: {},
-      facultad_regional: {}
-      }
+    render json: grupo.as_json(
+      include: {
+        director: {},
+        vicedirector: {},
+        facultad_regional: {}
+        }
     )
   end
 

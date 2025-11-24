@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_23_212406) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_24_212605) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -23,15 +23,17 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_23_212406) do
   create_table "grupo_de_investigacions", force: :cascade do |t|
     t.string "correo_electronico", null: false
     t.datetime "created_at", null: false
-    t.integer "director_id", null: false
+    t.bigint "director_id", null: false
     t.bigint "facultad_regional_id", null: false
     t.integer "integrantes", null: false
     t.string "nombre", null: false
-    t.text "objetivos", null: false
+    t.text "objetivos"
     t.string "sigla", null: false
     t.datetime "updated_at", null: false
-    t.integer "vicedirector_id", null: false
+    t.bigint "vicedirector_id", null: false
+    t.index ["director_id"], name: "index_grupo_de_investigacions_on_director_id"
     t.index ["facultad_regional_id"], name: "index_grupo_de_investigacions_on_facultad_regional_id"
+    t.index ["vicedirector_id"], name: "index_grupo_de_investigacions_on_vicedirector_id"
   end
 
   create_table "investigadors", force: :cascade do |t|
@@ -39,15 +41,26 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_23_212406) do
     t.datetime "created_at", null: false
     t.string "dedicacion", null: false
     t.bigint "personal_id", null: false
+    t.integer "programa_incentivo"
     t.datetime "updated_at", null: false
     t.index ["personal_id"], name: "index_investigadors_on_personal_id"
   end
 
   create_table "pais", force: :cascade do |t|
-    t.string "codigo"
+    t.string "codigo", null: false
     t.datetime "created_at", null: false
-    t.string "nombre"
+    t.string "nombre", null: false
     t.datetime "updated_at", null: false
+  end
+
+  create_table "patentes", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "grupo_de_investigacion_id", null: false
+    t.string "identificador"
+    t.string "tipo"
+    t.string "titulo"
+    t.datetime "updated_at", null: false
+    t.index ["grupo_de_investigacion_id"], name: "index_patentes_on_grupo_de_investigacion_id"
   end
 
   create_table "personals", force: :cascade do |t|
@@ -71,4 +84,5 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_23_212406) do
   add_foreign_key "grupo_de_investigacions", "investigadors", column: "director_id"
   add_foreign_key "grupo_de_investigacions", "investigadors", column: "vicedirector_id"
   add_foreign_key "investigadors", "personals"
+  add_foreign_key "patentes", "grupo_de_investigacions", column: "grupo_de_investigacion_id"
 end

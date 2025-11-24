@@ -1,6 +1,6 @@
-class CreatePaises < ActiveRecord::Migration[8.1]
+class CreatePais < ActiveRecord::Migration[8.1]
   def change
-    create_table :paises do |t|
+    create_table :pais do |t|
       t.string :nombre, null: false
       t.string :codigo, null: false
 

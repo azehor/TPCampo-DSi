@@ -4,12 +4,13 @@ Rails.application.routes.draw do
 
   # Rutas protegidas por autenticación
   scope "/api" do
-    resources :users, only: [:create]        # Solo admin
+    resources :users, only: [ :create ]        # Solo admin
     resources :facultad_regionales
     resources :personals
     resources :investigadors
     resources :grupo_de_investigacions
     resources :pais
+    resources :patentes
     # Cambiar contraseña
     patch "/change_password", to: "users#change_password"
   end
