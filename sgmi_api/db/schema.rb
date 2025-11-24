@@ -10,9 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_24_212605) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_24_232535) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "articulo_de_divulgacions", force: :cascade do |t|
+    t.string "codigo"
+    t.datetime "created_at", null: false
+    t.bigint "grupo_de_investigacion_id", null: false
+    t.string "nombre"
+    t.string "titulo"
+    t.datetime "updated_at", null: false
+    t.index ["grupo_de_investigacion_id"], name: "index_articulo_de_divulgacions_on_grupo_de_investigacion_id"
+  end
 
   create_table "facultad_regionals", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -72,6 +82,38 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_212605) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "publicacion_en_libros", force: :cascade do |t|
+    t.string "capitulo"
+    t.string "codigo"
+    t.datetime "created_at", null: false
+    t.bigint "grupo_de_investigacion_id", null: false
+    t.string "libro"
+    t.string "titulo"
+    t.datetime "updated_at", null: false
+    t.index ["grupo_de_investigacion_id"], name: "index_publicacion_en_libros_on_grupo_de_investigacion_id"
+  end
+
+  create_table "revista", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "editorial", null: false
+    t.string "issn", null: false
+    t.string "nombre", null: false
+    t.bigint "pais_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["pais_id"], name: "index_revista_on_pais_id"
+  end
+
+  create_table "trabajo_en_revista", force: :cascade do |t|
+    t.string "codigo", null: false
+    t.datetime "created_at", null: false
+    t.bigint "grupo_de_investigacion_id", null: false
+    t.bigint "revista_id", null: false
+    t.string "titulo", null: false
+    t.datetime "updated_at", null: false
+    t.index ["grupo_de_investigacion_id"], name: "index_trabajo_en_revista_on_grupo_de_investigacion_id"
+    t.index ["revista_id"], name: "index_trabajo_en_revista_on_revista_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "email", null: false
@@ -80,9 +122,14 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_212605) do
     t.datetime "updated_at", null: false
   end
 
+  add_foreign_key "articulo_de_divulgacions", "grupo_de_investigacions"
   add_foreign_key "grupo_de_investigacions", "facultad_regionals"
   add_foreign_key "grupo_de_investigacions", "investigadors", column: "director_id"
   add_foreign_key "grupo_de_investigacions", "investigadors", column: "vicedirector_id"
   add_foreign_key "investigadors", "personals"
-  add_foreign_key "patentes", "grupo_de_investigacions", column: "grupo_de_investigacion_id"
+  add_foreign_key "patentes", "grupo_de_investigacions"
+  add_foreign_key "publicacion_en_libros", "grupo_de_investigacions"
+  add_foreign_key "revista", "pais", column: "pais_id"
+  add_foreign_key "trabajo_en_revista", "grupo_de_investigacions"
+  add_foreign_key "trabajo_en_revista", "revista", column: "revista_id"
 end
