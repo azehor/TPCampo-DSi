@@ -1,0 +1,25 @@
+.header {
+  background-color: #ffffff;
+  padding: 15px 20px;
+  margin: 0 auto;
+  max-width: 98%;         
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.header-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+}
+
+.header-title {
+  font-size: 22px;
+  font-weight: 600;
+  color: #333;
+}
