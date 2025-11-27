@@ -17,7 +17,6 @@ export default function Sidebar() {
           <span>Administración</span>
         </li>
 
-        {/* ACTIVIDADES I+D+i */}
         <li 
           className="menu-item clickable"
           onClick={() => setOpenActividades(!openActividades)}
@@ -25,7 +24,6 @@ export default function Sidebar() {
           <span>Actividades I+D+i</span>
         </li>
 
-        {/* SUBMENÚ */}
         {openActividades && (
           <ul className="submenu">
             <li className="submenu-item">Investigaciones</li>
@@ -62,6 +60,19 @@ export default function Sidebar() {
           <span>Programación Futura</span>
         </li>
       </ul>
+
+        {/* FOOTER DEL SIDEBAR */}
+        <div className="sidebar-footer">
+        <button className="btn-export">
+            <img src="/public/excel.png" alt="excel" className="btn-icon" />
+            Exportar a Excel
+        </button>
+
+        <button className="btn-logout">
+            <img src="/public/logout.png" alt="logout" className="btn-icon" />
+            Cerrar Sesión
+        </button>
+        </div>
     </aside>
   );
 }
