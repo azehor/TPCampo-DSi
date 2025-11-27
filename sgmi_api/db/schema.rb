@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_24_232535) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_26_234713) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -54,6 +54,40 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_232535) do
     t.integer "programa_incentivo"
     t.datetime "updated_at", null: false
     t.index ["personal_id"], name: "index_investigadors_on_personal_id"
+  end
+
+  create_table "memorias", force: :cascade do |t|
+    t.string "anio"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "memorias_articulo_de_divulgacions", id: false, force: :cascade do |t|
+    t.bigint "memoria_id", null: false
+    t.bigint "articulo_de_divulgacion_id", null: false
+    t.index ["memoria_id", "articulo_de_divulgacion_id"], name: "idx_memoria_divulgacion"
+    t.index ["articulo_de_divulgacion_id", "memoria_id"], name: "idx_divulgacion_memoria"
+  end
+
+  create_table "memorias_patentes", id: false, force: :cascade do |t|
+    t.bigint "memoria_id", null: false
+    t.bigint "patente_id", null: false
+    t.index ["memoria_id", "patente_id"], name: "idx_memoria_patente"
+    t.index ["patente_id", "memoria_id"], name: "idx_patente_memoria"
+  end
+
+  create_table "memorias_publicacion_en_libros", id: false, force: :cascade do |t|
+    t.bigint "memoria_id", null: false
+    t.bigint "publicacion_en_libro_id", null: false
+    t.index ["memoria_id", "publicacion_en_libro_id"], name: "idx_memoria_publicacion_libro"
+    t.index ["publicacion_en_libro_id", "memoria_id"], name: "idx_publicacion_libro_memoria"
+  end
+
+  create_table "memorias_trabajo_en_revistas", id: false, force: :cascade do |t|
+    t.bigint "memoria_id", null: false
+    t.bigint "trabajo_en_revista_id", null: false
+    t.index ["memoria_id", "trabajo_en_revista_id"], name: "idx_memoria_trabajo_revista"
+    t.index ["trabajo_en_revista_id", "memoria_id"], name: "idx_trabajo_revista_memoria"
   end
 
   create_table "pais", force: :cascade do |t|

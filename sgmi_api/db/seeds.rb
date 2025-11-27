@@ -157,6 +157,115 @@ end
 puts "Paises creados correctamente"
 puts "Total: #{Pais.count}"
 
+# Grupos de investigacion
+grupos = [
+  {
+    correo_electronico: "ia@utn.edu.ar",
+    integrantes: 8,
+    nombre: "Grupo de IA Aplicada",
+    objetivos: "Aplicación de machine learning en ingeniería.",
+    sigla: "GIAA",
+    facultad_regional_id: FacultadRegional.first.id,
+    director_id: Investigador.first.id,
+    vicedirector_id: Investigador.second.id
+  },
+  {
+    correo_electronico: "robotica@utn.edu.ar",
+    integrantes: 5,
+    nombre: "Grupo de Robótica Industrial",
+    objetivos: "Automatización avanzada aplicada a la industria.",
+    sigla: "GRI",
+    facultad_regional_id: FacultadRegional.second.id,
+    director_id: Investigador.second.id,
+    vicedirector_id: Investigador.first.id
+  }
+]
+
+grupos.each do |g|
+  GrupoDeInvestigacion.find_or_create_by!(correo_electronico: g[:correo_electronico]) do |grupo|
+    grupo.integrantes = g[:integrantes]
+    grupo.nombre = g[:nombre]
+    grupo.objetivos = g[:objetivos]
+    grupo.sigla = g[:sigla]
+    grupo.facultad_regional_id = g[:facultad_regional_id]
+    grupo.director_id = g[:director_id]
+    grupo.vicedirector_id = g[:vicedirector_id]
+  end
+end
+
+# MEMORIAS
+memorias = [
+  { anio: "2023" },
+  { anio: "2024" }
+]
+
+memorias.each do |m|
+  Memoria.find_or_create_by!(anio: m[:anio])
+end
+
+
+# PATENTES
+patentes = [
+  { identificador: "P-1234", titulo: "Control Inteligente", tipo: "Tecnológica", grupo_de_investigacion_id: GrupoDeInvestigacion.first.id },
+  { identificador: "P-5678", titulo: "Sistema Autónomo", tipo: "Robótica", grupo_de_investigacion_id: GrupoDeInvestigacion.second.id }
+]
+
+patentes.each do |p|
+  Patente.find_or_create_by!(identificador: p[:identificador]) do |pat|
+    pat.titulo = p[:titulo]
+    pat.tipo = p[:tipo]
+    pat.grupo_de_investigacion_id = p[:grupo_de_investigacion_id]
+  end
+end
+
+
+# REVISTA + TRABAJO EN REVISTA
+revista = Revista.find_or_create_by!(
+  nombre: "Journal Ingeniería",
+  issn: "1111-2222",
+  editorial: "UTN Press",
+  pais_id: Pais.first.id
+)
+
+trabajos_revista = [
+  { titulo: "Redes Neuronales", codigo: "TR-001", revista_id: revista.id, grupo_de_investigacion_id: GrupoDeInvestigacion.first.id }
+]
+
+trabajos_revista.each do |t|
+  TrabajoEnRevista.find_or_create_by!(codigo: t[:codigo]) do |trab|
+    trab.titulo = t[:titulo]
+    trab.revista_id = t[:revista_id]
+    trab.grupo_de_investigacion_id = t[:grupo_de_investigacion_id]
+  end
+end
+
+# PUBLICACIÓN EN LIBROS
+publicaciones = [
+  { titulo: "ML Avanzado", libro: "Avances 2023", capitulo: "5", codigo: "LIB-111", grupo_de_investigacion_id: GrupoDeInvestigacion.first.id }
+]
+
+publicaciones.each do |pb|
+  PublicacionEnLibro.find_or_create_by!(codigo: pb[:codigo]) do |pub|
+    pub.titulo = pb[:titulo]
+    pub.libro = pb[:libro]
+    pub.capitulo = pb[:capitulo]
+    pub.grupo_de_investigacion_id = pb[:grupo_de_investigacion_id]
+  end
+end
+
+# ARTÍCULO DE DIVULGACIÓN
+articulos = [
+  { titulo: "Robótica Básica", nombre: "Ciencia Hoy", codigo: "DIV-789", grupo_de_investigacion_id: GrupoDeInvestigacion.second.id }
+]
+
+articulos.each do |a|
+  ArticuloDeDivulgacion.find_or_create_by!(codigo: a[:codigo]) do |art|
+    art.titulo = a[:titulo]
+    art.nombre = a[:nombre]
+    art.grupo_de_investigacion_id = a[:grupo_de_investigacion_id]
+  end
+end
+
 # Crear usuario admin
 admin_email  = ENV["ADMIN_EMAIL"]
 admin_pass   = ENV["ADMIN_PASSWORD"]
