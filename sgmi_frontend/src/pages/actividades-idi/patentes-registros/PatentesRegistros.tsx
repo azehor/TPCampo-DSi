@@ -6,12 +6,14 @@ import {
 } from "@mui/material";
 import { Edit, Delete } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
+import NuevoRegistroDialog from "../../../components/patentes-registros/NuevoRegistroDialog";
 import "./patentesRegistros.css";
 
 export default function PatentesRegistros() {
   const [search, setSearch] = React.useState("");
+  const [openDialog, setOpenDialog] = React.useState(false);
 
-  const registros = [
+  const [registros, setRegistros] = React.useState([
     {
       id: 1,
       identificador: "AR133639 A3",
@@ -33,10 +35,31 @@ export default function PatentesRegistros() {
       titulo: "Efectos de la Imotica en el medioambiente",
       tipo: "Propiedad Intelectual",
     },
-  ];
+  ]);
 
   const handleEdit = (id: number) => console.log("Editar registro con ID:", id);
-  const handleDelete = (id: number) => console.log("Eliminar registro con ID:", id);
+  const handleDelete = (id: number) => {
+    setRegistros(registros.filter((r) => r.id !== id));
+  };
+
+  const handleAddRegistro = (nuevo: {
+    grupo: string;
+    titulo: string;
+    identificador: string;
+    tipoRegistro: string;
+  }) => {
+    setRegistros([
+      ...registros,
+      {
+        id: registros.length + 1,
+        grupo: nuevo.grupo,
+        titulo: nuevo.titulo,
+        identificador: nuevo.identificador,
+        tipo: nuevo.tipoRegistro,
+      },
+    ]);
+    setOpenDialog(false);
+  };
 
   const filteredRegistros = registros.filter((r) =>
     [r.identificador, r.grupo, r.titulo, r.tipo]
@@ -68,7 +91,7 @@ export default function PatentesRegistros() {
               variant="contained"
               color="primary"
               startIcon={<AddIcon />}
-              onClick={() => console.log("Añadir nueva patente")}
+              onClick={() => setOpenDialog(true)}
             >
               Añadir patente
             </Button>
@@ -108,6 +131,13 @@ export default function PatentesRegistros() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Diálog para añadir patente */}
+      <NuevoRegistroDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onConfirm={handleAddRegistro}
+      />
     </div>
   );
 }
