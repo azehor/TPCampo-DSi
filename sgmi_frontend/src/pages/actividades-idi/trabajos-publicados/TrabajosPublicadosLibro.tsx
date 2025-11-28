@@ -7,6 +7,7 @@ import {
 import { Edit, Delete } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate, useLocation } from "react-router-dom";
+import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTrabajoDialog";
 import "./trabajosPublicados.css";
 
 export default function TrabajosPublicadosLibro() {
@@ -19,7 +20,8 @@ export default function TrabajosPublicadosLibro() {
     { label: "Artículos de Divulgación", path: "/actividades-idi/articulos-divulgacion" },
   ];
 
-  const trabajos = [
+  // Estado dinámico de trabajos
+  const [trabajos, setTrabajos] = React.useState([
     {
       id: 1,
       codigo: "2025-12345",
@@ -34,19 +36,23 @@ export default function TrabajosPublicadosLibro() {
       libro: "ACM Transactions on Information Systems",
       capitulo: "1050-124X",
     },
-    {
-      id: 3,
-      codigo: "2025-15625",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      libro: "ACM Transactions on Information Systems",
-      capitulo: "1050-124X",
-    },
-  ];
+  ]);
 
   const [search, setSearch] = React.useState("");
+  const [openDialog, setOpenDialog] = React.useState(false);
 
   const handleEdit = (id: number) => console.log("Editar trabajo con ID:", id);
-  const handleDelete = (id: number) => console.log("Eliminar trabajo con ID:", id);
+  const handleDelete = (id: number) => {
+    setTrabajos(trabajos.filter((t) => t.id !== id));
+  };
+
+  const handleAddTrabajo = (nuevoTrabajo: any) => {
+    setTrabajos([
+      ...trabajos,
+      { id: trabajos.length + 1, ...nuevoTrabajo }
+    ]);
+    setOpenDialog(false);
+  };
 
   const filteredTrabajos = trabajos.filter((t) =>
     [t.codigo, t.titulo, t.libro, t.capitulo]
@@ -66,7 +72,7 @@ export default function TrabajosPublicadosLibro() {
         <Grid item>
           <Box display="flex" gap={2}>
             <TextField
-              label="Buscar trabajo"
+              label="Buscar"
               variant="outlined"
               size="small"
               value={search}
@@ -77,7 +83,7 @@ export default function TrabajosPublicadosLibro() {
               variant="contained"
               color="primary"
               startIcon={<AddIcon />}
-              onClick={() => console.log("Añadir nuevo trabajo")}
+              onClick={() => setOpenDialog(true)} // ← abre el diálogo
             >
               Añadir trabajo
             </Button>
@@ -129,6 +135,14 @@ export default function TrabajosPublicadosLibro() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Diálogo de nuevo trabajo */}
+      <NuevoTrabajoDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onConfirm={handleAddTrabajo}
+        tipo="libro"
+      />
     </div>
   );
 }
