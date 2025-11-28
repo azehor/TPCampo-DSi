@@ -7,6 +7,7 @@ import {
 import { Edit, Delete } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate, useLocation } from "react-router-dom";
+import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTrabajoDialog";
 import "./trabajosPublicados.css";
 
 export default function TrabajosPublicados() {
@@ -19,7 +20,9 @@ export default function TrabajosPublicados() {
     { label: "Artículos de Divulgación", path: "/actividades-idi/articulos-divulgacion" },
   ];
 
-  const trabajos = [
+  const [search, setSearch] = React.useState("");
+  const [openDialog, setOpenDialog] = React.useState(false);
+  const [trabajos, setTrabajos] = React.useState([
     {
       id: 1,
       codigo: "2025-12345",
@@ -47,12 +50,24 @@ export default function TrabajosPublicados() {
       editorial: "Association for Computing Machinery",
       pais: "Estados Unidos",
     },
-  ];
-
-  const [search, setSearch] = React.useState("");
+  ]);
 
   const handleEdit = (id: number) => console.log("Editar trabajo con ID:", id);
   const handleDelete = (id: number) => console.log("Eliminar trabajo con ID:", id);
+
+  const handleAddTrabajo = (data: any) => {
+    const nuevo = {
+      id: trabajos.length + 1,
+      codigo: data.codigo,
+      titulo: data.titulo,
+      revista: data.revista || "",
+      issn: "",
+      editorial: "",
+      pais: "",
+    };
+    setTrabajos([...trabajos, nuevo]);
+    setOpenDialog(false);
+  };
 
   const filteredTrabajos = trabajos.filter((t) =>
     [t.codigo, t.titulo, t.revista, t.issn, t.editorial, t.pais]
@@ -63,6 +78,7 @@ export default function TrabajosPublicados() {
 
   return (
     <div className="trabajos-publicados">
+      {/* Título + buscador + botón */}
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Grid item>
           <Typography variant="h4" color="black">
@@ -72,7 +88,7 @@ export default function TrabajosPublicados() {
         <Grid item>
           <Box display="flex" gap={2}>
             <TextField
-              label="Buscar trabajo"
+              label="Buscar"
               variant="outlined"
               size="small"
               value={search}
@@ -83,7 +99,7 @@ export default function TrabajosPublicados() {
               variant="contained"
               color="primary"
               startIcon={<AddIcon />}
-              onClick={() => console.log("Añadir nuevo trabajo")}
+              onClick={() => setOpenDialog(true)}
             >
               Añadir trabajo
             </Button>
@@ -91,7 +107,7 @@ export default function TrabajosPublicados() {
         </Grid>
       </Grid>
 
-      {/* Fila inferior: pestañas justo encima de la tabla */}
+      {/* Tabs */}
       <div className="tabs-container">
         {tabs.map((tab) => (
           <button
@@ -140,6 +156,14 @@ export default function TrabajosPublicados() {
           </TableBody>
         </Table>
       </TableContainer>
+
+      {/* Dialog para añadir trabajo */}
+      <NuevoTrabajoDialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        onConfirm={handleAddTrabajo}
+        tipo="revista"
+      />
     </div>
   );
 }
