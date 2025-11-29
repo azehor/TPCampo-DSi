@@ -7,11 +7,14 @@ import {
 import { Edit, Delete } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import NuevoRegistroDialog from "../../../components/patentes-registros/NuevoRegistroDialog";
+import ModificarRegistroDialog from "../../../components/patentes-registros/ModificarRegistroDialog"; // ← nuevo
 import "./patentesRegistros.css";
 
 export default function PatentesRegistros() {
   const [search, setSearch] = React.useState("");
   const [openDialog, setOpenDialog] = React.useState(false);
+  const [openEditDialog, setOpenEditDialog] = React.useState(false);
+  const [registroSeleccionado, setRegistroSeleccionado] = React.useState<any>(null);
 
   const [registros, setRegistros] = React.useState([
     {
@@ -37,7 +40,34 @@ export default function PatentesRegistros() {
     },
   ]);
 
-  const handleEdit = (id: number) => console.log("Editar registro con ID:", id);
+  const handleEdit = (registro: any) => {
+    setRegistroSeleccionado({
+      tipoRegistro: registro.tipo,
+      grupo: registro.grupo,
+      codigoTrabajo: registro.titulo,
+      identificador: registro.identificador,
+    });
+    setOpenEditDialog(true);
+  };
+
+  const handleUpdateRegistro = (data: any) => {
+    setRegistros((prev) =>
+      prev.map((r) =>
+        r.id === registroSeleccionado.id
+          ? {
+              ...r,
+              grupo: data.grupo,
+              titulo: data.codigoTrabajo,
+              identificador: data.identificador,
+              tipo: data.tipoRegistro,
+            }
+          : r
+      )
+    );
+    setOpenEditDialog(false);
+    setRegistroSeleccionado(null);
+  };
+
   const handleDelete = (id: number) => {
     setRegistros(registros.filter((r) => r.id !== id));
   };
@@ -70,7 +100,6 @@ export default function PatentesRegistros() {
 
   return (
     <div className="patentes-registros">
-      {/* Título + buscador + botón */}
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Grid item>
           <Typography variant="h4" color="black">
@@ -99,7 +128,6 @@ export default function PatentesRegistros() {
         </Grid>
       </Grid>
 
-      {/* Tabla */}
       <TableContainer component={Paper} elevation={3}>
         <Table>
           <TableHead>
@@ -119,10 +147,18 @@ export default function PatentesRegistros() {
                 <TableCell>{r.titulo}</TableCell>
                 <TableCell>{r.tipo}</TableCell>
                 <TableCell>
-                  <IconButton color="primary" onClick={() => handleEdit(r.id)} title="Editar">
+                  <IconButton
+                    color="primary"
+                    onClick={() => handleEdit(r)}
+                    title="Editar"
+                  >
                     <Edit />
                   </IconButton>
-                  <IconButton color="error" onClick={() => handleDelete(r.id)} title="Eliminar">
+                  <IconButton
+                    color="error"
+                    onClick={() => handleDelete(r.id)}
+                    title="Eliminar"
+                  >
                     <Delete />
                   </IconButton>
                 </TableCell>
@@ -132,12 +168,20 @@ export default function PatentesRegistros() {
         </Table>
       </TableContainer>
 
-      {/* Diálog para añadir patente */}
       <NuevoRegistroDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         onConfirm={handleAddRegistro}
       />
+
+      {registroSeleccionado && (
+        <ModificarRegistroDialog
+          open={openEditDialog}
+          onClose={() => setOpenEditDialog(false)}
+          onConfirm={handleUpdateRegistro}
+          initialData={registroSeleccionado}
+        />
+      )}
     </div>
   );
 }
