@@ -1,13 +1,18 @@
 class MemoriasController < ApplicationController
-  before_action :set_memoria, only: [:show, :update, :destroy,
+  before_action :set_memoria, only: [ :show, :update, :destroy,
                                      :add_patente, :remove_patente,
                                      :add_trabajo_en_revista, :remove_trabajo_en_revista,
                                      :add_publicacion_en_libro, :remove_publicacion_en_libro,
-                                     :add_articulo_de_divulgacion, :remove_articulo_de_divulgacion]
+                                     :add_articulo_de_divulgacion, :remove_articulo_de_divulgacion ]
 
   # GET /memorias
   def index
-    render json: Memoria.all.as_json(include: full_includes)
+    if params.has_key?(:grupo)
+      grupo_id = params[:grupo].to_i
+      render json: Memoria.where(grupo_de_investigacion_id: grupo_id)
+    else
+      render json: Memoria.all.as_json(include: full_includes)
+    end
   end
 
   # GET /memorias/:id
@@ -102,7 +107,10 @@ class MemoriasController < ApplicationController
   end
 
   def memoria_params
-    params.require(:memoria).permit(:anio)
+    params.require(:memoria).permit(
+      :anio,
+      :grupo_de_investigacion_id
+    )
   end
 
   def full_includes
