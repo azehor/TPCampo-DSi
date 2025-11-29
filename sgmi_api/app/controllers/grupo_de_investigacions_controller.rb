@@ -1,9 +1,16 @@
 class GrupoDeInvestigacionsController < ApplicationController
   def index
+    if params.has_key?(:page) && params.has_key?(:limit)
+      page = params[:page].to_i
+      per_page = params[:limit].to_i
+    else
+      page = 0
+      per_page = 15
+    end
     count = GrupoDeInvestigacion.count
-    grupos = GrupoDeInvestigacion.joins(director: :personal).limit(params[:limit].to_i).offset(params[:page].to_i * params[:limit].to_i)
+    grupos = GrupoDeInvestigacion.joins(director: :personal).limit(per_page).offset(page * per_page)
     render json: {
-      grupos: grupos.as_json(
+      content: grupos.as_json(
         include: {
           director: {
             include: {
@@ -17,7 +24,12 @@ class GrupoDeInvestigacionsController < ApplicationController
           },
           facultad_regional: {}
       }
-      ), count: count.as_json }
+      ), metadata: {
+        page: page,
+        per_page: per_page,
+        total_count: count.as_json
+      }
+    }
   end
 
 
