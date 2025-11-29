@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_26_234713) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_29_182823) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -59,14 +59,16 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_26_234713) do
   create_table "memorias", force: :cascade do |t|
     t.string "anio"
     t.datetime "created_at", null: false
+    t.bigint "grupo_de_investigacion_id", null: false
     t.datetime "updated_at", null: false
+    t.index ["grupo_de_investigacion_id"], name: "index_memorias_on_grupo_de_investigacion_id"
   end
 
   create_table "memorias_articulo_de_divulgacions", id: false, force: :cascade do |t|
-    t.bigint "memoria_id", null: false
     t.bigint "articulo_de_divulgacion_id", null: false
-    t.index ["memoria_id", "articulo_de_divulgacion_id"], name: "idx_memoria_divulgacion"
+    t.bigint "memoria_id", null: false
     t.index ["articulo_de_divulgacion_id", "memoria_id"], name: "idx_divulgacion_memoria"
+    t.index ["memoria_id", "articulo_de_divulgacion_id"], name: "idx_memoria_divulgacion"
   end
 
   create_table "memorias_patentes", id: false, force: :cascade do |t|
@@ -161,6 +163,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_26_234713) do
   add_foreign_key "grupo_de_investigacions", "investigadors", column: "director_id"
   add_foreign_key "grupo_de_investigacions", "investigadors", column: "vicedirector_id"
   add_foreign_key "investigadors", "personals"
+  add_foreign_key "memorias", "grupo_de_investigacions"
   add_foreign_key "patentes", "grupo_de_investigacions"
   add_foreign_key "publicacion_en_libros", "grupo_de_investigacions"
   add_foreign_key "revista", "pais", column: "pais_id"

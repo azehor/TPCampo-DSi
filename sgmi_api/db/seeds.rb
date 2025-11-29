@@ -74,8 +74,8 @@ puts "Total: #{Personal.count}"
 Personal.all.each do |p|
   Investigador.find_or_create_by!(
     personal: p,
-    categoria: ["Primera", "Segunda", "Tercera", "Cuarta"].sample,
-    dedicacion: ["Simple", "Semiexclusiva", "Exclusiva"].sample
+    categoria: [ "Primera", "Segunda", "Tercera", "Cuarta" ].sample,
+    dedicacion: [ "Simple", "Semiexclusiva", "Exclusiva" ].sample
   )
 end
 
@@ -195,12 +195,14 @@ end
 
 # MEMORIAS
 memorias = [
-  { anio: "2023" },
-  { anio: "2024" }
+  { anio: "2023",  grupo_de_investigacion_id: GrupoDeInvestigacion.first.id },
+  { anio: "2024",  grupo_de_investigacion_id: GrupoDeInvestigacion.first.id }
 ]
 
 memorias.each do |m|
-  Memoria.find_or_create_by!(anio: m[:anio])
+  Memoria.find_or_create_by!(anio: m[:anio]) do |mem|
+    mem.grupo_de_investigacion_id = m[:grupo_de_investigacion_id]
+   end
 end
 
 
