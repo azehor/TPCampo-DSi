@@ -8,6 +8,7 @@ import { Edit, Delete } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate, useLocation } from "react-router-dom";
 import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTrabajoDialog";
+import ModificarTrabajoDialog from "../../../components/trabajos-publicados/ModificarTrabajoDialog";
 import "./trabajosPublicados.css";
 
 export default function TrabajosPublicadosLibro() {
@@ -28,6 +29,8 @@ export default function TrabajosPublicadosLibro() {
       titulo: "Efectos de la Imotica en el medioambiente",
       libro: "Nature",
       capitulo: "0317-8471",
+      grupo: "Grupo 1",
+      tipo: "libro",
     },
     {
       id: 2,
@@ -35,13 +38,30 @@ export default function TrabajosPublicadosLibro() {
       titulo: "Efectos de la Imotica en el medioambiente",
       libro: "ACM Transactions on Information Systems",
       capitulo: "1050-124X",
+      grupo: "Grupo 2",
+      tipo: "libro",
+    },
+    {
+      id: 3,
+      codigo: "2025-15625",
+      titulo: "Efectos de la Imotica en el medioambiente",
+      libro: "ACM Transactions on Information Systems",
+      capitulo: "1050-124X",
+      grupo: "Grupo 3",
+      tipo: "libro",
     },
   ]);
 
   const [search, setSearch] = React.useState("");
   const [openDialog, setOpenDialog] = React.useState(false);
+  const [openEditDialog, setOpenEditDialog] = React.useState(false);
+  const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
 
-  const handleEdit = (id: number) => console.log("Editar trabajo con ID:", id);
+  const handleEdit = (trabajo: any) => {
+    setTrabajoSeleccionado(trabajo);
+    setOpenEditDialog(true);
+  };
+
   const handleDelete = (id: number) => {
     setTrabajos(trabajos.filter((t) => t.id !== id));
   };
@@ -52,6 +72,14 @@ export default function TrabajosPublicadosLibro() {
       { id: trabajos.length + 1, ...nuevoTrabajo }
     ]);
     setOpenDialog(false);
+  };
+
+  const handleUpdateTrabajo = (data: any) => {
+    setTrabajos((prev) =>
+      prev.map((t) => (t.id === trabajoSeleccionado.id ? { ...t, ...data } : t))
+    );
+    setOpenEditDialog(false);
+    setTrabajoSeleccionado(null);
   };
 
   const filteredTrabajos = trabajos.filter((t) =>
@@ -83,7 +111,7 @@ export default function TrabajosPublicadosLibro() {
               variant="contained"
               color="primary"
               startIcon={<AddIcon />}
-              onClick={() => setOpenDialog(true)} // ← abre el diálogo
+              onClick={() => setOpenDialog(true)} 
             >
               Añadir trabajo
             </Button>
@@ -123,10 +151,18 @@ export default function TrabajosPublicadosLibro() {
                 <TableCell>{t.libro}</TableCell>
                 <TableCell>{t.capitulo}</TableCell>
                 <TableCell>
-                  <IconButton color="primary" onClick={() => handleEdit(t.id)} title="Editar">
+                  <IconButton
+                    color="primary"
+                    onClick={() => handleEdit(t)}
+                    title="Editar"
+                  >
                     <Edit />
                   </IconButton>
-                  <IconButton color="error" onClick={() => handleDelete(t.id)} title="Eliminar">
+                  <IconButton
+                    color="error"
+                    onClick={() => handleDelete(t.id)}
+                    title="Eliminar"
+                  >
                     <Delete />
                   </IconButton>
                 </TableCell>
@@ -143,6 +179,16 @@ export default function TrabajosPublicadosLibro() {
         onConfirm={handleAddTrabajo}
         tipo="libro"
       />
+
+      {/* Diálogo de modificar trabajo */}
+      {trabajoSeleccionado && (
+        <ModificarTrabajoDialog
+          open={openEditDialog}
+          onClose={() => setOpenEditDialog(false)}
+          onConfirm={handleUpdateTrabajo}
+          initialData={trabajoSeleccionado}
+        />
+      )}
     </div>
   );
 }

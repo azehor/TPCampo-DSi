@@ -8,6 +8,7 @@ import { Edit, Delete } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate, useLocation } from "react-router-dom";
 import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTrabajoDialog";
+import ModificarTrabajoDialog from "../../../components/trabajos-publicados/ModificarTrabajoDialog";
 import "./trabajosPublicados.css";
 
 export default function TrabajosPublicados() {
@@ -22,6 +23,9 @@ export default function TrabajosPublicados() {
 
   const [search, setSearch] = React.useState("");
   const [openDialog, setOpenDialog] = React.useState(false);
+  const [openEditDialog, setOpenEditDialog] = React.useState(false);
+  const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
+
   const [trabajos, setTrabajos] = React.useState([
     {
       id: 1,
@@ -31,6 +35,8 @@ export default function TrabajosPublicados() {
       issn: "0317-8471",
       editorial: "Springer Nature",
       pais: "Reino Unido",
+      grupo: "Grupo 1",
+      tipo: "revista",
     },
     {
       id: 2,
@@ -40,6 +46,8 @@ export default function TrabajosPublicados() {
       issn: "1050-124X",
       editorial: "Association for Computing Machinery",
       pais: "Estados Unidos",
+      grupo: "Grupo 2",
+      tipo: "revista",
     },
     {
       id: 3,
@@ -49,24 +57,41 @@ export default function TrabajosPublicados() {
       issn: "1050-124X",
       editorial: "Association for Computing Machinery",
       pais: "Estados Unidos",
+      grupo: "Grupo 3",
+      tipo: "revista",
     },
   ]);
-
-  const handleEdit = (id: number) => console.log("Editar trabajo con ID:", id);
-  const handleDelete = (id: number) => console.log("Eliminar trabajo con ID:", id);
 
   const handleAddTrabajo = (data: any) => {
     const nuevo = {
       id: trabajos.length + 1,
-      codigo: data.codigo,
-      titulo: data.titulo,
-      revista: data.revista || "",
+      ...data,
       issn: "",
       editorial: "",
       pais: "",
     };
     setTrabajos([...trabajos, nuevo]);
     setOpenDialog(false);
+  };
+
+  const handleEdit = (id: number) => {
+    const trabajo = trabajos.find((t) => t.id === id);
+    if (trabajo) {
+      setTrabajoSeleccionado(trabajo);
+      setOpenEditDialog(true);
+    }
+  };
+
+  const handleUpdateTrabajo = (data: any) => {
+    setTrabajos((prev) =>
+      prev.map((t) => (t.id === trabajoSeleccionado.id ? { ...t, ...data } : t))
+    );
+    setOpenEditDialog(false);
+    setTrabajoSeleccionado(null);
+  };
+
+  const handleDelete = (id: number) => {
+    setTrabajos(trabajos.filter((t) => t.id !== id));
   };
 
   const filteredTrabajos = trabajos.filter((t) =>
@@ -78,7 +103,6 @@ export default function TrabajosPublicados() {
 
   return (
     <div className="trabajos-publicados">
-      {/* Título + buscador + botón */}
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Grid item>
           <Typography variant="h4" color="black">
@@ -107,7 +131,6 @@ export default function TrabajosPublicados() {
         </Grid>
       </Grid>
 
-      {/* Tabs */}
       <div className="tabs-container">
         {tabs.map((tab) => (
           <button
@@ -120,7 +143,6 @@ export default function TrabajosPublicados() {
         ))}
       </div>
 
-      {/* Tabla */}
       <TableContainer component={Paper} elevation={3}>
         <Table>
           <TableHead>
@@ -157,13 +179,21 @@ export default function TrabajosPublicados() {
         </Table>
       </TableContainer>
 
-      {/* Dialog para añadir trabajo */}
       <NuevoTrabajoDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         onConfirm={handleAddTrabajo}
         tipo="revista"
       />
+
+      {trabajoSeleccionado && (
+        <ModificarTrabajoDialog
+          open={openEditDialog}
+          onClose={() => setOpenEditDialog(false)}
+          onConfirm={handleUpdateTrabajo}
+          initialData={trabajoSeleccionado}
+        />
+      )}
     </div>
   );
 }
