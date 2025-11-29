@@ -3,9 +3,23 @@ class ArticuloDeDivulgacionsController < ApplicationController
 
   # GET /articulo_de_divulgacions
   def index
-    @articulo_de_divulgacions = ArticuloDeDivulgacion.all
-
-    render json: @articulo_de_divulgacions
+    if params.has_key?(:page) && params.has_key?(:limit)
+      page = params[:page].to_i
+      per_page = params[:limit].to_i
+    else
+      page = 0
+      per_page = 15
+    end
+    count = ArticuloDeDivulgacion.count
+    articulos = ArticuloDeDivulgacion.limit(per_page).offset(page * per_page)
+    render json: {
+      content: articulos.as_json,
+      metadata: {
+        page: page,
+        per_page: per_page,
+        total_count: count
+      }
+    }
   end
 
   # GET /articulo_de_divulgacions/1
