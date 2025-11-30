@@ -65,7 +65,7 @@ export default function TrabajosPublicados() {
     try {
       const res = await getTrabajosEnRevista(page, limit);
       const trabajosRaw = res.content || [];
-      const total = res.count || trabajosRaw.length;
+      const total = res.metadata.total_count || trabajosRaw.length;
 
       const trabajos = trabajosRaw.map((t: { id: any; codigo: any; titulo: any; revista: { nombre: any; id: any; issn: any; editorial: any; pais: { nombre: any; }; }; grupo_de_investigacion_id: any; grupo_de_investigacion: { nombre: any; }; }) => ({
         id: t.id,

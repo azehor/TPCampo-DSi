@@ -14,10 +14,10 @@ import { getGruposList } from "../../services/gruposService";
 import { crearPatente } from "../../services/patenteService";
 
 interface RegistroData {
-  grupo_id: number;
+  grupo_id?: number;
   titulo: string;
   identificador: string;
-  tipoRegistro: string;
+  tipo: string;
 }
 
 interface Grupo {
@@ -39,10 +39,10 @@ export default function NuevoRegistroDialog({
   const [grupos, setGrupos] = React.useState<Grupo[]>([]);
 
   const [form, setForm] = React.useState<RegistroData>({
-    grupo_id: 0,
+    grupo_id: undefined,
     titulo: "",
     identificador: "",
-    tipoRegistro: "",
+    tipo: "",
   });
 
   // Cargar grupos
@@ -72,9 +72,9 @@ export default function NuevoRegistroDialog({
     };
 
   const handleConfirm = async () => {
-    const { grupo_id, titulo, identificador, tipoRegistro } = form;
+    const { grupo_id, titulo, identificador, tipo } = form;
 
-    if (!grupo_id || !titulo || !identificador || !tipoRegistro) {
+    if (!grupo_id || !titulo || !identificador || !tipo) {
       alert("Por favor completá todos los campos.");
       return;
     }
@@ -83,11 +83,17 @@ export default function NuevoRegistroDialog({
       await crearPatente({
         identificador,
         titulo,
-        tipo: tipoRegistro,
+        tipo: tipo,
         grupo_de_investigacion_id: grupo_id,
       });
 
       onConfirm();
+      setForm({
+        grupo_id: undefined,
+        titulo: "",
+        identificador: "",
+        tipo: "",
+      });
       onClose();
     } catch (err) {
       console.error("Error creando patente", err);
@@ -143,8 +149,8 @@ export default function NuevoRegistroDialog({
 
           <TextField
             label="Tipo de Registro"
-            value={form.tipoRegistro}
-            onChange={handleChange("tipoRegistro")}
+            value={form.tipo}
+            onChange={handleChange("tipo")}
             fullWidth
             select
           >

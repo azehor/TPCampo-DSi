@@ -11,14 +11,13 @@ import {
   Stack,
 } from "@mui/material";
 
-import { getTrabajosEnRevista } from "../../services/trabajoEnRevistaService";
 import { getGruposList } from "../../services/gruposService";
 import { updatePatente } from "../../services/patenteService";
 
 interface RegistroData {
   id: number;
   grupo_id: number;
-  codigoTrabajo: string;
+  titulo: string;
   identificador: string;
   tipo: string;
 }
@@ -26,11 +25,6 @@ interface RegistroData {
 interface Grupo {
   id: number;
   nombre: string;
-}
-
-interface Trabajo {
-  id: number;
-  codigo: string;
 }
 
 interface Props {
@@ -48,7 +42,6 @@ export default function ModificarRegistroDialog({
 }: Props) {
 
   const [grupos, setGrupos] = React.useState<Grupo[]>([]);
-  const [trabajos, setTrabajos] = React.useState<Trabajo[]>([]);
   const [form, setForm] = React.useState<RegistroData>(initialData);
 
   // Reset cuando cambia el registro seleccionado
@@ -71,27 +64,7 @@ export default function ModificarRegistroDialog({
     cargarGrupos();
   }, [open]);
 
-  // Cargar trabajos
-  useEffect(() => {
-    if (!open) return;
 
-    async function cargarTrabajos() {
-      try {
-        const res = await getTrabajosEnRevista(0, 100);
-        const lista = res.content || [];
-
-        const trabajosMap = lista.map((t: any) => ({
-          id: t.id,
-          codigo: t.codigo,
-        }));
-
-        setTrabajos(trabajosMap);
-      } catch (err) {
-        console.error("Error cargando trabajos", err);
-      }
-    }
-    cargarTrabajos();
-  }, [open]);
 
   const handleChange =
     (field: keyof RegistroData) =>
@@ -100,9 +73,9 @@ export default function ModificarRegistroDialog({
     };
 
   const handleConfirm = async () => {
-    const { id, grupo_id, codigoTrabajo, identificador, tipo } = form;
+    const { id, grupo_id, titulo, identificador, tipo } = form;
 
-    if (!grupo_id || !codigoTrabajo || !identificador || !tipo) {
+    if (!grupo_id || !titulo || !identificador || !tipo) {
       alert("Por favor completá todos los campos.");
       return;
     }
@@ -110,7 +83,7 @@ export default function ModificarRegistroDialog({
     try {
       await updatePatente(id, {
         identificador,
-        titulo: codigoTrabajo,
+        titulo: titulo,
         tipo: tipo,
         grupo_de_investigacion_id: grupo_id,
       });
@@ -156,22 +129,12 @@ export default function ModificarRegistroDialog({
             ))}
           </TextField>
 
-          {/* CÓDIGO DE TRABAJO */}
           <TextField
-            label="Código de Trabajo Asociado"
-            value={form.codigoTrabajo || ""}
-            onChange={(e) =>
-              setForm({ ...form, codigoTrabajo: String(e.target.value) })
-            }
-            fullWidth
-            select
-          >
-            {trabajos.map((t) => (
-              <MenuItem key={t.id} value={t.codigo}>
-                {t.codigo}
-              </MenuItem>
-            ))}
-          </TextField>
+              label="Título"
+              value={form.titulo}
+              onChange={handleChange("titulo")}
+              fullWidth
+          />
 
 
           {/* IDENTIFICADOR */}
