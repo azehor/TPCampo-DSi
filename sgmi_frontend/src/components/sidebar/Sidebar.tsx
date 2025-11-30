@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import ExportarExcelDialog from "./ExportarExcelDialog";
 import "./Sidebar.css";
 import { clearToken } from "../../services/auth";
+import { getExcel } from "../../services/excelService";
 
 export default function Sidebar() {
   const [openActividades, setOpenActividades] = useState(false);
