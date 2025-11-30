@@ -7,8 +7,6 @@ export async function getPatentes(page = 0, limit = 10) {
       limit
     }
   });
-
-  console.log(response.data);
   
   return response.data;
 }
