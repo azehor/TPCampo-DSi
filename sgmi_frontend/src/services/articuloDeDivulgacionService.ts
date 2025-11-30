@@ -18,7 +18,7 @@ export async function deleteArticulosDivulgacion(id:number) {
 export async function crearArticuloDeDivulgacion(data: {
   codigo: string;
   titulo: string;
-  nombre: string; // nombre del artículo
+  nombre: string;
   grupo_de_investigacion_id: number;
 }) {
   const body = {

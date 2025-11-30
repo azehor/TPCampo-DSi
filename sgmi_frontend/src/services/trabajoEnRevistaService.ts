@@ -5,7 +5,7 @@ export async function getTrabajosEnRevista(page = 0, limit = 10) {
     params: { page, limit }
   });
 
-  return response.data; // { publicaciones: [], count: X }
+  return response.data;
 }
 
 export async function deleteTrabajoEnRevista({ id }: { id: number; }): Promise<void> {

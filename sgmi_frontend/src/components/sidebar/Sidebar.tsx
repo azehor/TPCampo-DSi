@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ExportarExcelDialog from "./ExportarExcelDialog";
 import "./Sidebar.css";
+import { clearToken } from "../../services/auth";
 
 export default function Sidebar() {
   const [openActividades, setOpenActividades] = useState(false);
   const [openExportDialog, setOpenExportDialog] = useState(false);
+  const navigate = useNavigate();
 
   const handleExportClick = () => {
     setOpenExportDialog(true);
@@ -78,7 +80,7 @@ export default function Sidebar() {
           Exportar a Excel
         </button>
 
-        <button className="btn-logout">
+        <button className="btn-logout" onClick={handleLogout}>
           <img src="/public/logout.png" alt="logout" className="btn-icon" />
           Cerrar Sesión
         </button>
@@ -92,4 +94,10 @@ export default function Sidebar() {
       />
     </aside>
   );
+
+  
+  function handleLogout() {
+    clearToken();
+    navigate("/login");
+  }
 }

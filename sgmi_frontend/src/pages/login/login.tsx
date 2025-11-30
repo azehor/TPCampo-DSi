@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import type { FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import "./login.css";
+import { login } from "../../services/authService";
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -10,15 +11,17 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
 
-  function handleSubmit(e: FormEvent) {
+  async function handleSubmit(e: FormEvent) {
     e.preventDefault();
 
-    // acá después vas a hacer la llamada al backend
-    console.log("Login:", { email, password });
-
-    // por ahora, navega directo al home
-    navigate("/home");
+    try {
+      await login(email, password);
+      navigate("/home");
+    } catch (err) {
+      setError("Credenciales incorrectas");
+    }
   }
 
   return (
@@ -27,6 +30,9 @@ const LoginPage: React.FC = () => {
         <h2>Iniciar Sesión</h2>
 
         <form onSubmit={handleSubmit}>
+
+          {error && <p className="error">{error}</p>}
+
           <label>Correo Electrónico</label>
           <input
             type="text"
