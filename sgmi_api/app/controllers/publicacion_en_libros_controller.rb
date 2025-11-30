@@ -13,7 +13,9 @@ class PublicacionEnLibrosController < ApplicationController
     count = PublicacionEnLibro.count
     publicaciones = PublicacionEnLibro.limit(per_page).offset(page * per_page)
     render json: {
-      content: publicaciones.as_json,
+      content: publicaciones.as_json(include: {
+          grupo_de_investigacion: {}
+      }),
       metadata: {
         page: page,
         per_page: per_page,

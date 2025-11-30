@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -6,14 +6,15 @@ import {
   DialogActions,
   TextField,
   Button,
-  InputAdornment,
-  IconButton,
   MenuItem,
-  Box,
   Stack,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
+import { crearTrabajoEnRevista } from "../../services/trabajoEnRevistaService";
+import { crearPublicacionEnLibro } from "../../services/publicacionEnLibroService";
+import { crearArticuloDeDivulgacion } from "../../services/articuloDeDivulgacionService";
+import { getRevistas } from "../../services/revistaService.ts";
+import { getGruposList } from "../../services/gruposService";
+
 
 type TipoTrabajo = "revista" | "libro" | "divulgacion";
 
@@ -21,16 +22,27 @@ interface TrabajoData {
   tipo: TipoTrabajo;
   codigo: string;
   titulo: string;
-  revista: string;
-  grupo: string;
+  grupo_id?: number;
+  libro: string;
+  revista_id?: number; 
   capitulo?: string;
   nombreArticulo?: string;
+}
+
+interface Revista {
+  id: number;
+  nombre: string;
+}
+
+interface Grupo {
+  id: number;
+  nombre: string;
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onConfirm: (data: TrabajoData) => void;
+  onConfirm: () => void;
   tipo: TipoTrabajo;
 }
 
@@ -44,75 +56,132 @@ export default function NuevoTrabajoDialog({
     tipo,
     codigo: "",
     titulo: "",
-    revista: "",
-    grupo:"",
+    grupo_id: undefined,
+    libro: "",
+    revista_id: undefined,
     capitulo: "",
     nombreArticulo: "",
   });
+
+  const [revistas, setRevistas] = React.useState<Revista[]>([]);
+  const [grupos, setGrupos] = React.useState<Grupo[]>([]);
+
+
+  // si cambia el tipo desde fuera, reseteo form
+  useEffect(() => {
+    setForm({
+      tipo,
+      codigo: "",
+      titulo: "",
+      grupo_id: undefined,
+      libro: "",
+      revista_id: undefined,
+      capitulo: "",
+      nombreArticulo: "",
+    });
+  }, [tipo]);
+
+    useEffect(() => {
+    async function cargarRevistas() {
+      try {
+        const res = await getRevistas(0, 100, null, null);
+        const lista = res.content || res; 
+        setRevistas(lista);
+      } catch (e) {
+        console.error("Error cargando revistas", e);
+      }
+    }
+
+    if (tipo === "revista" && open) {
+      cargarRevistas();
+    }
+  }, [tipo, open]);
+
+  useEffect(() => {
+    async function cargarGrupos() {
+      try {
+        const res = await getGruposList();
+        setGrupos(res);
+      } catch (e) {
+        console.error("Error cargando grupos", e);
+      }
+    }
+
+    if (open) cargarGrupos();
+  }, [open]);
 
   const handleChange =
     (field: keyof TrabajoData) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [field]: e.target.value });
     };
 
-  const handleConfirm = () => {
-    const camposBase = form.codigo && form.titulo;
-    const camposRevista = form.tipo === "revista" && form.revista;
-    const camposLibro = form.tipo === "libro" && form.revista && form.capitulo;
-    const camposDivulgacion =
-      form.tipo === "divulgacion" && form.nombreArticulo;
+  async function handleSave() {
+    try {
+      if (!form.codigo || !form.titulo) {
+        alert("Completá código y título.");
+        return;
+      }
 
-    if (
-      camposBase &&
-      (camposRevista || camposLibro || camposDivulgacion)
-    ) {
-      onConfirm(form);
-    } else {
-      alert("Por favor completá todos los campos.");
+      if (form.tipo === "revista") {
+        if (!form.revista_id) {
+          alert("Debe ingresar una revista.");
+          return;
+        }
+
+        await crearTrabajoEnRevista({
+          codigo: form.codigo,
+          titulo: form.titulo,
+          grupo_de_investigacion_id: Number(form.grupo_id),
+          revista_id:form.revista_id 
+        });
+      }
+
+      if (form.tipo === "libro") {
+        if (!form.libro || !form.capitulo) {
+          alert("Debe completar libro y capítulo.");
+          return;
+        }
+
+        await crearPublicacionEnLibro({
+          codigo: form.codigo,
+          titulo: form.titulo,
+          libro: form.libro,
+          capitulo: form.capitulo,
+          grupo_de_investigacion_id: Number(form.grupo_id),
+        });
+      }
+
+      if (form.tipo === "divulgacion") {
+        if (!form.nombreArticulo) {
+          alert("Debe ingresar el nombre del artículo.");
+          return;
+        }
+
+        await crearArticuloDeDivulgacion({
+          codigo: form.codigo,
+          titulo: form.titulo,
+          nombre: form.nombreArticulo,
+          grupo_de_investigacion_id: Number(form.grupo_id),
+        });
+      }
+
+      onConfirm();
+      onClose();
+
+    } catch (err) {
+      console.error(err);
+      alert("Error guardando el registro.");
     }
-  };
+  }
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle
-        sx={{
-          fontWeight: 600,
-          color: "primary.main",
-          textAlign: "center",
-          pt: 3,
-        }}
-      >
-        Nuevo Trabajo
-      </DialogTitle>
+      <DialogTitle>Nueva Publicación</DialogTitle>
 
-      <DialogContent dividers sx={{ px: 4, pt: 2 }}>
+      <DialogContent dividers>
         <Stack spacing={3}>
           <TextField
-            label="Tipo de Trabajo"
-            value={form.tipo}
-            onChange={handleChange("tipo")}
-            fullWidth
-            select
-          >
-            <MenuItem value="revista">Trabajo en Revista</MenuItem>
-            <MenuItem value="libro">Publicación en Libro o Capítulo</MenuItem>
-            <MenuItem value="divulgacion">Artículo de Divulgación</MenuItem>
-          </TextField>
-
-          <TextField
-            label="Grupo"
-            value={form.grupo}
-            onChange={handleChange("grupo")}
-            fullWidth
-            select
-            >
-            <MenuItem value="grupo1">Grupo 1</MenuItem>
-            <MenuItem value="grupo2">Grupo 2</MenuItem>
-            <MenuItem value="grupo3">Grupo 3</MenuItem>
-          </TextField>
-
-          <TextField
-            label="Código del Trabajo"
+            label="Código"
             value={form.codigo}
             onChange={handleChange("codigo")}
             fullWidth
@@ -125,33 +194,52 @@ export default function NuevoTrabajoDialog({
             fullWidth
           />
 
+          {/* SELECT GRUPO */}
+          <TextField
+            label="Grupo de Investigación"
+            value={form.grupo_id}
+            select
+            fullWidth
+            onChange={(e) =>
+              setForm({ ...form, grupo_id: Number(e.target.value) })
+            }
+          >
+            {(grupos ?? []).map((g) => (
+              <MenuItem key={g.id} value={g.id}>
+                {g.nombre}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          {/* -------- REVISTA -------- */}
           {form.tipo === "revista" && (
             <TextField
               label="Revista"
-              value={form.revista}
-              onChange={handleChange("revista")}
+              value={form.revista_id ?? ""}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  revista_id: e.target.value ? Number(e.target.value) : undefined,
+                })
+              }
               fullWidth
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" title="Buscar revista">
-                      <SearchIcon />
-                    </IconButton>
-                    <IconButton size="small" title="Añadir revista">
-                      <AddIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
+              select
+            >
+              {revistas.map((r) => (
+                <MenuItem key={r.id} value={r.id}>
+                  {r.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
           )}
 
+           {/* -------- LIBRO -------- */}
           {form.tipo === "libro" && (
             <>
               <TextField
                 label="Título del Libro"
-                value={form.revista}
-                onChange={handleChange("revista")}
+                value={form.libro}
+                onChange={handleChange("libro")}
                 fullWidth
               />
               <TextField
@@ -163,6 +251,7 @@ export default function NuevoTrabajoDialog({
             </>
           )}
 
+          {/* -------- DIVULGACION -------- */}
           {form.tipo === "divulgacion" && (
             <TextField
               label="Nombre del Artículo"
@@ -174,34 +263,15 @@ export default function NuevoTrabajoDialog({
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
-        <Box display="flex" gap={2}>
-          <Button
-            onClick={onClose}
-            variant="outlined"
-            sx={{
-              color: "#666",
-              borderColor: "#ccc",
-              backgroundColor: "#f5f5f5",
-              textTransform: "none",
-              minWidth: 120,
-            }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            variant="contained"
-            sx={{
-              backgroundColor: "#1976d2",
-              textTransform: "none",
-              minWidth: 120,
-            }}
-          >
-            Confirmar
-          </Button>
-        </Box>
+      <DialogActions sx={{ justifyContent: "center", p: 2 }}>
+        <Button variant="outlined" onClick={onClose}>
+          Cancelar
+        </Button>
+        <Button variant="contained" onClick={handleSave}>
+          Guardar
+        </Button>
       </DialogActions>
     </Dialog>
   );
 }
+

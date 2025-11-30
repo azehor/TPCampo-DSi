@@ -1,4 +1,29 @@
-.btn-icon: {
-  width: 29px;
-  height: 29px;
+.tabs-container {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin-bottom: 25px;
+}
+
+.tab-button {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: #333;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tab-button:hover {
+  color: #000;
+  border-bottom: 2px solid #ccc;
+}
+
+.tab-button.active {
+  font-weight: bold;
+  color: #274c77;
+  border-bottom: 2px solid #274c77;
 }

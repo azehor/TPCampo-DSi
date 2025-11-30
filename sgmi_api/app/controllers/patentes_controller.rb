@@ -13,7 +13,9 @@ class PatentesController < ApplicationController
     count = Patente.count
     patentes = Patente.limit(per_page).offset(page * per_page)
     render json: {
-      content: patentes.as_json,
+      content: patentes.as_json(include: {
+          grupo_de_investigacion: {}
+      }),
       metadata: {
         page: page,
         per_page: per_page,

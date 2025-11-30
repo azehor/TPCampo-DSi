@@ -1,19 +1,124 @@
 import React from "react";
 import {
-  Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, IconButton, Typography,
-  Box, TextField, Button, Grid
+  Box, Button, Grid, TextField, Typography, Paper
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import { useNavigate, useLocation } from "react-router-dom";
+
 import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTrabajoDialog";
 import ModificarTrabajoDialog from "../../../components/trabajos-publicados/ModificarTrabajoDialog";
+
+import { deleteArticulosDivulgacion, getArticulosDivulgacion } from "../../../services/articuloDeDivulgacionService";
+
 import "./trabajosPublicados.css";
+
+interface Divulgacion {
+  id: number;
+  codigo: string;
+  titulo: string;
+  nombre: string;
+  grupo: string;
+}
 
 export default function TrabajosPublicadosDivulgacion() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [rows, setRows] = React.useState<Divulgacion[]>([]);
+  const [count, setCount] = React.useState(0);
+  const [page, setPage] = React.useState(0);
+  const [search, setSearch] = React.useState("");
+
+  const [openDialog, setOpenDialog] = React.useState(false);
+  const [openEditDialog, setOpenEditDialog] = React.useState(false);
+
+  const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
+
+  const limit = 10;
+
+  React.useEffect(() => {
+    cargarDivulgaciones();
+  }, [page]);
+
+  async function cargarDivulgaciones() {
+    try {
+      const res = await getArticulosDivulgacion(page, limit);
+
+
+      const articulos = res.content || [];
+      console.log(articulos);
+      
+      const total = res.count || articulos.length;
+
+      const articulosMap = articulos.map((a: { id: any; codigo: any; titulo: any; nombre: any; grupo_de_investigacion_id: any; grupo_de_investigacion: { nombre: any; }; }) => ({
+        id: a.id,
+        codigo: a.codigo,
+        titulo: a.titulo,
+        tipo: "divulgacion",
+
+        nombre: a.nombre,
+
+        grupo_id: a.grupo_de_investigacion_id,
+        grupo: a.grupo_de_investigacion?.nombre ?? "Sin grupo"
+      }));
+      setRows(articulosMap);
+      setCount(total);
+    } catch (err) {
+      console.error("Error cargando divulgaciones:", err);
+    }
+  }
+
+  const filtered = rows.filter((t) =>
+    [t.codigo, t.titulo, t.nombre]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  const columns: GridColDef[] = [
+    { field: "codigo", headerName: "Código", flex: 1, minWidth: 100  },
+    { field: "titulo", headerName: "Título del Trabajo", flex: 3, minWidth: 180 },
+    { field: "grupo", headerName: "Grupo", flex: 2.5, minWidth: 180  },
+    { field: "nombre", headerName: "Nombre del Artículo", flex: 2.5, minWidth: 200 },
+    {
+      field: "acciones",
+      headerName: "Acciones",
+      flex: 1,
+      minWidth: 120,
+      sortable: false,
+      renderCell: (params) => (
+        <Box display="flex" >
+          <Button size="small" color="primary"
+            onClick={() => {
+              setTrabajoSeleccionado(params.row);
+              setOpenEditDialog(true);
+            }}>
+            <EditIcon />
+          </Button>
+
+          <Button size="small" color="error"
+            onClick={async () => {
+              const conf = confirm("¿Seguro que deseas eliminar el artículo de divulgación?");
+              if (!conf) return;
+
+              try {
+                await deleteArticulosDivulgacion(params.row.id);
+                await cargarDivulgaciones();
+              } catch (error) {
+                alert("Ocurrió un error al eliminar el artículo.");
+                console.error(error);
+              }
+            }}>
+            <DeleteIcon />
+          </Button>
+        </Box>
+      ),
+    },
+  ];
 
   const tabs = [
     { label: "Trabajo en Revista", path: "/actividades-idi/trabajos-publicados" },
@@ -21,66 +126,9 @@ export default function TrabajosPublicadosDivulgacion() {
     { label: "Artículos de Divulgación", path: "/actividades-idi/articulos-divulgacion" },
   ];
 
-  // Estado dinámico de trabajos
-  const [trabajos, setTrabajos] = React.useState([
-    {
-      id: 1,
-      codigo: "2025-12345",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      articulo: "Imotica International",
-      grupo: "Grupo 1",
-      tipo: "divulgacion",
-    },
-    {
-      id: 2,
-      codigo: "2025-15625",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      articulo: "ACM Transactions on Information Systems",
-      grupo: "Grupo 2",
-      tipo: "divulgacion",
-    },
-  ]);
-
-  const [search, setSearch] = React.useState("");
-  const [openDialog, setOpenDialog] = React.useState(false);
-  const [openEditDialog, setOpenEditDialog] = React.useState(false);
-  const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
-
-  const handleEdit = (trabajo: any) => {
-    setTrabajoSeleccionado(trabajo);
-    setOpenEditDialog(true);
-  };
-
-  const handleDelete = (id: number) => {
-    setTrabajos(trabajos.filter((t) => t.id !== id));
-  };
-
-  const handleAddTrabajo = (nuevoTrabajo: any) => {
-    setTrabajos([
-      ...trabajos,
-      { id: trabajos.length + 1, ...nuevoTrabajo }
-    ]);
-    setOpenDialog(false);
-  };
-
-  const handleUpdateTrabajo = (data: any) => {
-    setTrabajos((prev) =>
-      prev.map((t) => (t.id === trabajoSeleccionado.id ? { ...t, ...data } : t))
-    );
-    setOpenEditDialog(false);
-    setTrabajoSeleccionado(null);
-  };
-
-  const filteredTrabajos = trabajos.filter((t) =>
-    [t.codigo, t.titulo, t.articulo]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
-
   return (
     <div className="trabajos-publicados">
-      {/* Título + buscador + botón */}
+
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Grid item>
           <Typography variant="h4" color="black">
@@ -93,13 +141,12 @@ export default function TrabajosPublicadosDivulgacion() {
               label="Buscar"
               variant="outlined"
               size="small"
+              sx={{ width: 300 }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              sx={{ width: "300px" }}
             />
             <Button
               variant="contained"
-              color="primary"
               startIcon={<AddIcon />}
               onClick={() => setOpenDialog(true)}
             >
@@ -109,7 +156,7 @@ export default function TrabajosPublicadosDivulgacion() {
         </Grid>
       </Grid>
 
-      {/* Tabs encima de la tabla */}
+      {/* Tabs */}
       <div className="tabs-container">
         {tabs.map((tab) => (
           <button
@@ -122,59 +169,52 @@ export default function TrabajosPublicadosDivulgacion() {
         ))}
       </div>
 
-      {/* Tabla */}
-      <TableContainer component={Paper} elevation={3}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "#f3f3f3" }}>
-              <TableCell sx={{ fontWeight: 600 }}>Código</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Título del Trabajo</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Nombre del Artículo</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredTrabajos.map((t) => (
-              <TableRow key={t.id} hover>
-                <TableCell>{t.codigo}</TableCell>
-                <TableCell>{t.titulo}</TableCell>
-                <TableCell>{t.articulo}</TableCell>
-                <TableCell>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleEdit(t)}
-                    title="Editar"
-                  >
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(t.id)}
-                    title="Eliminar"
-                  >
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* DATAGRID */}
+      <Paper elevation={3} sx={{ height: 600, width: "100%" }}>
+        <DataGrid
+          sx={{
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeadersInner": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: 600,
+            color: "#000",
+          },
+        }}
+          rows={filtered}
+          rowCount={count}
+          columns={columns}
+          pagination
+          pageSizeOptions={[limit]}
+          paginationMode="server"
+          onPaginationModelChange={(model) => setPage(model.page)}
+        />
+      </Paper>
 
-      {/* Diálogo de nuevo trabajo */}
+      {/* DIALOG NUEVO */}
       <NuevoTrabajoDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        onConfirm={handleAddTrabajo}
+        onConfirm={cargarDivulgaciones}
         tipo="divulgacion"
       />
 
-      {/* Diálogo de modificar trabajo */}
+      {/* DIALOG EDITAR */}
       {trabajoSeleccionado && (
         <ModificarTrabajoDialog
           open={openEditDialog}
           onClose={() => setOpenEditDialog(false)}
-          onConfirm={handleUpdateTrabajo}
+          onConfirm={() => {
+            cargarDivulgaciones();
+            setOpenEditDialog(false);
+            setTrabajoSeleccionado(null);
+          }}
           initialData={trabajoSeleccionado}
         />
       )}

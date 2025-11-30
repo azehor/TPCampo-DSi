@@ -1,93 +1,151 @@
 import React from "react";
 import {
-  Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, IconButton, Typography,
-  Box, TextField, Button, Grid
+  Box,
+  Button,
+  Grid,
+  TextField,
+  Typography,
+  Paper
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import { useNavigate, useLocation } from "react-router-dom";
+
 import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTrabajoDialog";
 import ModificarTrabajoDialog from "../../../components/trabajos-publicados/ModificarTrabajoDialog";
+
+import { deletePublicacionEnLibro, getPublicaciones } from "../../../services/publicacionEnLibroService";
+
 import "./trabajosPublicados.css";
+
+interface Publicacion {
+  id: number;
+  codigo: string;
+  titulo: string;
+  libro: any;
+  capitulo: string;
+  grupo: string;
+}
 
 export default function TrabajosPublicadosLibro() {
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [rows, setRows] = React.useState<Publicacion[]>([]);
+  const [count, setCount] = React.useState(0);
+  const [page, setPage] = React.useState(0);
+  const [search, setSearch] = React.useState("");
+
+  const [openDialog, setOpenDialog] = React.useState(false);
+  const [openEditDialog, setOpenEditDialog] = React.useState(false);
+  const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
+
+  const limit = 10;
+
+  React.useEffect(() => {
+    cargarPublicaciones();
+  }, [page]);
+
+  async function cargarPublicaciones() {
+    try {
+      const res = await getPublicaciones(page, limit);
+
+      const publicaciones = res.content || [];
+      const total = res.count || publicaciones.length;
+
+      const publicacionesMap = publicaciones.map((p) => ({
+        id: p.id,
+        codigo: p.codigo,
+        titulo: p.titulo,
+        tipo: "libro",
+
+        libro: p.libro,
+        capitulo: p.capitulo,
+
+        grupo_id: p.grupo_de_investigacion_id,
+        grupo: p.grupo_de_investigacion?.nombre ?? "Sin grupo"
+
+      }));
+      setRows(publicacionesMap);
+      setCount(total);
+    } catch (err) {
+      console.error("Error cargando publicaciones:", err);
+    }
+  }
+
+  const handleEdit = (row: Publicacion) => {
+    setTrabajoSeleccionado(row);
+    setOpenEditDialog(true);
+  };
+
+  const handleDelete = async (id: number) => {
+  const conf = confirm("¿Seguro que deseas eliminar la publicación del libro?");
+  if (!conf) return;
+
+  try {
+    await deletePublicacionEnLibro({ id });
+    await cargarPublicaciones();
+  } catch (error) {
+    alert("Ocurrió un error al eliminar la publicación.");
+    console.error(error);
+  }
+};
+
+
+  const filtered = rows.filter((t) =>
+    [
+      t?.codigo ?? "",
+      t?.titulo ?? "",
+      t?.libro ?? "",
+      t?.capitulo ?? ""
+    ]
+      .join(" ")
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
+
+  // Columnas DataGrid
+  const columns: GridColDef[] = [
+    { field: "codigo", headerName: "Código", width: 120 },
+    { field: "titulo", headerName: "Título del Trabajo", width: 300 },
+    { field: "grupo", headerName: "Grupo", width: 300 },
+    { field: "libro", headerName: "Título del Libro", width: 250 },
+    { field: "capitulo", headerName: "Capítulo", width: 120 },
+    {
+      field: "acciones",
+      headerName: "Acciones",
+      width: 150,
+      sortable: false,
+      renderCell: (params) => (
+        <Box display="flex" gap={1}>
+          <Button
+            size="small"
+            color="primary"
+            onClick={() => handleEdit(params.row)}
+          >
+            <EditIcon />
+          </Button>
+
+          <Button
+            size="small"
+            color="error"
+            onClick={() => handleDelete(params.row.id)}
+          >
+            <DeleteIcon />
+          </Button>
+        </Box>
+      ),
+    },
+  ];
 
   const tabs = [
     { label: "Trabajo en Revista", path: "/actividades-idi/trabajos-publicados" },
     { label: "Publicación en Libro o Capítulo", path: "/actividades-idi/publicacion-libro" },
     { label: "Artículos de Divulgación", path: "/actividades-idi/articulos-divulgacion" },
   ];
-
-  // Estado dinámico de trabajos
-  const [trabajos, setTrabajos] = React.useState([
-    {
-      id: 1,
-      codigo: "2025-12345",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      libro: "Nature",
-      capitulo: "0317-8471",
-      grupo: "Grupo 1",
-      tipo: "libro",
-    },
-    {
-      id: 2,
-      codigo: "2025-15625",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      libro: "ACM Transactions on Information Systems",
-      capitulo: "1050-124X",
-      grupo: "Grupo 2",
-      tipo: "libro",
-    },
-    {
-      id: 3,
-      codigo: "2025-15625",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      libro: "ACM Transactions on Information Systems",
-      capitulo: "1050-124X",
-      grupo: "Grupo 3",
-      tipo: "libro",
-    },
-  ]);
-
-  const [search, setSearch] = React.useState("");
-  const [openDialog, setOpenDialog] = React.useState(false);
-  const [openEditDialog, setOpenEditDialog] = React.useState(false);
-  const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
-
-  const handleEdit = (trabajo: any) => {
-    setTrabajoSeleccionado(trabajo);
-    setOpenEditDialog(true);
-  };
-
-  const handleDelete = (id: number) => {
-    setTrabajos(trabajos.filter((t) => t.id !== id));
-  };
-
-  const handleAddTrabajo = (nuevoTrabajo: any) => {
-    setTrabajos([
-      ...trabajos,
-      { id: trabajos.length + 1, ...nuevoTrabajo }
-    ]);
-    setOpenDialog(false);
-  };
-
-  const handleUpdateTrabajo = (data: any) => {
-    setTrabajos((prev) =>
-      prev.map((t) => (t.id === trabajoSeleccionado.id ? { ...t, ...data } : t))
-    );
-    setOpenEditDialog(false);
-    setTrabajoSeleccionado(null);
-  };
-
-  const filteredTrabajos = trabajos.filter((t) =>
-    [t.codigo, t.titulo, t.libro, t.capitulo]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
 
   return (
     <div className="trabajos-publicados">
@@ -103,15 +161,15 @@ export default function TrabajosPublicadosLibro() {
               label="Buscar"
               variant="outlined"
               size="small"
+              sx={{ width: 300 }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              sx={{ width: "300px" }}
             />
+
             <Button
               variant="contained"
-              color="primary"
               startIcon={<AddIcon />}
-              onClick={() => setOpenDialog(true)} 
+              onClick={() => setOpenDialog(true)}
             >
               Añadir trabajo
             </Button>
@@ -119,6 +177,7 @@ export default function TrabajosPublicadosLibro() {
         </Grid>
       </Grid>
 
+      {/* ---------- TABS ---------- */}
       <div className="tabs-container">
         {tabs.map((tab) => (
           <button
@@ -131,61 +190,61 @@ export default function TrabajosPublicadosLibro() {
         ))}
       </div>
 
-      {/* Tabla */}
-      <TableContainer component={Paper} elevation={3}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "#f3f3f3" }}>
-              <TableCell sx={{ fontWeight: 600 }}>Código</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Título del Trabajo</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Título del Libro</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Capítulo</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredTrabajos.map((t) => (
-              <TableRow key={t.id} hover>
-                <TableCell>{t.codigo}</TableCell>
-                <TableCell>{t.titulo}</TableCell>
-                <TableCell>{t.libro}</TableCell>
-                <TableCell>{t.capitulo}</TableCell>
-                <TableCell>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleEdit(t)}
-                    title="Editar"
-                  >
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(t.id)}
-                    title="Eliminar"
-                  >
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* ---------- DATAGRID ---------- */}
+      <Paper elevation={3} sx={{
+          height: 600,
+          width: "100%" 
+         }}>
+        <DataGrid
+        sx={{
+          // ---- HEADER GRIS ----
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeadersInner": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: 600,
+            color: "#000",
+          },
+        }}
+          rows={filtered}
+          rowCount={15}
+          columns={columns}
+          pagination
+          disableColumnMenu
+          disableColumnResize={true}
+          pageSizeOptions={[15]}
+          sortingMode="server"
+          filterMode="server"
+          paginationMode="server"
+          onPaginationModelChange={(model) => setPage(model.page)}
+        />
+      </Paper>
 
-      {/* Diálogo de nuevo trabajo */}
       <NuevoTrabajoDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        onConfirm={handleAddTrabajo}
+        onConfirm={() => {
+          cargarPublicaciones()
+        }}
         tipo="libro"
-      />
+    />
 
-      {/* Diálogo de modificar trabajo */}
+
       {trabajoSeleccionado && (
         <ModificarTrabajoDialog
           open={openEditDialog}
           onClose={() => setOpenEditDialog(false)}
-          onConfirm={handleUpdateTrabajo}
+          onConfirm={(data) => {
+            cargarPublicaciones();
+            setOpenEditDialog(false);
+            setTrabajoSeleccionado(null);
+          }}
           initialData={trabajoSeleccionado}
         />
       )}

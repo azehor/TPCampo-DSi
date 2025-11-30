@@ -34,3 +34,9 @@
   color: #274c77;
   border-bottom: 2px solid #274c77;
 }
+
+.data-grid-header {
+  background-color: #f3f3f3 !important;
+  font-weight: 600 !important;
+  color: #000 !important;
+}

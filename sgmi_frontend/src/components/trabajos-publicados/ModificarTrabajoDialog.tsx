@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -6,33 +6,43 @@ import {
   DialogActions,
   TextField,
   Button,
-  InputAdornment,
-  IconButton,
   MenuItem,
-  Box,
   Stack,
 } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
 
-type TipoTrabajo = "revista" | "libro" | "divulgacion";
+import { getRevistas } from "../../services/revistaService.ts";
+import { getGruposList } from "../../services/gruposService";
+import { updateTrabajoEnRevista } from "../../services/trabajoEnRevistaService";
+import { updatePublicacionEnLibro } from "../../services/publicacionEnLibroService";
+import { updateArticuloDeDivulgacion } from "../../services/articuloDeDivulgacionService";
+
+interface Revista {
+  id: number;
+  nombre: string;
+}
+
+interface Grupo {
+  id: number;
+  nombre: string;
+}
 
 interface TrabajoData {
-  tipo: TipoTrabajo;
+  id: number;
+  tipo: "revista" | "libro" | "divulgacion";
   codigo: string;
   titulo: string;
-  grupo: string;
-  revista?: string;
-  capitulo?: string;
-  nombreArticulo?: string;
+  grupo_id: number;
+
+  revista_id?: number;
   libro?: string;
-  articulo?: string;
+  capitulo?: string;
+  nombre?: string;
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onConfirm: (data: TrabajoData) => void;
+  onConfirm: () => void;
   initialData: TrabajoData;
 }
 
@@ -42,137 +52,159 @@ export default function ModificarTrabajoDialog({
   onConfirm,
   initialData,
 }: Props) {
-  const [form, setForm] = React.useState<TrabajoData>({
-    ...initialData,
-    revista:
-      initialData.tipo === "libro"
-        ? initialData.libro ?? ""
-        : initialData.tipo === "revista"
-        ? initialData.revista ?? ""
-        : "",
-    nombreArticulo:
-      initialData.tipo === "divulgacion"
-        ? initialData.articulo ?? ""
-        : initialData.nombreArticulo ?? "",
-  });
+  const [revistas, setRevistas] = React.useState<Revista[]>([]);
+  const [grupos, setGrupos] = React.useState<Grupo[]>([]);
+  const [form, setForm] = React.useState<TrabajoData>(initialData);
 
-  React.useEffect(() => {
-    setForm({
-      ...initialData,
-      revista:
-        initialData.tipo === "libro"
-          ? initialData.libro ?? ""
-          : initialData.tipo === "revista"
-          ? initialData.revista ?? ""
-          : "",
-      nombreArticulo:
-        initialData.tipo === "divulgacion"
-          ? initialData.articulo ?? ""
-          : initialData.nombreArticulo ?? "",
-    });
+  useEffect(() => {
+    setForm(initialData);
   }, [initialData]);
 
+  // cargar revistas
+  useEffect(() => {
+    if (open && initialData.tipo === "revista") {
+      getRevistas(0, 200, null, null).then((res: { content: any; }) => {
+        setRevistas(res.content || res);
+      });
+    }
+  }, [open, initialData.tipo]);
+
+  useEffect(() => {
+    if (open) {
+      getGruposList().then((res) => setGrupos(res));
+    }
+  }, [open]);
+
   const handleChange =
-    (field: keyof TrabajoData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof TrabajoData) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [field]: e.target.value });
     };
 
-  const handleConfirm = () => {
-    const camposBase = form.codigo && form.titulo && form.grupo;
-    const camposRevista = form.tipo === "revista" && form.revista;
-    const camposLibro = form.tipo === "libro" && form.revista && form.capitulo;
-    const camposDivulgacion =
-      form.tipo === "divulgacion" && form.nombreArticulo;
+  async function handleSave() {
+    try {
+      if (!form.codigo || !form.titulo) {
+        alert("Código y título son obligatorios.");
+        return;
+      }
 
-    if (camposBase && (camposRevista || camposLibro || camposDivulgacion)) {
-      onConfirm(form);
-    } else {
-      alert("Por favor completá todos los campos.");
+      if (!form.grupo_id) {
+        alert("Debe seleccionar un grupo.");
+        return;
+      }
+
+      if (form.tipo === "revista") {
+        await updateTrabajoEnRevista(form.id, {
+          codigo: form.codigo,
+          titulo: form.titulo,
+          grupo_de_investigacion_id: form.grupo_id,
+          revista_id: Number(form.revista_id),
+        });
+      }
+
+      if (form.tipo === "libro") {
+        if (!form.libro || !form.capitulo) {
+          alert("Faltan datos del libro.");
+          return;
+        }
+
+        await updatePublicacionEnLibro(form.id, {
+          codigo: form.codigo,
+          titulo: form.titulo,
+          grupo_de_investigacion_id: form.grupo_id,
+          libro: form.libro,
+          capitulo: form.capitulo,
+        });
+      }
+
+      if (form.tipo === "divulgacion") {
+        if (!form.nombre) {
+          alert("Falta el nombre del artículo.");
+          return;
+        }
+
+        await updateArticuloDeDivulgacion(form.id, {
+          codigo: form.codigo,
+          titulo: form.titulo,
+          grupo_de_investigacion_id: form.grupo_id,
+          nombre: form.nombre,
+        });
+      }
+
+      onConfirm();
+      onClose();
+    } catch (err) {
+      console.error(err);
+      alert("Error al modificar el trabajo.");
     }
-  };
+  }
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle
-        sx={{
-          fontWeight: 600,
-          color: "primary.main",
-          textAlign: "center",
-          pt: 3,
-        }}
-      >
-        Modificar Trabajo
-      </DialogTitle>
+      <DialogTitle>Modificar Trabajo</DialogTitle>
 
-      <DialogContent dividers sx={{ px: 4, pt: 2 }}>
+      <DialogContent dividers>
         <Stack spacing={3}>
-          <TextField
-            label="Tipo de Trabajo"
-            value={form.tipo}
-            onChange={handleChange("tipo")}
-            fullWidth
-            select
-          >
-            <MenuItem value="revista">Trabajo en Revista</MenuItem>
-            <MenuItem value="libro">Publicación en Libro o Capítulo</MenuItem>
-            <MenuItem value="divulgacion">Artículo de Divulgación</MenuItem>
-          </TextField>
-
+          {/* GRUPO */}
           <TextField
             label="Grupo"
-            value={form.grupo}
-            onChange={handleChange("grupo")}
-            fullWidth
+            value={form.grupo_id ?? ""}
+            onChange={(e) =>
+              setForm({ ...form, grupo_id: Number(e.target.value) })
+            }
             select
+            fullWidth
           >
-            <MenuItem value="Grupo 1">Grupo 1</MenuItem>
-            <MenuItem value="Grupo 2">Grupo 2</MenuItem>
-            <MenuItem value="Grupo 3">Grupo 3</MenuItem>
+            {grupos.map((g) => (
+              <MenuItem key={g.id} value={g.id}>
+                {g.nombre}
+              </MenuItem>
+            ))}
           </TextField>
 
           <TextField
-            label="Código del Trabajo"
+            label="Código"
             value={form.codigo}
             onChange={handleChange("codigo")}
             fullWidth
           />
 
           <TextField
-            label="Título del Trabajo"
+            label="Título"
             value={form.titulo}
             onChange={handleChange("titulo")}
             fullWidth
           />
 
+          {/* REVISTA */}
           {form.tipo === "revista" && (
             <TextField
               label="Revista"
-              value={form.revista ?? ""}
-              onChange={handleChange("revista")}
+              value={form.revista_id ?? ""}
+              onChange={(e) =>
+                setForm({ ...form, revista_id: Number(e.target.value) })
+              }
+              select
               fullWidth
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton size="small" title="Buscar revista">
-                      <SearchIcon />
-                    </IconButton>
-                    <IconButton size="small" title="Añadir revista">
-                      <AddIcon />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
+            >
+              {revistas.map((r) => (
+                <MenuItem key={r.id} value={r.id}>
+                  {r.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
           )}
 
+          {/* LIBRO */}
           {form.tipo === "libro" && (
             <>
               <TextField
                 label="Título del Libro"
-                value={form.revista ?? ""}
-                onChange={handleChange("revista")}
+                value={form.libro ?? ""}
+                onChange={handleChange("libro")}
                 fullWidth
               />
+
               <TextField
                 label="Capítulo"
                 value={form.capitulo ?? ""}
@@ -182,44 +214,25 @@ export default function ModificarTrabajoDialog({
             </>
           )}
 
+          {/* DIVULGACIÓN */}
           {form.tipo === "divulgacion" && (
             <TextField
               label="Nombre del Artículo"
-              value={form.nombreArticulo ?? ""}
-              onChange={handleChange("nombreArticulo")}
+              value={form.nombre ?? ""}
+              onChange={handleChange("nombre")}
               fullWidth
             />
           )}
         </Stack>
       </DialogContent>
 
-      <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
-        <Box display="flex" gap={2}>
-          <Button
-            onClick={onClose}
-            variant="outlined"
-            sx={{
-              color: "#666",
-              borderColor: "#ccc",
-              backgroundColor: "#f5f5f5",
-              textTransform: "none",
-              minWidth: 120,
-            }}
-          >
-            Cancelar
-          </Button>
-          <Button
-            onClick={handleConfirm}
-            variant="contained"
-            sx={{
-              backgroundColor: "#1976d2",
-              textTransform: "none",
-              minWidth: 120,
-            }}
-          >
-            Confirmar
-          </Button>
-        </Box>
+      <DialogActions sx={{ justifyContent: "center", p: 2 }}>
+        <Button variant="outlined" onClick={onClose}>
+          Cancelar
+        </Button>
+        <Button variant="contained" onClick={handleSave}>
+          Guardar
+        </Button>
       </DialogActions>
     </Dialog>
   );

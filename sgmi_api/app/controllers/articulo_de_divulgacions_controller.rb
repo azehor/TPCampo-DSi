@@ -13,7 +13,9 @@ class ArticuloDeDivulgacionsController < ApplicationController
     count = ArticuloDeDivulgacion.count
     articulos = ArticuloDeDivulgacion.limit(per_page).offset(page * per_page)
     render json: {
-      content: articulos.as_json,
+      content: articulos.as_json(include: {
+          grupo_de_investigacion: {}
+      }),
       metadata: {
         page: page,
         per_page: per_page,
