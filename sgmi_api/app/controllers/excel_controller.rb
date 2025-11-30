@@ -1,9 +1,13 @@
 class ExcelController < ApplicationController
   def generar
+    if !params.has_key?(:anio) || !params.has_key?(:grupo)
+      render json: { error: "Año o Grupo faltante" } and return
+    end
     anio = params[:anio].to_i
     grupo_id = params[:grupo].to_i
     grupo = GrupoDeInvestigacion.find(grupo_id)
     memoria = Memoria.where(grupo_de_investigacion_id: grupo, anio: anio).first
+    if memoria.nil? then render json: { error: "Memoria del año #{anio} para el grupo #{grupo.nombre} inexistente" } and return end
     director = grupo.director.personal
     vicedirector = grupo.vicedirector.personal
     @revistas = memoria.trabajo_en_revistas
