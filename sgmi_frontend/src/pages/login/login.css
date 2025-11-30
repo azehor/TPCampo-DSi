@@ -1,0 +1,113 @@
+/* Fondo y centrado del contenido debajo del header */
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 80px); /* resta altura del header */
+  background-color: #eceff1;
+}
+
+/* Tarjeta blanca */
+.login-card {
+  background: #ffffff;
+  padding: 40px 50px;
+  width: 420px;
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  text-align: left;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Título */
+.login-card h2 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+/* Etiquetas */
+.login-card label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15px;
+  font-weight: 500;
+}
+
+/* Inputs generales */
+.login-card input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #d0d3d6;
+  border-radius: 12px;
+  font-size: 16px;
+  background-color: #f7f7f7;
+  height: 50px;
+  box-sizing: border-box;
+}
+
+/* Contenedor del input de contraseña */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Input dentro del wrapper */
+.password-wrapper input {
+  padding-right: 52px !important; /* espacio suficiente para el ojo */
+}
+
+/* Icono ojo */
+.toggle-pass {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  width: 28px;
+  cursor: pointer;
+}
+
+.toggle-pass svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Botón azul */
+.login-card button {
+  width: 100%;
+  padding: 14px;
+  background-color: #005bcc;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 17px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.login-card button:hover {
+  background-color: #0046a5;
+}
+
+/* Link recuperar clave */
+.recover-link {
+  text-align: center;
+  display: block;
+  margin-top: 12px;
+  font-size: 14px;
+  color: #0073e6;
+  text-decoration: none;
+}
+
+.recover-link:hover {
+  text-decoration: underline;
+}

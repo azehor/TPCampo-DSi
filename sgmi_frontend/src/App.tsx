@@ -1,20 +1,24 @@
-import './App.css';
-import { Route, Routes, useLocation } from 'react-router-dom';
-import Home from './pages/home';
-import Header from './components/header/Header';
-import Sidebar from './components/sidebar/Sidebar';
+// src/App.tsx
+import "./App.css";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import Header from "./components/header/Header";
+import Sidebar from "./components/sidebar/Sidebar";
 import GruposIDI from './pages/grupos-idi/GruposIDI';
 import Memorias from './pages/memorias/Memorias'
 import TrabajosPublicados from './pages/actividades-idi/trabajos-publicados/TrabajosPublicados';
 
 import PatentesRegistros from './pages/actividades-idi/patentes-registros/PatentesRegistros';
+
+import LoginPage from "./pages/login/login";
+import Home from "./pages/home";
+
 import TrabajosPublicadosLibro from './pages/actividades-idi/trabajos-publicados/TrabajosPublicadosLibro';
 import TrabajosPublicadosDivulgacion from './pages/actividades-idi/trabajos-publicados/TrabajosPublicadosDivulgacion';
 
 export default function App() {
   const location = useLocation();
 
-  // Oculto el sidebar solo en /login
+  // en /login NO muestro el sidebar
   const hideSidebar = location.pathname === "/login";
 
   return (
@@ -26,7 +30,17 @@ export default function App() {
 
         <div style={{ flex: 1, padding: "20px" }}>
           <Routes>
-            <Route path="/" element={<Home />} />
+            {/* raíz redirige a /login */}
+            <Route path="/" element={<Navigate to="/login" replace />} />
+
+            {/* login */}
+            <Route path="/login" element={<LoginPage />} />
+
+            {/* home (por si después querés ir acá) */}
+            <Route path="/home" element={<Home />} />
+
+            {/* cualquier otra ruta también manda a login */}
+            <Route path="*" element={<Navigate to="/login" replace />} />
 
             <Route path="/grupos-idi" element={<GruposIDI />} />
             <Route path="/memorias" element={<Memorias />} />
