@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -11,21 +11,39 @@ import {
   Stack,
 } from "@mui/material";
 
+import { getInvestigadores } from "../../services/investigadorService";
+import { getFacultadesRegionales } from "../../services/facultadRegionalService";
+import { updateGrupo } from "../../services/gruposService";
+
 interface GrupoData {
+  id?: number;
   nombre: string;
   sigla: string;
-  correo: string;
-  facultad: string;
-  director: string;
-  vicedirector: string;
+  correo_electronico: string;
+  facultad_id?: number;
+  director_id?: number;
+  vicedirector_id?: number;
   objetivo: string;
+}
+
+interface Investigador {
+  id: number;
+  personal: {
+    nombre: string;
+    apellido: string;
+  };
+}
+
+interface Facultad {
+  id: number;
+  nombre: string;
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onConfirm: (data: GrupoData) => void;
-  initialData: GrupoData;
+  initialData: any; 
 }
 
 export default function ModificarGrupoDialog({
@@ -34,25 +52,118 @@ export default function ModificarGrupoDialog({
   onConfirm,
   initialData,
 }: Props) {
-  const [form, setForm] = React.useState<GrupoData>(initialData);
+  
+  const [investigadores, setInvestigadores] = useState<Investigador[]>([]);
+  const [facultades, setFacultades] = useState<Facultad[]>([]);
 
-  React.useEffect(() => {
-    setForm(initialData);
-  }, [initialData]);
+  const [form, setForm] = useState<GrupoData>({
+    id: undefined,
+    nombre: "",
+    sigla: "",
+    correo_electronico: "",
+    facultad_id: undefined,
+    director_id: undefined,
+    vicedirector_id: undefined,
+    objetivo: "",
+  });
+
+  /** Cargar datos iniciales del grupo a editar */
+  useEffect(() => {
+    if (initialData && open) {
+      setForm({
+        id: initialData.id,
+        nombre: initialData.nombre,
+        sigla: initialData.sigla,
+        correo_electronico: initialData.correo_electronico,
+        facultad_id: initialData.facultad_regional?.id,
+        director_id: initialData.director?.id,
+        vicedirector_id: initialData.vicedirector?.id,
+        objetivo: initialData.objetivos,
+      });
+    }
+  }, [initialData, open]);
+
+  /** Cargar investigadores */
+  useEffect(() => {
+    if (!open) return;
+
+    async function loadInvestigadores() {
+      try {
+        const res = await getInvestigadores();
+        setInvestigadores(res.content ?? res);
+      } catch (error) {
+        console.error("Error cargando investigadores", error);
+      }
+    }
+    loadInvestigadores();
+  }, [open]);
+
+  /** Cargar facultades */
+  useEffect(() => {
+    if (!open) return;
+
+    async function loadFacultades() {
+      try {
+        const res = await getFacultadesRegionales();
+        setFacultades(res.content ?? res);
+      } catch (error) {
+        console.error("Error cargando facultades", error);
+      }
+    }
+    loadFacultades();
+  }, [open]);
 
   const handleChange =
     (field: keyof GrupoData) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [field]: e.target.value });
     };
 
-  const handleConfirm = () => {
-    const { nombre, correo, director, objetivo, facultad, vicedirector } = form;
-    if (nombre && correo && director && objetivo && facultad && vicedirector) {
-      onConfirm(form);
-    } else {
-      alert("Por favor completá todos los campos obligatorios.");
-    }
-  };
+  const handleConfirm = async () => {
+  const {
+    nombre,
+    correo_electronico,
+    director_id,
+    objetivo,
+    facultad_id,
+    vicedirector_id,
+    sigla,
+  } = form;
+
+  if (
+    !nombre ||
+    !correo_electronico ||
+    !director_id ||
+    !objetivo ||
+    !facultad_id ||
+    !vicedirector_id
+  ) {
+    alert("Por favor completá todos los campos obligatorios.");
+    return;
+  }
+
+  if (!form.id) {
+    alert("No se encontró el ID del grupo a actualizar.");
+    return;
+  }
+
+  try {
+    await updateGrupo(form.id, {
+      correo_electronico,
+      integrantes: 1,
+      nombre,
+      objetivos: objetivo,
+      sigla,
+      facultad_regional_id: facultad_id,
+      director_id: director_id,
+      vicedirector_id
+    });
+
+    onConfirm(form);
+  } catch (err) {
+    console.error(err);
+    alert("Error al actualizar el grupo");
+  }
+};
 
   return (
     <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
@@ -64,7 +175,7 @@ export default function ModificarGrupoDialog({
           pt: 3,
         }}
       >
-        Modificar Grupo
+        Editar Grupo
       </DialogTitle>
 
       <DialogContent dividers sx={{ px: 4, pt: 2 }}>
@@ -85,41 +196,58 @@ export default function ModificarGrupoDialog({
 
           <TextField
             label="Correo electrónico*"
-            value={form.correo}
-            onChange={handleChange("correo")}
+            value={form.correo_electronico}
+            onChange={handleChange("correo_electronico")}
             fullWidth
             type="email"
           />
 
           <TextField
             label="Facultad Regional*"
-            value={form.facultad}
-            onChange={handleChange("facultad")}
-            fullWidth
-          />
-
-          <TextField
-            label="Director*"
-            value={form.director}
-            onChange={handleChange("director")}
+            value={form.facultad_id ?? ""}
+            onChange={(e) =>
+              setForm({ ...form, facultad_id: Number(e.target.value) })
+            }
             fullWidth
             select
           >
-            <MenuItem value="director1">Director 1</MenuItem>
-            <MenuItem value="director2">Director 2</MenuItem>
-            <MenuItem value="director3">Director 3</MenuItem>
+            {facultades.map((f) => (
+              <MenuItem key={f.id} value={f.id}>
+                {f.nombre}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            label="Director/a*"
+            value={form.director_id ?? ""}
+            onChange={(e) =>
+              setForm({ ...form, director_id: Number(e.target.value) })
+            }
+            fullWidth
+            select
+          >
+            {investigadores.map((i) => (
+              <MenuItem key={i.id} value={i.id}>
+                {i.personal.nombre} {i.personal.apellido}
+              </MenuItem>
+            ))}
           </TextField>
 
           <TextField
             label="Vicedirector/a*"
-            value={form.vicedirector}
-            onChange={handleChange("vicedirector")}
+            value={form.vicedirector_id ?? ""}
+            onChange={(e) =>
+              setForm({ ...form, vicedirector_id: Number(e.target.value) })
+            }
             fullWidth
             select
           >
-            <MenuItem value="vicedirector1">Vicedirector 1</MenuItem>
-            <MenuItem value="vicedirector2">Vicedirector 2</MenuItem>
-            <MenuItem value="vicedirector3">Vicedirector 3</MenuItem>
+            {investigadores.map((i) => (
+              <MenuItem key={i.id} value={i.id}>
+                {i.personal.nombre} {i.personal.apellido}
+              </MenuItem>
+            ))}
           </TextField>
 
           <TextField
@@ -130,7 +258,7 @@ export default function ModificarGrupoDialog({
             multiline
             rows={3}
             inputProps={{ maxLength: 200 }}
-            helperText={`${form.objetivo.length}/200 caracteres`}
+            helperText={`${form.objetivo?.length}/200 caracteres`}
             FormHelperTextProps={{ sx: { textAlign: "right", mt: 0.5 } }}
           />
         </Stack>
@@ -160,7 +288,7 @@ export default function ModificarGrupoDialog({
               minWidth: 120,
             }}
           >
-            Confirmar
+            Guardar Cambios
           </Button>
         </Box>
       </DialogActions>

@@ -44,6 +44,10 @@ export default function TrabajosPublicadosLibro() {
   const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
 
   const limit = 10;
+  const [paginationModel, setPaginationModel] = React.useState({
+    page: 0,
+    pageSize: limit
+  });
 
   React.useEffect(() => {
     cargarPublicaciones();
@@ -213,16 +217,16 @@ export default function TrabajosPublicadosLibro() {
           },
         }}
           rows={filtered}
-          rowCount={15}
+          rowCount={count}
           columns={columns}
           pagination
-          disableColumnMenu
-          disableColumnResize={true}
-          pageSizeOptions={[15]}
-          sortingMode="server"
-          filterMode="server"
+          pageSizeOptions={[limit]}
           paginationMode="server"
-          onPaginationModelChange={(model) => setPage(model.page)}
+          paginationModel={paginationModel}
+          onPaginationModelChange={(model) => {
+            setPaginationModel(model);
+            setPage(model.page);
+          }}
         />
       </Paper>
 

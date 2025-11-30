@@ -1,6 +1,11 @@
 class InvestigadorsController < ApplicationController
   def index
-    render json: Investigador.all
+    investigadores= Investigador.all
+    render json:{
+      content: investigadores.as_json(
+        include: {personal: {}}
+      )
+    } 
   end
 
   def show
