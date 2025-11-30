@@ -40,6 +40,11 @@ export default function TrabajosPublicadosDivulgacion() {
 
   const limit = 10;
 
+  const [paginationModel, setPaginationModel] = React.useState({
+      page: 0,
+      pageSize: limit
+    });
+
   React.useEffect(() => {
     cargarDivulgaciones();
   }, [page]);
@@ -52,7 +57,7 @@ export default function TrabajosPublicadosDivulgacion() {
       const articulos = res.content || [];
       console.log(articulos);
       
-      const total = res.count || articulos.length;
+      const total = res.metadata.total_count || articulos.length;
 
       const articulosMap = articulos.map((a: { id: any; codigo: any; titulo: any; nombre: any; grupo_de_investigacion_id: any; grupo_de_investigacion: { nombre: any; }; }) => ({
         id: a.id,
@@ -193,7 +198,11 @@ export default function TrabajosPublicadosDivulgacion() {
           pagination
           pageSizeOptions={[limit]}
           paginationMode="server"
-          onPaginationModelChange={(model) => setPage(model.page)}
+          paginationModel={paginationModel}
+          onPaginationModelChange={(model) => {
+            setPaginationModel(model);
+            setPage(model.page);
+          }}
         />
       </Paper>
 

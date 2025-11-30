@@ -37,6 +37,11 @@ export default function PatentesRegistros() {
 
   const limit = 10;
 
+  const [paginationModel, setPaginationModel] = React.useState({
+      page: 0,
+      pageSize: limit
+  });
+
   React.useEffect(() => {
     cargarPatentes();
   }, [page]);
@@ -46,7 +51,7 @@ export default function PatentesRegistros() {
       const res = await getPatentes(page, limit);
 
       const patentes = res.content || [];
-      const total = res.count || patentes.length;
+      const total = res.metadata.total_count || patentes.length;
 
       const patentesMap = patentes.map((p: any) => ({
         id: p.id,
@@ -173,14 +178,18 @@ export default function PatentesRegistros() {
           },
         }}
 
-        rows={filtered}
-        rowCount={count}
-        columns={columns}
-        pagination
-        pageSizeOptions={[limit]}
-        paginationMode="server"
-        onPaginationModelChange={(model) => setPage(model.page)}
-      />
+          rows={filtered}
+          rowCount={count}
+          columns={columns}
+          pagination
+          pageSizeOptions={[limit]}
+          paginationMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={(model) => {
+            setPaginationModel(model);
+            setPage(model.page);
+          }}
+        />
 
       </Paper>
 

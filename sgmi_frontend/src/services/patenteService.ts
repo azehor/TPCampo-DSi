@@ -8,6 +8,8 @@ export async function getPatentes(page = 0, limit = 10) {
     }
   });
 
+  console.log(response.data);
+  
   return response.data;
 }
 
