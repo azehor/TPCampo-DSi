@@ -1,14 +1,24 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import ExportarExcelDialog from "./ExportarExcelDialog";
 import "./Sidebar.css";
 
 export default function Sidebar() {
   const [openActividades, setOpenActividades] = useState(false);
+  const [openExportDialog, setOpenExportDialog] = useState(false);
+
+  const handleExportClick = () => {
+    setOpenExportDialog(true);
+  };
+
+  const handleExportConfirm = (data: any) => {
+    console.log("Exportar con filtros:", data);
+    setOpenExportDialog(false);
+  };
 
   return (
     <aside className="sidebar">
       <ul className="menu">
-
         <li className="menu-item">
           <Link to="/grupos-idi">Grupos I+D+i</Link>
         </li>
@@ -17,7 +27,7 @@ export default function Sidebar() {
           <span>Administración</span>
         </li>
 
-        <li 
+        <li
           className="menu-item clickable"
           onClick={() => setOpenActividades(!openActividades)}
         >
@@ -61,18 +71,25 @@ export default function Sidebar() {
         </li>
       </ul>
 
-        {/* FOOTER DEL SIDEBAR */}
-        <div className="sidebar-footer">
-        <button className="btn-export">
-            <img src="/public/excel.png" alt="excel" className="btn-icon" />
-            Exportar a Excel
+      {/* FOOTER DEL SIDEBAR */}
+      <div className="sidebar-footer">
+        <button className="btn-export" onClick={handleExportClick}>
+          <img src="/public/excel.png" alt="excel" className="btn-icon" />
+          Exportar a Excel
         </button>
 
         <button className="btn-logout">
-            <img src="/public/logout.png" alt="logout" className="btn-icon" />
-            Cerrar Sesión
+          <img src="/public/logout.png" alt="logout" className="btn-icon" />
+          Cerrar Sesión
         </button>
-        </div>
+      </div>
+
+      {/* Dialog de exportacion */}
+      <ExportarExcelDialog
+        open={openExportDialog}
+        onClose={() => setOpenExportDialog(false)}
+        onConfirm={handleExportConfirm}
+      />
     </aside>
   );
 }

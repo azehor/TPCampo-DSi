@@ -4,10 +4,16 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Header from "./components/header/Header";
 import Sidebar from "./components/sidebar/Sidebar";
 import GruposIDI from './pages/grupos-idi/GruposIDI';
+import Memorias from './pages/memorias/Memorias'
 import TrabajosPublicados from './pages/actividades-idi/trabajos-publicados/TrabajosPublicados';
+
 import PatentesRegistros from './pages/actividades-idi/patentes-registros/PatentesRegistros';
+
 import LoginPage from "./pages/login/login";
 import Home from "./pages/home";
+
+import TrabajosPublicadosLibro from './pages/actividades-idi/trabajos-publicados/TrabajosPublicadosLibro';
+import TrabajosPublicadosDivulgacion from './pages/actividades-idi/trabajos-publicados/TrabajosPublicadosDivulgacion';
 
 export default function App() {
   const location = useLocation();
@@ -37,7 +43,10 @@ export default function App() {
             <Route path="*" element={<Navigate to="/login" replace />} />
 
             <Route path="/grupos-idi" element={<GruposIDI />} />
+            <Route path="/memorias" element={<Memorias />} />
             <Route path="/actividades-idi/trabajos-publicados" element={<TrabajosPublicados />} />
+            <Route path="/actividades-idi/publicacion-libro" element={<TrabajosPublicadosLibro />} />
+            <Route path="/actividades-idi/articulos-divulgacion" element={<TrabajosPublicadosDivulgacion />} />
             <Route path="/actividades-idi/patentes-registros" element={<PatentesRegistros />} />
 
           </Routes>

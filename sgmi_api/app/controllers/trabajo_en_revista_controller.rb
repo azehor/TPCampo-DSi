@@ -3,9 +3,23 @@ class TrabajoEnRevistaController < ApplicationController
 
   # GET /trabajo_en_revista
   def index
-    @trabajo_en_revista = TrabajoEnRevista.all
-
-    render json: @trabajo_en_revista
+    if params.has_key?(:page) && params.has_key?(:limit)
+      page = params[:page].to_i
+      per_page = params[:limit].to_i
+    else
+      page = 0
+      per_page = 15
+    end
+    count = TrabajoEnRevista.count
+    revistas = TrabajoEnRevista.limit(per_page).offset(page * per_page)
+    render json: {
+      content: revistas.as_json,
+      metadata: {
+        page: page,
+        per_page: per_page,
+        total_count: count
+      }
+    }
   end
 
   # GET /trabajo_en_revista/1

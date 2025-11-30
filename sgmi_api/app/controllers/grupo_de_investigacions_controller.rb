@@ -1,13 +1,35 @@
 class GrupoDeInvestigacionsController < ApplicationController
   def index
-    grupos = GrupoDeInvestigacion.all
-    render json: grupos.as_json(
-      include: {
-        director: {},
-        vicedirector: {},
-        facultad_regional: {}
+    if params.has_key?(:page) && params.has_key?(:limit)
+      page = params[:page].to_i
+      per_page = params[:limit].to_i
+    else
+      page = 0
+      per_page = 15
+    end
+    count = GrupoDeInvestigacion.count
+    grupos = GrupoDeInvestigacion.joins(director: :personal).limit(per_page).offset(page * per_page)
+    render json: {
+      content: grupos.as_json(
+        include: {
+          director: {
+            include: {
+              personal: {}
+            }
+          },
+          vicedirector: {
+            include: {
+              personal: {}
+            }
+          },
+          facultad_regional: {}
       }
-    )
+      ), metadata: {
+        page: page,
+        per_page: per_page,
+        total_count: count.as_json
+      }
+    }
   end
 
 
