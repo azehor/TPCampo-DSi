@@ -38,6 +38,9 @@ Rails.application.routes.draw do
       end
     end
 
+    # EXPORTAR A EXCEL
+    get "/exportar", to: "excel#generar"
+
     # CAMBIO DE CONTRASEÑA (fuera de memorias)
     patch "/change_password", to: "users#change_password"
   end

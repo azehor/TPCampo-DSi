@@ -208,8 +208,8 @@ end
 
 # PATENTES
 patentes = [
-  { identificador: "P-1234", titulo: "Control Inteligente", tipo: "Tecnológica", grupo_de_investigacion_id: GrupoDeInvestigacion.first.id },
-  { identificador: "P-5678", titulo: "Sistema Autónomo", tipo: "Robótica", grupo_de_investigacion_id: GrupoDeInvestigacion.second.id }
+  { identificador: "P-1234", titulo: "Control Inteligente", tipo: "Propiedad Intelectual", grupo_de_investigacion_id: GrupoDeInvestigacion.first.id },
+  { identificador: "P-5678", titulo: "Sistema Autónomo", tipo: "Propiedad Industrial", grupo_de_investigacion_id: GrupoDeInvestigacion.second.id }
 ]
 
 patentes.each do |p|

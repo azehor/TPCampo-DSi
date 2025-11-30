@@ -9,7 +9,7 @@ class MemoriasController < ApplicationController
   def index
     if params.has_key?(:grupo)
       grupo_id = params[:grupo].to_i
-      render json: Memoria.where(grupo_de_investigacion_id: grupo_id)
+      render json: Memoria.where(grupo_de_investigacion_id: grupo_id).as_json(include: full_includes)
     else
       render json: Memoria.all.as_json(include: full_includes)
     end
@@ -99,6 +99,14 @@ class MemoriasController < ApplicationController
     @memoria.articulo_de_divulgacions.delete(art)
     head :no_content
   end
+  def full_includes
+    {
+      patentes: {},
+      trabajo_en_revistas: {},
+      publicacion_en_libros: {},
+      articulo_de_divulgacions: {}
+    }
+  end
 
   private
 
@@ -111,14 +119,5 @@ class MemoriasController < ApplicationController
       :anio,
       :grupo_de_investigacion_id
     )
-  end
-
-  def full_includes
-    {
-      patentes: {},
-      trabajo_en_revistas: {},
-      publicacion_en_libros: {},
-      articulo_de_divulgacions: {}
-    }
   end
 end
