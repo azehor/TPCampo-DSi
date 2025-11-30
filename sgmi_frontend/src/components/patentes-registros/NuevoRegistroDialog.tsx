@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -10,18 +10,25 @@ import {
   Box,
   Stack,
 } from "@mui/material";
+import { getGruposList } from "../../services/gruposService";
+import { crearPatente } from "../../services/patenteService";
 
 interface RegistroData {
-  grupo: string;
+  grupo_id: number;
   titulo: string;
   identificador: string;
   tipoRegistro: string;
 }
 
+interface Grupo {
+  id: number;
+  nombre: string;
+}
+
 interface Props {
   open: boolean;
   onClose: () => void;
-  onConfirm: (data: RegistroData) => void;
+  onConfirm: () => void;
 }
 
 export default function NuevoRegistroDialog({
@@ -29,24 +36,62 @@ export default function NuevoRegistroDialog({
   onClose,
   onConfirm,
 }: Props) {
+  const [grupos, setGrupos] = React.useState<Grupo[]>([]);
+
   const [form, setForm] = React.useState<RegistroData>({
-    grupo: "Grupo 1",
+    grupo_id: 0,
     titulo: "",
     identificador: "",
     tipoRegistro: "",
   });
 
+  // Cargar grupos
+  useEffect(() => {
+    if (!open) return;
+
+    async function cargarGrupos() {
+      try {
+        const res = await getGruposList();
+        setGrupos(res);
+
+        if (res.length > 0) {
+          setForm((prev) => ({ ...prev, grupo_id: res[0].id }));
+        }
+      } catch (e) {
+        console.error("Error cargando grupos", e);
+      }
+    }
+
+    cargarGrupos();
+  }, [open]);
+
   const handleChange =
-    (field: keyof RegistroData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof RegistroData) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [field]: e.target.value });
     };
 
-  const handleConfirm = () => {
-    const { grupo, titulo, identificador, tipoRegistro } = form;
-    if (grupo && titulo && identificador && tipoRegistro) {
-      onConfirm(form);
-    } else {
+  const handleConfirm = async () => {
+    const { grupo_id, titulo, identificador, tipoRegistro } = form;
+
+    if (!grupo_id || !titulo || !identificador || !tipoRegistro) {
       alert("Por favor completá todos los campos.");
+      return;
+    }
+
+    try {
+      await crearPatente({
+        identificador,
+        titulo,
+        tipo: tipoRegistro,
+        grupo_de_investigacion_id: grupo_id,
+      });
+
+      onConfirm();
+      onClose();
+    } catch (err) {
+      console.error("Error creando patente", err);
+      alert("Ocurrió un error al guardar la patente.");
     }
   };
 
@@ -60,21 +105,26 @@ export default function NuevoRegistroDialog({
           pt: 3,
         }}
       >
-        Nueva Patente
+        Nueva Patente / Registro
       </DialogTitle>
 
       <DialogContent dividers sx={{ px: 4, pt: 2 }}>
         <Stack spacing={3}>
+          {/* GRUPO */}
           <TextField
             label="Grupo"
-            value={form.grupo}
-            onChange={handleChange("grupo")}
+            value={form.grupo_id}
+            onChange={(e) =>
+              setForm({ ...form, grupo_id: Number(e.target.value) })
+            }
             fullWidth
             select
           >
-            <MenuItem value="Grupo 1">Grupo 1</MenuItem>
-            <MenuItem value="Grupo 2">Grupo 2</MenuItem>
-            <MenuItem value="Grupo 3">Grupo 3</MenuItem>
+            {grupos.map((g) => (
+              <MenuItem key={g.id} value={g.id}>
+                {g.nombre}
+              </MenuItem>
+            ))}
           </TextField>
 
           <TextField
@@ -98,8 +148,12 @@ export default function NuevoRegistroDialog({
             fullWidth
             select
           >
-            <MenuItem value="Propiedad Intelectual">Propiedad Intelectual</MenuItem>
-            <MenuItem value="Propiedad Industrial">Propiedad Industrial</MenuItem>
+            <MenuItem value="Propiedad Intelectual">
+              Propiedad Intelectual
+            </MenuItem>
+            <MenuItem value="Propiedad Industrial">
+              Propiedad Industrial
+            </MenuItem>
           </TextField>
         </Stack>
       </DialogContent>

@@ -13,7 +13,12 @@ class TrabajoEnRevistaController < ApplicationController
     count = TrabajoEnRevista.count
     revistas = TrabajoEnRevista.limit(per_page).offset(page * per_page)
     render json: {
-      content: revistas.as_json,
+      content: revistas.as_json(include: {
+          revista:{
+            include:{pais:{}}
+          },
+          grupo_de_investigacion: {}
+      }),
       metadata: {
         page: page,
         per_page: per_page,

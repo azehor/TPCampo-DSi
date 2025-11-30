@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -11,17 +11,32 @@ import {
   Stack,
 } from "@mui/material";
 
+import { getTrabajosEnRevista } from "../../services/trabajoEnRevistaService";
+import { getGruposList } from "../../services/gruposService";
+import { updatePatente } from "../../services/patenteService";
+
 interface RegistroData {
-  grupo: string;
+  id: number;
+  grupo_id: number;
   codigoTrabajo: string;
   identificador: string;
-  tipoRegistro: string;
+  tipo: string;
+}
+
+interface Grupo {
+  id: number;
+  nombre: string;
+}
+
+interface Trabajo {
+  id: number;
+  codigo: string;
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onConfirm: (data: RegistroData) => void;
+  onConfirm: () => void;
   initialData: RegistroData;
 }
 
@@ -31,23 +46,80 @@ export default function ModificarRegistroDialog({
   onConfirm,
   initialData,
 }: Props) {
+
+  const [grupos, setGrupos] = React.useState<Grupo[]>([]);
+  const [trabajos, setTrabajos] = React.useState<Trabajo[]>([]);
   const [form, setForm] = React.useState<RegistroData>(initialData);
 
-  React.useEffect(() => {
+  // Reset cuando cambia el registro seleccionado
+  useEffect(() => {
     setForm(initialData);
   }, [initialData]);
 
+  // Cargar grupos
+  useEffect(() => {
+    if (!open) return;
+
+    async function cargarGrupos() {
+      try {
+        const res = await getGruposList();
+        setGrupos(res);
+      } catch (e) {
+        console.error("Error cargando grupos", e);
+      }
+    }
+    cargarGrupos();
+  }, [open]);
+
+  // Cargar trabajos
+  useEffect(() => {
+    if (!open) return;
+
+    async function cargarTrabajos() {
+      try {
+        const res = await getTrabajosEnRevista(0, 100);
+        const lista = res.content || [];
+
+        const trabajosMap = lista.map((t: any) => ({
+          id: t.id,
+          codigo: t.codigo,
+        }));
+
+        setTrabajos(trabajosMap);
+      } catch (err) {
+        console.error("Error cargando trabajos", err);
+      }
+    }
+    cargarTrabajos();
+  }, [open]);
+
   const handleChange =
-    (field: keyof RegistroData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof RegistroData) =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [field]: e.target.value });
     };
 
-  const handleConfirm = () => {
-    const { grupo, codigoTrabajo, identificador, tipoRegistro } = form;
-    if (grupo && codigoTrabajo && identificador && tipoRegistro) {
-      onConfirm(form);
-    } else {
+  const handleConfirm = async () => {
+    const { id, grupo_id, codigoTrabajo, identificador, tipo } = form;
+
+    if (!grupo_id || !codigoTrabajo || !identificador || !tipo) {
       alert("Por favor completá todos los campos.");
+      return;
+    }
+
+    try {
+      await updatePatente(id, {
+        identificador,
+        titulo: codigoTrabajo,
+        tipo: tipo,
+        grupo_de_investigacion_id: grupo_id,
+      });
+
+      onConfirm();
+      onClose();
+    } catch (err) {
+      console.error("Error modificando patente", err);
+      alert("Ocurrió un error al modificar la patente.");
     }
   };
 
@@ -66,30 +138,43 @@ export default function ModificarRegistroDialog({
 
       <DialogContent dividers sx={{ px: 4, pt: 2 }}>
         <Stack spacing={3}>
+
+          {/* GRUPO */}
           <TextField
             label="Grupo"
-            value={form.grupo}
-            onChange={handleChange("grupo")}
+            value={form.grupo_id}
+            onChange={(e) =>
+              setForm({ ...form, grupo_id: Number(e.target.value) })
+            }
             fullWidth
             select
           >
-            <MenuItem value="CODAPLI">CODAPLI</MenuItem>
-            <MenuItem value="LINES">LINES</MenuItem>
-            <MenuItem value="GIDAS">GIDAS</MenuItem>
+            {grupos.map((g) => (
+              <MenuItem key={g.id} value={g.id}>
+                {g.nombre}
+              </MenuItem>
+            ))}
           </TextField>
 
+          {/* CÓDIGO DE TRABAJO */}
           <TextField
             label="Código de Trabajo Asociado"
-            value={form.codigoTrabajo}
-            onChange={handleChange("codigoTrabajo")}
+            value={form.codigoTrabajo || ""}
+            onChange={(e) =>
+              setForm({ ...form, codigoTrabajo: String(e.target.value) })
+            }
             fullWidth
             select
           >
-            <MenuItem value="2025-12345">2025-12345</MenuItem>
-            <MenuItem value="2025-15625">2025-15625</MenuItem>
-            <MenuItem value="2025-15657">2025-15657</MenuItem>
+            {trabajos.map((t) => (
+              <MenuItem key={t.id} value={t.codigo}>
+                {t.codigo}
+              </MenuItem>
+            ))}
           </TextField>
 
+
+          {/* IDENTIFICADOR */}
           <TextField
             label="Número Identificador"
             value={form.identificador}
@@ -97,10 +182,11 @@ export default function ModificarRegistroDialog({
             fullWidth
           />
 
+          {/* TIPO */}
           <TextField
             label="Tipo de Registro"
-            value={form.tipoRegistro}
-            onChange={handleChange("tipoRegistro")}
+            value={form.tipo}
+            onChange={handleChange("tipo")}
             fullWidth
             select
           >

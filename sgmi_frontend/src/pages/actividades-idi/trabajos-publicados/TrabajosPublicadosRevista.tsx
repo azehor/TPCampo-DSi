@@ -1,15 +1,31 @@
 import React from "react";
 import {
-  Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, IconButton, Typography,
-  Box, TextField, Button, Grid
+  Box, Button, Grid, TextField, Typography, Paper
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import { useNavigate, useLocation } from "react-router-dom";
+
 import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTrabajoDialog";
 import ModificarTrabajoDialog from "../../../components/trabajos-publicados/ModificarTrabajoDialog";
+
+import { deleteTrabajoEnRevista, getTrabajosEnRevista } from "../../../services/trabajoEnRevistaService";
+
 import "./trabajosPublicados.css";
+
+interface TrabajoRevista {
+  id: number;
+  codigo: string;
+  grupo: string;
+  titulo: string;
+  revista: any;
+  issn: string;
+  editorial: string;
+  pais: string;
+}
 
 export default function TrabajosPublicados() {
   const navigate = useNavigate();
@@ -21,107 +37,137 @@ export default function TrabajosPublicados() {
     { label: "Artículos de Divulgación", path: "/actividades-idi/articulos-divulgacion" },
   ];
 
+  const [rows, setRows] = React.useState<TrabajoRevista[]>([]);
+  const [count, setCount] = React.useState(0);
+  const [page, setPage] = React.useState(0);
   const [search, setSearch] = React.useState("");
+
+  
+
   const [openDialog, setOpenDialog] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
+
   const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
+    const limit = 10;
 
-  const [trabajos, setTrabajos] = React.useState([
-    {
-      id: 1,
-      codigo: "2025-12345",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      revista: "Nature",
-      issn: "0317-8471",
-      editorial: "Springer Nature",
-      pais: "Reino Unido",
-      grupo: "Grupo 1",
-      tipo: "revista",
-    },
-    {
-      id: 2,
-      codigo: "2025-15625",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      revista: "ACM Transactions on Information Systems",
-      issn: "1050-124X",
-      editorial: "Association for Computing Machinery",
-      pais: "Estados Unidos",
-      grupo: "Grupo 2",
-      tipo: "revista",
-    },
-    {
-      id: 3,
-      codigo: "2025-15625",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      revista: "ACM Transactions on Information Systems",
-      issn: "1050-124X",
-      editorial: "Association for Computing Machinery",
-      pais: "Estados Unidos",
-      grupo: "Grupo 3",
-      tipo: "revista",
-    },
-  ]);
+  const [paginationModel, setPaginationModel] = React.useState({
+    page: 0,
+    pageSize: limit
+  });
 
-  const handleAddTrabajo = (data: any) => {
-    const nuevo = {
-      id: trabajos.length + 1,
-      ...data,
-      issn: "",
-      editorial: "",
-      pais: "",
-    };
-    setTrabajos([...trabajos, nuevo]);
-    setOpenDialog(false);
-  };
 
-  const handleEdit = (id: number) => {
-    const trabajo = trabajos.find((t) => t.id === id);
-    if (trabajo) {
-      setTrabajoSeleccionado(trabajo);
-      setOpenEditDialog(true);
+  React.useEffect(() => {
+    cargarPublicaciones();
+  }, [page]);
+
+
+  async function cargarPublicaciones() {
+    try {
+      const res = await getTrabajosEnRevista(page, limit);
+      const trabajosRaw = res.content || [];
+      const total = res.count || trabajosRaw.length;
+
+      const trabajos = trabajosRaw.map((t: { id: any; codigo: any; titulo: any; revista: { nombre: any; id: any; issn: any; editorial: any; pais: { nombre: any; }; }; grupo_de_investigacion_id: any; grupo_de_investigacion: { nombre: any; }; }) => ({
+        id: t.id,
+        codigo: t.codigo,
+        titulo: t.titulo,
+        tipo: "revista",
+
+        revista: t.revista?.nombre ?? "",
+        revista_id: t.revista?.id ?? null,
+
+        issn: t.revista?.issn ?? "",
+        editorial: t.revista?.editorial ?? "",
+        pais: t.revista?.pais?.nombre ?? "",
+
+        grupo_id: t.grupo_de_investigacion_id,
+        grupo: t.grupo_de_investigacion?.nombre ?? "Sin grupo"
+      }));
+
+
+
+      setRows(trabajos);
+      setCount(total);
+    } catch (err) {
+      console.error("Error cargando trabajos en revista:", err);
+    }
+  }
+
+
+  const columns: GridColDef[] = [
+    { field: "codigo", headerName: "Código", width: 120 },
+    { field: "titulo", headerName: "Título del Trabajo", width: 300 },
+    { field: "grupo", headerName: "Grupo", width: 300 },
+    { field: "revista", headerName: "Revista", width: 220 },
+    { field: "editorial", headerName: "Editorial", width: 220 },
+    {
+      field: "acciones",
+      headerName: "Acciones",
+      width: 160,
+      sortable: false,
+      renderCell: (params) => (
+        <Box display="flex" gap={1}>
+          <Button
+            size="small"
+            color="primary"
+            onClick={() => {
+              setTrabajoSeleccionado(params.row);
+              setOpenEditDialog(true);
+            }}
+          >
+            <EditIcon />
+          </Button>
+
+          <Button
+            size="small"
+            color="error"
+            onClick={() =>handleDelete(params.row.id)}
+          >
+            <DeleteIcon />
+          </Button>
+        </Box>
+      ),
+    },
+  ];
+
+  const handleDelete = async (id: number) => {
+    const conf = confirm("¿Seguro que deseas eliminar el trabajo en revista?");
+    if (!conf) return;
+
+    try {
+      await deleteTrabajoEnRevista({id});
+      await cargarPublicaciones();
+    } catch (error) {
+      console.error("Error eliminando trabajo en revista:", error);
+      alert("Ocurrió un error al eliminar el trabajo.");
     }
   };
 
-  const handleUpdateTrabajo = (data: any) => {
-    setTrabajos((prev) =>
-      prev.map((t) => (t.id === trabajoSeleccionado.id ? { ...t, ...data } : t))
-    );
-    setOpenEditDialog(false);
-    setTrabajoSeleccionado(null);
-  };
-
-  const handleDelete = (id: number) => {
-    setTrabajos(trabajos.filter((t) => t.id !== id));
-  };
-
-  const filteredTrabajos = trabajos.filter((t) =>
-    [t.codigo, t.titulo, t.revista, t.issn, t.editorial, t.pais]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
 
   return (
     <div className="trabajos-publicados">
+
+      {/* Título + buscador */}
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Grid item>
           <Typography variant="h4" color="black">
             Trabajos Realizados y Publicados
           </Typography>
         </Grid>
+
         <Grid item>
           <Box display="flex" gap={2}>
             <TextField
               label="Buscar"
               variant="outlined"
               size="small"
+              sx={{ width: 300 }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              sx={{ width: "300px" }}
             />
+
             <Button
               variant="contained"
-              color="primary"
               startIcon={<AddIcon />}
               onClick={() => setOpenDialog(true)}
             >
@@ -131,6 +177,7 @@ export default function TrabajosPublicados() {
         </Grid>
       </Grid>
 
+      {/* Tabs */}
       <div className="tabs-container">
         {tabs.map((tab) => (
           <button
@@ -143,54 +190,57 @@ export default function TrabajosPublicados() {
         ))}
       </div>
 
-      <TableContainer component={Paper} elevation={3}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "#f3f3f3" }}>
-              <TableCell sx={{ fontWeight: 600 }}>Código</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Título del Trabajo</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Revista</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>ISSN</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Editorial</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>País</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredTrabajos.map((t) => (
-              <TableRow key={t.id} hover>
-                <TableCell>{t.codigo}</TableCell>
-                <TableCell>{t.titulo}</TableCell>
-                <TableCell>{t.revista}</TableCell>
-                <TableCell>{t.issn}</TableCell>
-                <TableCell>{t.editorial}</TableCell>
-                <TableCell>{t.pais}</TableCell>
-                <TableCell>
-                  <IconButton color="primary" onClick={() => handleEdit(t.id)} title="Editar">
-                    <Edit />
-                  </IconButton>
-                  <IconButton color="error" onClick={() => handleDelete(t.id)} title="Eliminar">
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* DataGrid */}
+      <Paper elevation={3} sx={{ height: 600, width: "100%" }}>
+        <DataGrid
+          sx={{
+          // ---- HEADER GRIS ----
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeadersInner": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: 600,
+            color: "#000",
+          },
+        }}
+          rows={rows}
+          rowCount={count}
+          columns={columns}
+          pagination
+          pageSizeOptions={[limit]}
+          paginationMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={(model) => {
+            setPaginationModel(model);
+            setPage(model.page);
+          }}
+        />
+      </Paper>
 
+      {/* Diálogo de crear */}
       <NuevoTrabajoDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        onConfirm={handleAddTrabajo}
+        onConfirm={cargarPublicaciones}
         tipo="revista"
       />
 
+      {/* Diálogo de edición */}
       {trabajoSeleccionado && (
         <ModificarTrabajoDialog
           open={openEditDialog}
           onClose={() => setOpenEditDialog(false)}
-          onConfirm={handleUpdateTrabajo}
+          onConfirm={() => {
+            cargarPublicaciones();
+            setOpenEditDialog(false);
+            setTrabajoSeleccionado(null);
+          }}
           initialData={trabajoSeleccionado}
         />
       )}

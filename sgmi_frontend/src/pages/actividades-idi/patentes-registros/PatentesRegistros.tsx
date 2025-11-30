@@ -1,184 +1,209 @@
 import React from "react";
 import {
-  Table, TableBody, TableCell, TableContainer,
-  TableHead, TableRow, Paper, IconButton, Typography,
-  Box, TextField, Button, Grid
+  Box, Button, Grid, TextField, Typography, Paper
 } from "@mui/material";
-import { Edit, Delete } from "@mui/icons-material";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+
 import NuevoRegistroDialog from "../../../components/patentes-registros/NuevoRegistroDialog";
-import ModificarRegistroDialog from "../../../components/patentes-registros/ModificarRegistroDialog"; // ← nuevo
+import ModificarRegistroDialog from "../../../components/patentes-registros/ModificarRegistroDialog";
+
+import { deletePatente, getPatentes } from "../../../services/patenteService";
+
 import "./patentesRegistros.css";
 
+interface Patente {
+  id: number;
+  identificador: string;
+  titulo: string;
+  tipo: string;
+  grupo: string;
+  grupo_id: number;
+}
+
 export default function PatentesRegistros() {
-  const [search, setSearch] = React.useState("");
   const [openDialog, setOpenDialog] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
+
   const [registroSeleccionado, setRegistroSeleccionado] = React.useState<any>(null);
 
-  const [registros, setRegistros] = React.useState([
-    {
-      id: 1,
-      identificador: "AR133639 A3",
-      grupo: "CODAPLI",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      tipo: "Propiedad Intelectual",
-    },
-    {
-      id: 2,
-      identificador: "AR133642 A1",
-      grupo: "LINES",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      tipo: "Propiedad Industrial",
-    },
-    {
-      id: 3,
-      identificador: "AR133657 A1",
-      grupo: "GIDAS",
-      titulo: "Efectos de la Imotica en el medioambiente",
-      tipo: "Propiedad Intelectual",
-    },
-  ]);
+  const [rows, setRows] = React.useState<Patente[]>([]);
+  const [count, setCount] = React.useState(0);
+  const [page, setPage] = React.useState(0);
+  const [search, setSearch] = React.useState("");
 
-  const handleEdit = (registro: any) => {
-    setRegistroSeleccionado({
-      tipoRegistro: registro.tipo,
-      grupo: registro.grupo,
-      codigoTrabajo: registro.titulo,
-      identificador: registro.identificador,
-    });
-    setOpenEditDialog(true);
-  };
+  const limit = 10;
 
-  const handleUpdateRegistro = (data: any) => {
-    setRegistros((prev) =>
-      prev.map((r) =>
-        r.id === registroSeleccionado.id
-          ? {
-              ...r,
-              grupo: data.grupo,
-              titulo: data.codigoTrabajo,
-              identificador: data.identificador,
-              tipo: data.tipoRegistro,
-            }
-          : r
-      )
-    );
-    setOpenEditDialog(false);
-    setRegistroSeleccionado(null);
-  };
+  React.useEffect(() => {
+    cargarPatentes();
+  }, [page]);
 
-  const handleDelete = (id: number) => {
-    setRegistros(registros.filter((r) => r.id !== id));
-  };
+  async function cargarPatentes() {
+    try {
+      const res = await getPatentes(page, limit);
 
-  const handleAddRegistro = (nuevo: {
-    grupo: string;
-    titulo: string;
-    identificador: string;
-    tipoRegistro: string;
-  }) => {
-    setRegistros([
-      ...registros,
-      {
-        id: registros.length + 1,
-        grupo: nuevo.grupo,
-        titulo: nuevo.titulo,
-        identificador: nuevo.identificador,
-        tipo: nuevo.tipoRegistro,
-      },
-    ]);
-    setOpenDialog(false);
-  };
+      const patentes = res.content || [];
+      const total = res.count || patentes.length;
 
-  const filteredRegistros = registros.filter((r) =>
-    [r.identificador, r.grupo, r.titulo, r.tipo]
+      const patentesMap = patentes.map((p: any) => ({
+        id: p.id,
+        identificador: p.identificador,
+        titulo: p.titulo,
+        tipo: p.tipo,
+        grupo_id: p.grupo_de_investigacion_id,
+        grupo: p.grupo_de_investigacion?.nombre ?? "Sin grupo"
+      }));
+
+      setRows(patentesMap);
+      setCount(total);
+    } catch (err) {
+      console.error("Error cargando patentes:", err);
+    }
+  }
+
+  const filtered = rows.filter((t) =>
+    [t.identificador, t.titulo, t.tipo, t.grupo]
       .join(" ")
       .toLowerCase()
       .includes(search.toLowerCase())
   );
 
+  const columns: GridColDef[] = [
+  { field: "identificador", headerName: "Identificador", flex: 1.5, minWidth: 120 },
+  { field: "grupo", headerName: "Grupo", flex: 2.5, minWidth: 150 },
+  { field: "titulo", headerName: "Título", flex: 3.5, minWidth: 200 },
+  { field: "tipo", headerName: "Tipo", flex: 1.5, minWidth: 120 },
+
+  {
+    field: "acciones",
+    headerName: "Acciones",
+    flex: 1,
+    minWidth: 140,
+    sortable: false,
+    renderCell: (params) => (
+      <Box display="flex" gap={1}>
+        <Button
+          size="small"
+          color="primary"
+          onClick={() => {
+            setRegistroSeleccionado(params.row);
+            setOpenEditDialog(true);
+          }}
+        >
+          <EditIcon />
+        </Button>
+
+        <Button
+          size="small"
+          color="error"
+          onClick={() => handleDelete(params.row.id)}
+        >
+          <DeleteIcon />
+        </Button>
+      </Box>
+    ),
+  },
+];
+
+  const handleDelete = async (id: number) => {
+    const conf = confirm("¿Seguro que deseas eliminar la patente?");
+    if (!conf) return;
+
+    try {
+      await deletePatente({ id });
+      await cargarPatentes();
+    } catch (error) {
+      console.error("Error al eliminar:", error);
+      alert("Ocurrió un error eliminando la patente.");
+    }
+  };
+
   return (
     <div className="patentes-registros">
+      {/* TÍTULO + BUSCADOR */}
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
         <Grid item>
           <Typography variant="h4" color="black">
             Patentes y Registros
           </Typography>
         </Grid>
+
         <Grid item>
           <Box display="flex" gap={2}>
             <TextField
               label="Buscar"
               variant="outlined"
               size="small"
+              sx={{ width: 300 }}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              sx={{ width: "300px" }}
             />
+
             <Button
               variant="contained"
-              color="primary"
               startIcon={<AddIcon />}
               onClick={() => setOpenDialog(true)}
             >
-              Añadir patente
+              Añadir Registro
             </Button>
           </Box>
         </Grid>
       </Grid>
 
-      <TableContainer component={Paper} elevation={3}>
-        <Table>
-          <TableHead>
-            <TableRow sx={{ backgroundColor: "#f3f3f3" }}>
-              <TableCell sx={{ fontWeight: 600 }}>Número Identificador</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Grupo</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Título</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Tipo de Registro</TableCell>
-              <TableCell sx={{ fontWeight: 600 }}>Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {filteredRegistros.map((r) => (
-              <TableRow key={r.id} hover>
-                <TableCell>{r.identificador}</TableCell>
-                <TableCell>{r.grupo}</TableCell>
-                <TableCell>{r.titulo}</TableCell>
-                <TableCell>{r.tipo}</TableCell>
-                <TableCell>
-                  <IconButton
-                    color="primary"
-                    onClick={() => handleEdit(r)}
-                    title="Editar"
-                  >
-                    <Edit />
-                  </IconButton>
-                  <IconButton
-                    color="error"
-                    onClick={() => handleDelete(r.id)}
-                    title="Eliminar"
-                  >
-                    <Delete />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* DATAGRID */}
+      <Paper elevation={3} sx={{ height: 600, width: "100%" }}>
+      <DataGrid
+        sx={{
+          // ---- HEADER GRIS ----
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeadersInner": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: 600,
+            color: "#000",
+          },
+        }}
 
+        rows={filtered}
+        rowCount={count}
+        columns={columns}
+        pagination
+        pageSizeOptions={[limit]}
+        paginationMode="server"
+        onPaginationModelChange={(model) => setPage(model.page)}
+      />
+
+      </Paper>
+
+      {/* NUEVO */}
       <NuevoRegistroDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        onConfirm={handleAddRegistro}
+        onConfirm={() => {
+          cargarPatentes();
+          setOpenDialog(false);
+        }}
       />
 
+      {/* EDITAR */}
       {registroSeleccionado && (
         <ModificarRegistroDialog
           open={openEditDialog}
           onClose={() => setOpenEditDialog(false)}
-          onConfirm={handleUpdateRegistro}
+          onConfirm={() => {
+            cargarPatentes();
+            setOpenEditDialog(false);
+            setRegistroSeleccionado(null);
+          }}
           initialData={registroSeleccionado}
         />
       )}
