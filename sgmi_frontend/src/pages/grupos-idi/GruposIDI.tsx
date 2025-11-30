@@ -4,7 +4,7 @@ import { useEffect, useState } from "react"
 import { getGrupos } from "../../services/gruposService.ts"
 import { Link } from "react-router-dom";
 import "./GruposIDI.css"
-import { DataGrid, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
+import { DataGrid, type GridColDef} from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
