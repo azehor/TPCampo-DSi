@@ -23,18 +23,22 @@ Rails.application.routes.draw do
         # MEMORIA-PATENTES
         post   "patentes/:patente_id", to: "memorias#add_patente"
         delete "patentes/:patente_id", to: "memorias#remove_patente"
+        get "patentes",                 to: "memorias#patentes"
 
         # MEMORIA-TRABAJO EN REVISTA
         post   "trabajo_en_revista/:trabajo_en_revista_id", to: "memorias#add_trabajo_en_revista"
         delete "trabajo_en_revista/:trabajo_en_revista_id", to: "memorias#remove_trabajo_en_revista"
+        get "trabajos_en_revista",      to: "memorias#trabajos_en_revista"
 
         # MEMORIA-PUBLICACION EN LIBROS
         post   "publicacion_en_libros/:publicacion_en_libro_id", to: "memorias#add_publicacion_en_libro"
         delete "publicacion_en_libros/:publicacion_en_libro_id", to: "memorias#remove_publicacion_en_libro"
+        get "publicaciones_en_libro",   to: "memorias#publicaciones_en_libro"
 
         # MEMORIA-ARTICULO DE DIVULGACION
         post   "articulo_de_divulgacions/:articulo_de_divulgacion_id", to: "memorias#add_articulo_de_divulgacion"
         delete "articulo_de_divulgacions/:articulo_de_divulgacion_id", to: "memorias#remove_articulo_de_divulgacion"
+        get "articulos_de_divulgacion", to: "memorias#articulos_de_divulgacion"
       end
     end
 

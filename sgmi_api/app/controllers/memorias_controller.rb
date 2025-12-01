@@ -1,9 +1,12 @@
 class MemoriasController < ApplicationController
-  before_action :set_memoria, only: [ :show, :update, :destroy,
-                                     :add_patente, :remove_patente,
-                                     :add_trabajo_en_revista, :remove_trabajo_en_revista,
-                                     :add_publicacion_en_libro, :remove_publicacion_en_libro,
-                                     :add_articulo_de_divulgacion, :remove_articulo_de_divulgacion ]
+  before_action :set_memoria, only: [
+  :show, :update, :destroy,
+  :add_patente, :remove_patente,
+  :add_trabajo_en_revista, :remove_trabajo_en_revista,
+  :add_publicacion_en_libro, :remove_publicacion_en_libro,
+  :add_articulo_de_divulgacion, :remove_articulo_de_divulgacion,
+  :patentes, :trabajos_en_revista, :publicaciones_en_libro, :articulos_de_divulgacion
+]
 
   # GET /memorias
   def index
@@ -61,6 +64,12 @@ class MemoriasController < ApplicationController
     head :no_content
   end
 
+  # GET /memorias/:id/patentes
+  def patentes
+    render json: @memoria.patentes
+  end
+
+
   # Trabajo en revista
   def add_trabajo_en_revista
     trabajo = TrabajoEnRevista.find(params[:trabajo_en_revista_id])
@@ -72,6 +81,11 @@ class MemoriasController < ApplicationController
     trabajo = TrabajoEnRevista.find(params[:trabajo_en_revista_id])
     @memoria.trabajo_en_revistas.delete(trabajo)
     head :no_content
+  end
+
+  # GET /memorias/:id/trabajos_en_revista
+  def trabajos_en_revista
+    render json: @memoria.trabajo_en_revistas
   end
 
   # Publicación en libros
@@ -87,6 +101,11 @@ class MemoriasController < ApplicationController
     head :no_content
   end
 
+  # GET /memorias/:id/publicaciones_en_libro
+  def publicaciones_en_libro
+    render json: @memoria.publicacion_en_libros
+  end
+
   # Artículo de divulgación
   def add_articulo_de_divulgacion
     art = ArticuloDeDivulgacion.find(params[:articulo_de_divulgacion_id])
@@ -99,6 +118,12 @@ class MemoriasController < ApplicationController
     @memoria.articulo_de_divulgacions.delete(art)
     head :no_content
   end
+
+  # GET /memorias/:id/articulos_de_divulgacion
+  def articulos_de_divulgacion
+    render json: @memoria.articulo_de_divulgacions
+  end
+  
   def full_includes
     {
       patentes: {},
