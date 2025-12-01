@@ -7,23 +7,26 @@ import {
   TextField,
   Button,
   MenuItem,
-  Grid,
+  Stack,
+  Box,
 } from "@mui/material";
 
 interface Trabajo {
   id: number;
-  codigo: string;
+  codigo?: string;
   titulo: string;
   revista?: { nombre: string };
   libro?: string;
   nombre?: string; // para divulgación
+  identificador?: string; // para patente
+  tipo?: string // para patente
 }
 
 interface Props {
   open: boolean;
   onClose: () => void;
   onConfirm: (trabajoId: number) => void;
-  tipo: "revista" | "libro" | "divulgacion";
+  tipo: "revista" | "libro" | "divulgacion" | "patente";
   trabajos: Trabajo[];
 }
 
@@ -39,6 +42,10 @@ export default function AsociarTrabajoDialog({
   const [extra, setExtra] = useState("");
 
   useEffect(() => {
+    if (!open) return;
+    console.log(trabajos)
+  }, [open])
+  useEffect(() => {
     if (!selectedId) {
       setTitulo("");
       setExtra("");
@@ -53,6 +60,7 @@ export default function AsociarTrabajoDialog({
     if (tipo === "revista") setExtra(t.revista?.nombre ?? "");
     if (tipo === "libro") setExtra(t.libro ?? "");
     if (tipo === "divulgacion") setExtra(t.nombre ?? "");
+    if (tipo === "patente") setExtra(t.tipo ?? "")
   }, [selectedId]);
 
   const handleConfirm = () => {
@@ -65,7 +73,9 @@ export default function AsociarTrabajoDialog({
       ? "Revista"
       : tipo === "libro"
       ? "Libro"
-      : "Nombre del Artículo";
+      : tipo === "divulgacion"
+      ? "Nombre del Artículo"
+      : "Tipo de Patente";
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -73,83 +83,101 @@ export default function AsociarTrabajoDialog({
         Asociar Trabajo a Memoria
       </DialogTitle>
 
-      <DialogContent sx={{ pb: 2, mt: 1 }}>
-        <Grid container spacing={2}>
-          {/* Tipo (solo lectura, estilo screenshot) */}
-          <Grid item xs={12}>
-            <TextField
-              label="Tipo de Trabajo:"
-              fullWidth
-              value={
-                tipo === "revista"
-                  ? "Trabajo en Revista"
-                  : tipo === "libro"
-                  ? "Publicación en Libro"
-                  : "Artículo de Divulgación"
-              }
-              InputProps={{ readOnly: true }}
-            />
-          </Grid>
+      <DialogContent dividers>
+        <Stack spacing={3}>
+          <TextField
+            label="Tipo de Trabajo:"
+            fullWidth
+            value={
+              tipo === "revista"
+                ? "Trabajo en Revista"
+                : tipo === "libro"
+                ? "Publicación en Libro"
+                : tipo === "divulgacion"
+                ? "Artículo de Divulgación"
+                : "Patente"
+            }
+            InputProps={{ disabled: true }}
 
-          {/* Código del trabajo */}
-          <Grid item xs={12}>
+          />
+
+          {tipo !== "patente" && (
             <TextField
-              select
-              label="Código del Trabajo:"
-              fullWidth
+              label="Codigo"
               value={selectedId}
-              onChange={(e) => setSelectedId(Number(e.target.value))}
-            >
-              {trabajos.map((t) => (
-                <MenuItem key={t.id} value={t.id}>
-                  {t.codigo}
-                </MenuItem>
-              ))}
+              select
+              fullWidth
+              onChange={(e) => { console.log("selected"); setSelectedId(Number(e.target.value))}}
+              >
+                {trabajos.map((t) => (
+                  <MenuItem key={t.id} value={t.id}>
+                    {t.codigo}
+                  </MenuItem>
+                ))}
             </TextField>
-          </Grid>
+          )}
 
-          {/* Título */}
-          <Grid item xs={12}>
+          { tipo === "patente" && (
             <TextField
-              label="Título:"
+              label="Identificador"
+              value={selectedId}
+              select
               fullWidth
-              value={titulo}
-              InputProps={{ readOnly: true }}
-            />
-          </Grid>
+              onChange={(e) => { console.log("selected"); setSelectedId(Number(e.target.value))}}
+              >
+                {trabajos.map((t) => (
+                  <MenuItem key={t.id} value={t.id}>
+                    {t.identificador}
+                  </MenuItem>
+                ))}
+            </TextField>
 
-          {/* Extra (Revista, Libro, Nombre) */}
-          <Grid item xs={12}>
-            <TextField
-              label={labelExtra + ":"}
-              fullWidth
-              value={extra}
-              InputProps={{ readOnly: true }}
-            />
-          </Grid>
-        </Grid>
+          )}
+
+          <TextField
+            label="Título:"
+            fullWidth
+            value={titulo}
+            InputProps={{ disabled: true }}
+          />
+
+          <TextField
+            label={labelExtra + ":"}
+            fullWidth
+            value={extra}
+            InputProps={{ disabled: true }}
+          />
+        </Stack>
       </DialogContent>
 
       <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
-        <Button
-          onClick={onClose}
-          variant="outlined"
-          sx={{
-            minWidth: 120,
-            textTransform: "none",
-            background: "#e0e0e0",
-          }}
-        >
-          Cancelar
-        </Button>
-        <Button
-          onClick={handleConfirm}
-          variant="contained"
-          sx={{ minWidth: 120, textTransform: "none" }}
-          disabled={!selectedId}
-        >
-          Agregar
-        </Button>
+        <Box display="flex" gap={2}>
+          <Button
+            onClick={onClose}
+            variant="outlined"
+            sx={{
+              color: "#666",
+              borderColor: "#ccc",
+              backgroundColor: "#f5f5f5",
+              textTransform: "none",
+              minWidth: 120,
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            variant="contained"
+            sx={{
+              backgroundColor: "#1976d2",
+              textTransform: "none",
+              minWidth: 120,
+            }}
+            disabled={!selectedId}
+          >
+            Confirmar
+          </Button>
+        </Box>
       </DialogActions>
     </Dialog>
   );
