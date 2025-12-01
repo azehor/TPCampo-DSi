@@ -95,15 +95,16 @@ export default function TrabajosPublicados() {
 
 
   const columns: GridColDef[] = [
-    { field: "codigo", headerName: "Código", width: 120 },
-    { field: "titulo", headerName: "Título del Trabajo", width: 300 },
-    { field: "grupo", headerName: "Grupo", width: 300 },
-    { field: "revista", headerName: "Revista", width: 220 },
-    { field: "editorial", headerName: "Editorial", width: 220 },
+    { field: "codigo", headerName: "Código", flex: 1, minWidth: 120 },
+    { field: "titulo", headerName: "Título del Trabajo", flex: 2, minWidth: 300 },
+    { field: "grupo", headerName: "Grupo", flex: 2, minWidth: 300 },
+    { field: "revista", headerName: "Revista", flex: 1.5, minWidth: 220 },
+    { field: "editorial", headerName: "Editorial", flex: 1.5, minWidth: 220 },
     {
       field: "acciones",
       headerName: "Acciones",
-      width: 160,
+      flex: 1,
+      minWidth: 160,
       sortable: false,
       renderCell: (params) => (
         <Box display="flex" gap={1}>
@@ -220,6 +221,8 @@ export default function TrabajosPublicados() {
             setPaginationModel(model);
             setPage(model.page);
           }}
+          disableColumnMenu
+          disableColumnResize
         />
       </Paper>
 

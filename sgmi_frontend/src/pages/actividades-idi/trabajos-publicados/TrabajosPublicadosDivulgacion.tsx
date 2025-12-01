@@ -38,7 +38,7 @@ export default function TrabajosPublicadosDivulgacion() {
 
   const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
 
-  const limit = 10;
+  const limit = 9;
 
   const [paginationModel, setPaginationModel] = React.useState({
       page: 0,
@@ -203,6 +203,8 @@ export default function TrabajosPublicadosDivulgacion() {
             setPaginationModel(model);
             setPage(model.page);
           }}
+          disableColumnMenu
+          disableColumnResize
         />
       </Paper>
 

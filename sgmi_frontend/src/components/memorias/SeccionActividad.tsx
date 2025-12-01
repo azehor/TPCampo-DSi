@@ -3,7 +3,8 @@ import {
   Box, Button, Paper, Tabs, Tab
 } from "@mui/material";
 import { DataGrid, type GridColDef } from "@mui/x-data-grid";
-import AddIcon from "@mui/icons-material/Add";
+import LinkIcon from '@mui/icons-material/Link';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
 import AsociarTrabajoDialog from "./AsociarTrabajoDialog";
 
 import {
@@ -88,20 +89,100 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
 
   const columnas: GridColDef[][] = [
     [
-      { field: "codigo", headerName: "Código", width: 120 },
-      { field: "titulo", headerName: "Título", width: 260 }
+      { field: "codigo", headerName: "Código", flex: 1, minWidth: 120 },
+      { field: "titulo", headerName: "Título del Trabajo", flex: 2, minWidth: 150 },
+      { field: "revista", headerName: "Revista", flex: 1.5, minWidth: 120, valueGetter: (_, row) => row?.revista?.nombre || "" },
+      { field: "editorial", headerName: "Editorial", flex: 1, minWidth: 100, valueGetter: (_, row) => row?.revista?.editorial || "" },
+      { field: "pais", headerName: "País", flex: 1, minWidth: 160, valueGetter: (_, row) => row?.revista?.pais?.nombre || "" },
+      {
+        field: "acciones",
+        headerName: "Acciones",
+        flex: 1,
+        minWidth: 120,
+        sortable: false,
+        renderCell: (params) => (
+          <Box display="flex" gap={1}>
+            <Button
+              size="small"
+              color="error"
+              onClick={() =>handleDelete(params.row.id)}
+            >
+              <LinkOffIcon />
+            </Button>
+          </Box>
+        ),
+      },
     ],
     [
-      { field: "codigo", headerName: "Código", width: 120 },
-      { field: "titulo", headerName: "Título", width: 260 }
+      { field: "codigo", headerName: "Código", flex: 1, minWidth: 120 },
+      { field: "titulo", headerName: "Título del Trabajo", flex: 2.25, minWidth: 300 },
+      { field: "libro", headerName: "Título del Libro", flex: 2.25, minWidth: 250 },
+      { field: "capitulo", headerName: "Capítulo", flex: 1, minWidth: 120 },
+      {
+        field: "acciones",
+        headerName: "Acciones",
+        flex: 1,
+        minWidth: 120,
+        sortable: false,
+        renderCell: (params) => (
+          <Box display="flex" gap={1}>
+            <Button
+              size="small"
+              color="error"
+              onClick={() => handleDelete(params.row.id)}
+            >
+              <LinkOffIcon />
+            </Button>
+          </Box>
+        ),
+      },
     ],
     [
-      { field: "codigo", headerName: "Código", width: 120 },
-      { field: "titulo", headerName: "Título", width: 260 }
+      { field: "codigo", headerName: "Código", flex: 1, minWidth: 100  },
+      { field: "titulo", headerName: "Título del Trabajo", flex: 3, minWidth: 180 },
+      { field: "nombre", headerName: "Nombre del Artículo", flex: 2.5, minWidth: 200 },
+      {
+        field: "acciones",
+        headerName: "Acciones",
+        flex: 1,
+        minWidth: 120,
+        sortable: false,
+        renderCell: (params) => (
+          <Box display="flex" >
+            <Button
+              size="small"
+              color="error"
+              onClick={() => handleDelete(params.row.id)}
+              >
+              <LinkOffIcon />
+            </Button>
+          </Box>
+        ),
+      },
     ],
     [
-      { field: "titulo", headerName: "Título", width: 260 },
-      { field: "numero", headerName: "Número", width: 120 }
+      { field: "identificador", headerName: "Identificador", flex: 1.5, minWidth: 120 },
+      { field: "titulo", headerName: "Título", flex: 3.5, minWidth: 200 },
+      { field: "tipo", headerName: "Tipo", flex: 1.5, minWidth: 120 },
+
+      {
+        field: "acciones",
+        headerName: "Acciones",
+        flex: 1,
+        minWidth: 120,
+        sortable: false,
+        renderCell: (params) => (
+          <Box display="flex" gap={1}>
+            <Button
+              size="small"
+              color="error"
+              onClick={() => handleDelete(params.row.id)}
+            >
+              <LinkOffIcon />
+            </Button>
+          </Box>
+        ),
+      },
     ]
   ];
 
@@ -118,7 +199,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
         <Button
           variant="outlined"
           size="small"
-          startIcon={<AddIcon />}
+          startIcon={<LinkIcon />}
           sx={{ ml: 2 }}
           onClick={() => setOpenDialog(true)}
         >
@@ -127,7 +208,29 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
       </Box>
 
       <Paper sx={{ mt: 2, height: 450 }}>
-        <DataGrid rows={rows} columns={columnas[tab]} />
+        <DataGrid
+          sx={{
+          // ---- HEADER GRIS ----
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeader": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeadersInner": {
+            backgroundColor: "#f3f3f3 !important",
+          },
+          "& .MuiDataGrid-columnHeaderTitle": {
+            fontWeight: 600,
+            color: "#000",
+          },
+        }}
+
+          rows={rows}
+          columns={columnas[tab]}
+          disableColumnMenu
+          disableColumnResize
+        />
       </Paper>
 
       <AsociarTrabajoDialog

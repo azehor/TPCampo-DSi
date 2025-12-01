@@ -113,15 +113,16 @@ export default function TrabajosPublicadosLibro() {
 
   // Columnas DataGrid
   const columns: GridColDef[] = [
-    { field: "codigo", headerName: "Código", width: 120 },
-    { field: "titulo", headerName: "Título del Trabajo", width: 300 },
-    { field: "grupo", headerName: "Grupo", width: 300 },
-    { field: "libro", headerName: "Título del Libro", width: 250 },
-    { field: "capitulo", headerName: "Capítulo", width: 120 },
+    { field: "codigo", headerName: "Código", flex: 1, minWidth: 120 },
+    { field: "titulo", headerName: "Título del Trabajo", flex: 2.5, minWidth: 300 },
+    { field: "grupo", headerName: "Grupo", flex: 2.5, minWidth: 300 },
+    { field: "libro", headerName: "Título del Libro", flex: 2, minWidth: 250 },
+    { field: "capitulo", headerName: "Capítulo", minWidth: 120, flex: 1 },
     {
       field: "acciones",
       headerName: "Acciones",
-      width: 150,
+      flex: 1,
+      minWidth: 150,
       sortable: false,
       renderCell: (params) => (
         <Box display="flex" gap={1}>
@@ -227,6 +228,8 @@ export default function TrabajosPublicadosLibro() {
             setPaginationModel(model);
             setPage(model.page);
           }}
+          disableColumnMenu
+          disableColumnResize
         />
       </Paper>
 
