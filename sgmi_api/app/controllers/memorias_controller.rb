@@ -85,7 +85,7 @@ class MemoriasController < ApplicationController
 
   # GET /memorias/:id/trabajos_en_revista
   def trabajos_en_revista
-    render json: @memoria.trabajo_en_revistas
+    render json: @memoria.trabajo_en_revistas.as_json(include: { revista: { include: { pais: {} } } })
   end
 
   # Publicación en libros
@@ -123,7 +123,7 @@ class MemoriasController < ApplicationController
   def articulos_de_divulgacion
     render json: @memoria.articulo_de_divulgacions
   end
-  
+
   def full_includes
     {
       patentes: {},
