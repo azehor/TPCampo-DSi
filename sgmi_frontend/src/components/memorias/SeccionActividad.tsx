@@ -31,31 +31,38 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
   const [openDialog, setOpenDialog] = useState(false);
   const [trabajosDisponibles, setTrabajosDisponibles] = useState<any[]>([]);
 
+  const limit = 6;
+  const [count, setCount] = useState(0);
+  const [paginationModel, setPaginationModel] = useState({
+      page: 0,
+      pageSize: limit
+  });
+  const [filterModel, setFilterModel] = useState({ items: [] });
+  const [sortModel, setSortModel] = useState([]);
+
   useEffect(() => {
     cargarDatos();
     cargarDisponibles();
-    console.log(trabajosDisponibles)
-  }, [tab]);
+  }, [tab, paginationModel]);
 
   async function cargarDatos() {
     let res;
 
     if (tab === 0) {
-      res = await getTrabajosEnRevistaPorMemoria(memoriaId);
-      setRows(res);
+      res = await getTrabajosEnRevistaPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize);
     }
     if (tab === 1) {
-      res = await getPublicacionesEnLibroPorMemoria(memoriaId);
-      setRows(res);
+      res = await getPublicacionesEnLibroPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize);
     }
     if (tab === 2) {
-      res = await getArticulosDivulgacionPorMemoria(memoriaId);
-      setRows(res);
+      res = await getArticulosDivulgacionPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize);
     }
     if (tab === 3) {
-      res = await getPatentesPorMemoria(memoriaId);
-      setRows(res);
+      res = await getPatentesPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize);
     }
+    setRows(res.content);
+    const total = res.metadata.total_count || res.length;
+    setCount(total);
   }
 
   async function cargarDisponibles() {
@@ -226,24 +233,32 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
       <Paper sx={{ mt: 2, height: 450 }}>
         <DataGrid
           sx={{
-          // ---- HEADER GRIS ----
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: "#f3f3f3 !important",
-          },
-          "& .MuiDataGrid-columnHeader": {
-            backgroundColor: "#f3f3f3 !important",
-          },
-          "& .MuiDataGrid-columnHeadersInner": {
-            backgroundColor: "#f3f3f3 !important",
-          },
-          "& .MuiDataGrid-columnHeaderTitle": {
-            fontWeight: 600,
-            color: "#000",
-          },
-        }}
-
+            // ---- HEADER GRIS ----
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: "#f3f3f3 !important",
+            },
+            "& .MuiDataGrid-columnHeader": {
+              backgroundColor: "#f3f3f3 !important",
+            },
+            "& .MuiDataGrid-columnHeadersInner": {
+              backgroundColor: "#f3f3f3 !important",
+            },
+            "& .MuiDataGrid-columnHeaderTitle": {
+              fontWeight: 600,
+              color: "#000",
+            },
+          }}
           rows={rows}
           columns={columnas[tab]}
+          rowCount={count}
+          pagination
+          paginationMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={(model) => setPaginationModel(model)}
+          sortingMode="server"
+          filterMode="server"
+          onSortModelChange={setSortModel}
+          onFilterModelChange={setFilterModel}
           disableColumnMenu
           disableColumnResize
         />

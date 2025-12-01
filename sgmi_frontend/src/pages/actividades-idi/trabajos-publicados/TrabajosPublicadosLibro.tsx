@@ -43,7 +43,7 @@ export default function TrabajosPublicadosLibro() {
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
   const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
 
-  const limit = 10;
+  const limit = 9;
   const [paginationModel, setPaginationModel] = React.useState({
     page: 0,
     pageSize: limit
