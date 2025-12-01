@@ -12,7 +12,8 @@ interface Memoria {
 
 export default function Memorias() {
   const state = useLocation().state || {};
-  const grupoId = state.grupo;
+  const grupoId = state.grupo.id;
+  console.log(state)
 
   const [memorias, setMemorias] = useState<Memoria[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
@@ -51,7 +52,7 @@ export default function Memorias() {
       }}
     >
       <h2 style={{ margin: 0 }}>
-        Gestión de Memorias - Grupo {grupoId}
+        Gestión de Memorias - Grupo {state.grupo.sigla}
       </h2>
 
       <Button

@@ -8,6 +8,7 @@ import { DataGrid, type GridColDef} from "@mui/x-data-grid";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import NuevoGrupoDialog from "../../components/Grupos-idi/NuevoGrupoDialog.tsx";
 import ModificarGrupoDialog from "../../components/Grupos-idi/ModificarGrupoDialog.tsx";
 
@@ -19,14 +20,14 @@ export default function GruposIDI() {
   const [openDialog, setOpenDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [grupoSeleccionado, setGrupoSeleccionado] = useState<any>(null);
+  const [search, setSearch] = useState("");
 
-   const limit = 10;
-  
-    const [count, setCount] = useState(0);
-    const [paginationModel, setPaginationModel] = useState({
-        page: 0,
-        pageSize: limit
-    });
+  const limit = 10;
+  const [count, setCount] = useState(0);
+  const [paginationModel, setPaginationModel] = useState({
+      page: 0,
+      pageSize: limit
+  });
 
   async function cargarGrupos() {
     const res = await getGrupos(
@@ -59,18 +60,20 @@ export default function GruposIDI() {
   };
 
   const columns: GridColDef[] = [
-    { field: "nombre", headerName: "Nombre", width: 360 },
-    { field: "sigla", headerName: "Sigla", width: 100 },
+    { field: "nombre", headerName: "Nombre", flex: 3, minWidth: 220 },
+    { field: "sigla", headerName: "Sigla", flex: 1, minWidth: 100 },
     {
       field: "facultad_regional",
       headerName: "Facultad Regional",
-      width: 220,
+      flex: 2,
+      minWidth: 220,
       valueGetter: (_, row) => row?.facultad_regional?.nombre || "",
     },
     {
       field: "director",
       headerName: "Director",
-      width: 220,
+      flex: 2,
+      minWidth: 220,
       valueGetter: (_, row) =>
         `${row?.director?.personal?.nombre || ""} ${
           row?.director?.personal?.apellido || ""
@@ -79,7 +82,8 @@ export default function GruposIDI() {
     {
       field: "vicedirector",
       headerName: "Vicedirector",
-      width: 220,
+      flex: 2,
+      minWidth: 220,
       valueGetter: (_, row) =>
         `${row?.vicedirector?.personal?.nombre || ""} ${
           row?.vicedirector?.personal?.apellido || ""
@@ -88,21 +92,18 @@ export default function GruposIDI() {
     {
       field: "acciones",
       headerName: "Acciones",
-      width: 150,
+      flex: 1.5,
+      minWidth: 200,
       sortable: false,
       renderCell: (params) => (
         <Box display="flex" alignItems="center">
-          <Link to="/memorias" state={{ grupo: params.id }}>
-            <button
-              style={{
-                background: "none",
-                border: "none",
-                padding: 0,
-                cursor: "pointer",
-              }}
-            >
-              <img src="/more.png" className="btn-icon" />
-            </button>
+          <Link to="/memorias" state={{ grupo: params.row }}>
+            <Button
+              size="small"
+              color="primary"
+              >
+                <LibraryBooksIcon />
+            </Button>
           </Link>
 
           <Button
@@ -129,48 +130,68 @@ export default function GruposIDI() {
   ];
 
   return (
-    <>
-      <Stack
-        direction="row"
-        sx={{ justifyContent: "space-between", alignItems: "flex-start" }}
-      >
-        <Grid>
+    <div className="grupos-idi">
+      <Grid container alignItems="center" justifyContent="space-between" mb={3}>
+        <Grid item>
           <Typography variant="h4" color="black">
             Grupos I+D+i
           </Typography>
         </Grid>
 
-        <Box>
-          <TextField
-            label="Buscar..."
-            variant="outlined"
-            size="small"
-            sx={{ width: 300 }}
-          />
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenDialog(true)}
-          >
-            Añadir Grupo
-          </Button>
-        </Box>
-      </Stack>
+        <Grid item>
+          <Box display="flex" gap={2}>
+            <TextField
+              label="Buscar"
+              variant="outlined"
+              size="small"
+              sx={{ width: 300 }}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setOpenDialog(true)}
+            >
+              Añadir Grupo
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
 
       <Paper elevation={3} sx={{ height: 600, width: "100%" }}>
         <DataGrid
-        rows={rows}
-        columns={columns}
-        rowCount={count}
-        pagination
-        paginationMode="server"
-        paginationModel={paginationModel}
-        onPaginationModelChange={(model) => setPaginationModel(model)}
-        sortingMode="server"
-        filterMode="server"
-        onSortModelChange={setSortModel}
-        onFilterModelChange={setFilterModel}
-      />
+          sx={{
+            // ---- HEADER GRIS ----
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: "#f3f3f3 !important",
+            },
+            "& .MuiDataGrid-columnHeader": {
+              backgroundColor: "#f3f3f3 !important",
+            },
+            "& .MuiDataGrid-columnHeadersInner": {
+              backgroundColor: "#f3f3f3 !important",
+            },
+            "& .MuiDataGrid-columnHeaderTitle": {
+              fontWeight: 600,
+              color: "#000",
+            },
+          }}
+          rows={rows}
+          columns={columns}
+          rowCount={count}
+          pagination
+          paginationMode="server"
+          paginationModel={paginationModel}
+          onPaginationModelChange={(model) => setPaginationModel(model)}
+          sortingMode="server"
+          filterMode="server"
+          onSortModelChange={setSortModel}
+          onFilterModelChange={setFilterModel}
+          disableColumnMenu
+          disableColumnResize
+        />
       </Paper>
 
       {/* Crear grupo */}
@@ -196,6 +217,6 @@ export default function GruposIDI() {
           initialData={grupoSeleccionado}
         />
       )}
-    </>
+    </div>
   );
 }

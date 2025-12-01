@@ -77,41 +77,41 @@ export default function PatentesRegistros() {
   );
 
   const columns: GridColDef[] = [
-  { field: "identificador", headerName: "Identificador", flex: 1.5, minWidth: 120 },
-  { field: "grupo", headerName: "Grupo", flex: 2.5, minWidth: 150 },
-  { field: "titulo", headerName: "Título", flex: 3.5, minWidth: 200 },
-  { field: "tipo", headerName: "Tipo", flex: 1.5, minWidth: 120 },
+    { field: "identificador", headerName: "Identificador", flex: 1.5, minWidth: 120 },
+    { field: "grupo", headerName: "Grupo", flex: 2.5, minWidth: 150 },
+    { field: "titulo", headerName: "Título", flex: 3.5, minWidth: 200 },
+    { field: "tipo", headerName: "Tipo", flex: 1.5, minWidth: 120 },
 
-  {
-    field: "acciones",
-    headerName: "Acciones",
-    flex: 1,
-    minWidth: 140,
-    sortable: false,
-    renderCell: (params) => (
-      <Box display="flex" gap={1}>
-        <Button
-          size="small"
-          color="primary"
-          onClick={() => {
-            setRegistroSeleccionado(params.row);
-            setOpenEditDialog(true);
-          }}
-        >
-          <EditIcon />
-        </Button>
+    {
+      field: "acciones",
+      headerName: "Acciones",
+      flex: 1,
+      minWidth: 140,
+      sortable: false,
+      renderCell: (params) => (
+        <Box display="flex" gap={1}>
+          <Button
+            size="small"
+            color="primary"
+            onClick={() => {
+              setRegistroSeleccionado(params.row);
+              setOpenEditDialog(true);
+            }}
+          >
+            <EditIcon />
+          </Button>
 
-        <Button
-          size="small"
-          color="error"
-          onClick={() => handleDelete(params.row.id)}
-        >
-          <DeleteIcon />
-        </Button>
-      </Box>
-    ),
-  },
-];
+          <Button
+            size="small"
+            color="error"
+            onClick={() => handleDelete(params.row.id)}
+          >
+            <DeleteIcon />
+          </Button>
+        </Box>
+      ),
+    },
+  ];
 
   const handleDelete = async (id: number) => {
     const conf = confirm("¿Seguro que deseas eliminar la patente?");
@@ -189,6 +189,8 @@ export default function PatentesRegistros() {
             setPaginationModel(model);
             setPage(model.page);
           }}
+          disableColumnMenu
+          disableColumnResize
         />
 
       </Paper>
