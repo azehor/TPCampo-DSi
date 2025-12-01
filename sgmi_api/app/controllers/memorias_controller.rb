@@ -66,7 +66,23 @@ class MemoriasController < ApplicationController
 
   # GET /memorias/:id/patentes
   def patentes
-    render json: @memoria.patentes
+    if params.has_key?(:page) && params.has_key?(:limit)
+      page = params[:page].to_i
+      per_page = params[:limit].to_i
+    else
+      page = 0
+      per_page = 15
+    end
+    count = @memoria.patentes.count
+    content = @memoria.patentes.limit(per_page).offset(page * per_page)
+    render json: {
+      content: content.as_json(),
+      metadata: {
+        page: page,
+        per_page: per_page,
+        total_count: count
+      }
+    }
   end
 
 
@@ -85,7 +101,29 @@ class MemoriasController < ApplicationController
 
   # GET /memorias/:id/trabajos_en_revista
   def trabajos_en_revista
-    render json: @memoria.trabajo_en_revistas.as_json(include: { revista: { include: { pais: {} } } })
+    if params.has_key?(:page) && params.has_key?(:limit)
+      page = params[:page].to_i
+      per_page = params[:limit].to_i
+    else
+      page = 0
+      per_page = 15
+    end
+    count = @memoria.trabajo_en_revistas.count
+    content = @memoria.trabajo_en_revistas.limit(per_page).offset(page * per_page)
+    render json: {
+      content: content.as_json(include: {
+        revista: {
+          include: {
+            pais: {}
+          }
+        }
+      }),
+      metadata: {
+        page: page,
+        per_page: per_page,
+        total_count: count
+      }
+    }
   end
 
   # Publicación en libros
@@ -103,7 +141,23 @@ class MemoriasController < ApplicationController
 
   # GET /memorias/:id/publicaciones_en_libro
   def publicaciones_en_libro
-    render json: @memoria.publicacion_en_libros
+    if params.has_key?(:page) && params.has_key?(:limit)
+      page = params[:page].to_i
+      per_page = params[:limit].to_i
+    else
+      page = 0
+      per_page = 15
+    end
+    count = @memoria.publicacion_en_libros.count
+    content = @memoria.publicacion_en_libros.limit(per_page).offset(page * per_page)
+    render json: {
+      content: content.as_json(),
+      metadata: {
+        page: page,
+        per_page: per_page,
+        total_count: count
+      }
+    }
   end
 
   # Artículo de divulgación
@@ -121,7 +175,23 @@ class MemoriasController < ApplicationController
 
   # GET /memorias/:id/articulos_de_divulgacion
   def articulos_de_divulgacion
-    render json: @memoria.articulo_de_divulgacions
+    if params.has_key?(:page) && params.has_key?(:limit)
+      page = params[:page].to_i
+      per_page = params[:limit].to_i
+    else
+      page = 0
+      per_page = 15
+    end
+    count = @memoria.articulo_de_divulgacions.count
+    content = @memoria.articulo_de_divulgacions.limit(per_page).offset(page * per_page)
+    render json: {
+      content: content.as_json(),
+      metadata: {
+        page: page,
+        per_page: per_page,
+        total_count: count
+      }
+    }
   end
 
   def full_includes
