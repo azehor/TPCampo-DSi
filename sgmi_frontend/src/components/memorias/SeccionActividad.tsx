@@ -15,8 +15,14 @@ import {
   addTrabajoRevistaToMemoria,
   addPublicacionLibroToMemoria,
   addArticuloDivulgacionToMemoria,
-  addPatenteToMemoria
+  addPatenteToMemoria,
+  removeTrabajoRevistaFromMemoria,
+  removePublicacionLibroFromMemoria,
+  removeArticuloDivulgacionFromMemoria,
+  removePatenteFromMemoria
 } from "../../services/memoriasService";
+
+import { api } from "../../services/api"
 
 export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
 
@@ -28,6 +34,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
   useEffect(() => {
     cargarDatos();
     cargarDisponibles();
+    console.log(trabajosDisponibles)
   }, [tab]);
 
   async function cargarDatos() {
@@ -53,20 +60,20 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
 
   async function cargarDisponibles() {
     if (tab === 0) {
-      const res = await fetch("/api/trabajo_en_revista").then((r) => r.json());
-      setTrabajosDisponibles(res);
+      const res = await api.get("/api/trabajo_en_revista")
+      setTrabajosDisponibles(res.data.content);
     }
     if (tab === 1) {
-      const res = await fetch("/api/publicacion_en_libros").then((r) => r.json());
-      setTrabajosDisponibles(res);
+      const res = await api.get("/api/publicacion_en_libros")
+      setTrabajosDisponibles(res.data.content);
     }
     if (tab === 2) {
-      const res = await fetch("/api/articulo_de_divulgacions").then((r) => r.json());
-      setTrabajosDisponibles(res);
+      const res = await api.get("/api/articulo_de_divulgacions")
+      setTrabajosDisponibles(res.data.content);
     }
     if (tab === 3) {
-      const res = await fetch("/api/patentes").then((r) => r.json());
-      setTrabajosDisponibles(res);
+      const res = await api.get("/api/patentes")
+      setTrabajosDisponibles(res.data.content);
     }
   }
 
@@ -79,6 +86,15 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
     await cargarDatos();
     setOpenDialog(false);
   };
+
+  const handleDesasociar = async (trabajoId: number) => {
+    if (tab === 0) await removeTrabajoRevistaFromMemoria(memoriaId, trabajoId);
+    if (tab === 1) await removePublicacionLibroFromMemoria(memoriaId, trabajoId);
+    if (tab === 2) await removeArticuloDivulgacionFromMemoria(memoriaId, trabajoId);
+    if (tab === 3) await removePatenteFromMemoria(memoriaId, trabajoId);
+
+    await cargarDatos();
+  }
 
   const etiquetas = [
     "Trabajo en Revista",
@@ -105,7 +121,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
             <Button
               size="small"
               color="error"
-              onClick={() =>handleDelete(params.row.id)}
+              onClick={() =>handleDesasociar(params.row.id)}
             >
               <LinkOffIcon />
             </Button>
@@ -129,7 +145,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
             <Button
               size="small"
               color="error"
-              onClick={() => handleDelete(params.row.id)}
+              onClick={() => handleDesasociar(params.row.id)}
             >
               <LinkOffIcon />
             </Button>
@@ -152,7 +168,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
             <Button
               size="small"
               color="error"
-              onClick={() => handleDelete(params.row.id)}
+              onClick={() => handleDesasociar(params.row.id)}
               >
               <LinkOffIcon />
             </Button>
@@ -176,7 +192,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
             <Button
               size="small"
               color="error"
-              onClick={() => handleDelete(params.row.id)}
+              onClick={() => handleDesasociar(params.row.id)}
             >
               <LinkOffIcon />
             </Button>
@@ -237,7 +253,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         onConfirm={handleAsociar}
-        tipo={tab === 0 ? "revista" : tab === 1 ? "libro" : tab === 2 ? "divulgacion" : "revista"}
+        tipo={tab === 0 ? "revista" : tab === 1 ? "libro" : tab === 2 ? "divulgacion" : "patente"}
         trabajos={trabajosDisponibles}
       />
 

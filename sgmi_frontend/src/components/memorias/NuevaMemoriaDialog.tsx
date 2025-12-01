@@ -47,8 +47,31 @@ export default function NuevaMemoriaDialog({ open, onClose, onConfirm }: Props) 
 
       <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
         <Box display="flex" gap={2}>
-          <Button variant="outlined" onClick={handleClose}>Cancelar</Button>
-          <Button variant="contained" onClick={handleConfirm}>Confirmar</Button>
+          <Button
+            onClick={handleClose}
+            variant="outlined"
+            sx={{
+              color: "#666",
+              borderColor: "#ccc",
+              backgroundColor: "#f5f5f5",
+              textTransform: "none",
+              minWidth: 120,
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleConfirm}
+            variant="contained"
+            sx={{
+              backgroundColor: "#1976d2",
+              textTransform: "none",
+              minWidth: 120,
+            }}
+          >
+            Confirmar
+          </Button>
+
         </Box>
       </DialogActions>
     </Dialog>
