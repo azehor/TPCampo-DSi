@@ -18,7 +18,7 @@ const LoginPage: React.FC = () => {
 
     try {
       await login(email, password);
-      navigate("/home");
+      navigate("/actividades-idi/trabajos-publicados");
     } catch (err) {
       setError("Credenciales incorrectas");
     }
