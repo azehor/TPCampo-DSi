@@ -35,7 +35,7 @@ export default function PatentesRegistros() {
   const [page, setPage] = React.useState(0);
   const [search, setSearch] = React.useState("");
 
-  const limit = 10;
+  const limit = 9;
 
   const [paginationModel, setPaginationModel] = React.useState({
       page: 0,

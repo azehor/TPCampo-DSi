@@ -22,7 +22,7 @@ export default function GruposIDI() {
   const [grupoSeleccionado, setGrupoSeleccionado] = useState<any>(null);
   const [search, setSearch] = useState("");
 
-  const limit = 10;
+  const limit = 9;
   const [count, setCount] = useState(0);
   const [paginationModel, setPaginationModel] = useState({
       page: 0,
@@ -132,13 +132,13 @@ export default function GruposIDI() {
   return (
     <div className="grupos-idi">
       <Grid container alignItems="center" justifyContent="space-between" mb={3}>
-        <Grid item>
+        <Grid>
           <Typography variant="h4" color="black">
             Grupos I+D+i
           </Typography>
         </Grid>
 
-        <Grid item>
+        <Grid>
           <Box display="flex" gap={2}>
             <TextField
               label="Buscar"
