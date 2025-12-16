@@ -9,6 +9,7 @@
 
 # Ignore all environment files.
 /.env*
+password.txt
 
 # Ignore all logfiles and tempfiles.
 /log/*
