@@ -1,281 +1,261 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
-
-facultades = [
-  { nombre: "FRBA - Buenos Aires" },
-  { nombre: "FRA - Avellaneda" },
-  { nombre: "FRBB - Bahía Blanca" },
-  { nombre: "FRN - Buenos Aires Norte" },
-  { nombre: "FRCh - Chubut" },
-  { nombre: "FRCU - Concepción del Uruguay" },
-  { nombre: "FRC - Córdoba" },
-  { nombre: "FRD - Delta" },
-  { nombre: "FRGP - General Pacheco" },
-  { nombre: "FRH - Haedo" },
-  { nombre: "FRLP - La Plata" },
-  { nombre: "FRM - Mendoza" },
-  { nombre: "FRP - Paraná" },
-  { nombre: "FRR - Rafaela" },
-  { nombre: "FRRe - Reconquista" },
-  { nombre: "FRRes - Resistencia" },
-  { nombre: "FRRG - Río Grande" },
-  { nombre: "FRRo - Rosario" },
-  { nombre: "FRSF - San Francisco" },
-  { nombre: "FRSN - San Nicolás" },
-  { nombre: "FRSF - Santa Fe" },
-  { nombre: "FRTDF - Tierra del Fuego" },
-  { nombre: "FRT - Tucumán" }
-]
-
-facultades.each do |fac|
-  FacultadRegional.find_or_create_by!(nombre: fac[:nombre])
-end
-
-puts "Facultades Regionales cargadas correctamente"
-puts "Total: #{FacultadRegional.count}"
-
-
 # db/seeds.rb
+# Idempotente: se puede ejecutar mil veces sin duplicar.
+# Genera más datos y crea relaciones HABTM con Memorias.
 
-# Personal
-personales = [
-  { apellido: "García", nombre: "Nahuel", horas_semanales: 40, object_type: "Investigador" },
-  { apellido: "Pérez", nombre: "Lucía", horas_semanales: 35, object_type: "Investigador" },
-  { apellido: "Martínez", nombre: "Joaquín", horas_semanales: 30, object_type: "Investigador" },
-  { apellido: "Sosa", nombre: "Valentina", horas_semanales: 45, object_type: "Investigador" },
-  { apellido: "López", nombre: "Mateo", horas_semanales: 20, object_type: "Investigador" },
-  { apellido: "Fernández", nombre: "Ana", horas_semanales: 40, object_type: "Investigador" },
-  { apellido: "Romero", nombre: "Marcos", horas_semanales: 35, object_type: "Investigador" },
-  { apellido: "Ruiz", nombre: "Carla", horas_semanales: 30, object_type: "Investigador" },
-  { apellido: "Álvarez", nombre: "Tomás", horas_semanales: 25, object_type: "Investigador" },
-  { apellido: "Silva", nombre: "Florencia", horas_semanales: 40, object_type: "Investigador" }
-]
+ActiveRecord::Base.transaction do
+  # -------------------------
+  # Helpers
+  # -------------------------
+  def upsert_by(klass, finder, attrs)
+    record = klass.find_or_initialize_by(finder)
+    record.assign_attributes(attrs)
+    record.save!
+    record
+  end
 
-personales.each do |p|
-  Personal.find_or_create_by!(
-    apellido: p[:apellido],
-    nombre: p[:nombre],
-    horas_semanales: p[:horas_semanales],
-    object_type: p[:object_type]
+  def sample_distinct(arr, exclude: nil)
+    pool = exclude ? (arr - [exclude]).compact : arr.compact
+    pool.sample || exclude || arr.sample
+  end
+
+  rng = Random.new(1234) # misma data siempre
+
+  categorias  = ["Primera", "Segunda", "Tercera", "Cuarta"].freeze
+  dedicaciones = ["Simple", "Semiexclusiva", "Exclusiva"].freeze
+
+  # -------------------------
+  # Facultades
+  # -------------------------
+  facultades = [
+    "FRBA - Buenos Aires", "FRA - Avellaneda", "FRBB - Bahía Blanca", "FRN - Buenos Aires Norte",
+    "FRCh - Chubut", "FRCU - Concepción del Uruguay", "FRC - Córdoba", "FRD - Delta",
+    "FRGP - General Pacheco", "FRH - Haedo", "FRLP - La Plata", "FRM - Mendoza",
+    "FRP - Paraná", "FRR - Rafaela", "FRRe - Reconquista", "FRRes - Resistencia",
+    "FRRG - Río Grande", "FRRo - Rosario", "FRSF - San Francisco", "FRSF - Santa Fe",
+    "FRSN - San Nicolás", "FRTDF - Tierra del Fuego", "FRT - Tucumán"
+  ].uniq
+
+  facultades_records = facultades.map do |nombre|
+    upsert_by(FacultadRegional, { nombre: nombre }, { nombre: nombre })
+  end
+
+  # -------------------------
+  # Personales
+  # -------------------------
+  base_personales = [
+    ["García", "Nahuel"], ["Pérez", "Lucía"], ["Martínez", "Joaquín"], ["Sosa", "Valentina"],
+    ["López", "Mateo"], ["Fernández", "Ana"], ["Romero", "Marcos"], ["Ruiz", "Carla"],
+    ["Álvarez", "Tomás"], ["Silva", "Florencia"], ["González", "Mariana"], ["Silvetti", "Hugo"],
+    ["Benítez", "Esteban"], ["Cordero", "Paolo"], ["Mares", "Luciana"], ["Ferrer", "Sergio"],
+    ["Ibarra", "Noelia"], ["Paz", "Carolina"], ["Acosta", "Bruno"], ["Rojas", "Micaela"],
+    ["Giménez", "Santino"], ["Vega", "Martina"], ["Castro", "Agustín"], ["Herrera", "Sofía"]
+  ].freeze
+
+  investigadores_count_target = 20
+  administrativos_count_target = 6
+
+  # Creamos 26 personas: 20 investigadores + 6 administrativos
+  personales_records = []
+
+  base_personales.each_with_index do |(apellido, nombre), idx|
+    object_type = idx < investigadores_count_target ? "Investigador" : "Administrativo"
+    horas = (object_type == "Investigador" ? [20, 25, 30, 35, 40, 45].sample(random: rng) : [20, 30, 40].sample(random: rng))
+
+    personales_records << upsert_by(
+      Personal,
+      { apellido: apellido, nombre: nombre },
+      { apellido: apellido, nombre: nombre, horas_semanales: horas, object_type: object_type }
+    )
+  end
+
+  # -------------------------
+  # Investigadores
+  # -------------------------
+  investigadores_records = Personal.where(object_type: "Investigador").map do |p|
+    upsert_by(
+      Investigador,
+      { personal_id: p.id },
+      {
+        personal: p,
+        categoria: categorias.sample(random: rng),
+        dedicacion: dedicaciones.sample(random: rng),
+        programa_incentivo: [nil, 1, 2, 3].sample(random: rng)
+      }
+    )
+  end
+
+  raise "No hay Investigadores para armar grupos" if investigadores_records.empty?
+
+  # -------------------------
+  # Países
+  # -------------------------
+  paises = [
+    { nombre: "Argentina", codigo: "AR" }, { nombre: "Brasil", codigo: "BR" }, { nombre: "Chile", codigo: "CL" },
+    { nombre: "Uruguay", codigo: "UY" }, { nombre: "Estados Unidos", codigo: "US" }, { nombre: "España", codigo: "ES" },
+    { nombre: "Reino Unido", codigo: "GB" }, { nombre: "Alemania", codigo: "DE" }, { nombre: "Francia", codigo: "FR" },
+    { nombre: "Italia", codigo: "IT" }
+  ].uniq { |p| p[:codigo] }
+
+  paises_records = paises.map do |p|
+    upsert_by(Pais, { codigo: p[:codigo] }, { codigo: p[:codigo], nombre: p[:nombre] })
+  end
+
+  pais_ar = Pais.find_by(codigo: "AR") || paises_records.first
+
+  # -------------------------
+  # Revistas
+  # -------------------------
+  revistas_seed = [
+    { nombre: "Journal Ingeniería", issn: "1111-2222", editorial: "UTN Press", pais: pais_ar },
+    { nombre: "Revista UTN Avances", issn: "3333-4444", editorial: "UTN Editorial", pais: pais_ar },
+    { nombre: "International Engineering Review", issn: "5555-6666", editorial: "Global Science", pais: Pais.find_by(codigo: "US") || pais_ar }
+  ]
+
+  revistas_records = revistas_seed.map do |r|
+    upsert_by(
+      Revista,
+      { nombre: r[:nombre] },
+      { nombre: r[:nombre], issn: r[:issn], editorial: r[:editorial], pais: r[:pais] }
+    )
+  end
+
+  # -------------------------
+  # Grupos de investigación
+  # -------------------------
+  grupos_seed = [
+    { sigla: "GIAA", nombre: "Grupo de IA Aplicada", correo: "ia@utn.edu.ar", integrantes: 8, objetivos: "Aplicación de machine learning en ingeniería.", facultad: "FRLP - La Plata" },
+    { sigla: "GRI",  nombre: "Grupo de Robótica Industrial", correo: "robotica@utn.edu.ar", integrantes: 5, objetivos: "Automatización avanzada aplicada a la industria.", facultad: "FRBA - Buenos Aires" },
+    { sigla: "GDATA", nombre: "Grupo de Datos y Ciencias", correo: "datos@utn.edu.ar", integrantes: 7, objetivos: "Análisis de datos para optimización de procesos.", facultad: "FRLP - La Plata" },
+    { sigla: "GSOFT", nombre: "Grupo de Desarrollo de Software", correo: "software@utn.edu.ar", integrantes: 9, objetivos: "Buenas prácticas y herramientas para desarrollo de software en la industria.", facultad: "FRBA - Buenos Aires" },
+    { sigla: "GBIO", nombre: "Grupo de Bioingeniería", correo: "bio@utn.edu.ar", integrantes: 6, objetivos: "Aplicaciones biomédicas y sensores.", facultad: "FRM - Mendoza" },
+    { sigla: "GIoT", nombre: "Grupo de IoT y Automatización", correo: "iot@utn.edu.ar", integrantes: 10, objetivos: "Sistemas embebidos, redes y automatización industrial.", facultad: "FRRo - Rosario" }
+  ]
+
+  grupos_records = grupos_seed.map.with_index do |g, idx|
+    fac = FacultadRegional.find_by(nombre: g[:facultad]) || facultades_records.first
+
+    director = investigadores_records[idx % investigadores_records.size]
+    vicedirector = sample_distinct(investigadores_records, exclude: director)
+
+    upsert_by(
+      GrupoDeInvestigacion,
+      { sigla: g[:sigla] },
+      {
+        sigla: g[:sigla],
+        nombre: g[:nombre],
+        correo_electronico: g[:correo],
+        integrantes: g[:integrantes],
+        objetivos: g[:objetivos],
+        facultad_regional: fac,
+        director: director,
+        vicedirector: vicedirector
+      }
+    )
+  end
+
+  # -------------------------
+  # Memorias
+  # -------------------------
+  anios = (2021..2025).map(&:to_s)
+
+  memorias_records = []
+  grupos_records.each do |grupo|
+    anios.each do |anio|
+      memorias_records << upsert_by(
+        Memoria,
+        { anio: anio, grupo_de_investigacion_id: grupo.id },
+        { anio: anio, grupo_de_investigacion: grupo }
+      )
+    end
+  end
+
+  # -------------------------
+  # Patentes / Publicaciones / Divulgación / Trabajos en revista
+  # -------------------------
+  tipos_patente = ["Propiedad Industrial", "Propiedad Intelectual"].freeze
+
+  patentes_records = []
+  publicaciones_records = []
+  articulos_records = []
+  trabajos_records = []
+
+  grupos_records.each_with_index do |g, idx|
+    # 3 patentes por grupo
+    3.times do |i|
+      ident = "#{g.sigla}-PAT-#{2020 + i}"
+      patentes_records << upsert_by(
+        Patente,
+        { identificador: ident },
+        { identificador: ident, titulo: "#{g.sigla} - Desarrollo #{i + 1}", tipo: tipos_patente.sample(random: rng), grupo_de_investigacion: g }
+      )
+    end
+
+    # 2 publicaciones por grupo
+    2.times do |i|
+      code = "LIB-#{g.sigla}-#{2023 + i}"
+      publicaciones_records << upsert_by(
+        PublicacionEnLibro,
+        { codigo: code },
+        { codigo: code, titulo: "Capítulo #{i + 1} - #{g.sigla}", libro: "Actas UTN #{2023 + i}", capitulo: (i + 1).to_s, grupo_de_investigacion: g }
+      )
+    end
+
+    # 2 artículos divulgación por grupo
+    2.times do |i|
+      code = "DIV-#{g.sigla}-#{2023 + i}"
+      articulos_records << upsert_by(
+        ArticuloDeDivulgacion,
+        { codigo: code },
+        { codigo: code, titulo: "Divulgación #{i + 1} - #{g.sigla}", nombre: "Ciencia para Todos UTN", grupo_de_investigacion: g }
+      )
+    end
+
+    # 2 trabajos por grupo (revistas variadas)
+    2.times do |i|
+      code = "TR-#{g.sigla}-#{idx + 1}-#{i + 1}"
+      revista = revistas_records.sample(random: rng)
+
+      trabajos_records << upsert_by(
+        TrabajoEnRevista,
+        { codigo: code },
+        { codigo: code, titulo: "Artículo #{i + 1} sobre #{g.nombre}", revista: revista, grupo_de_investigacion: g }
+      )
+    end
+  end
+
+ 
+  # Para cada memoria: linkeamos un subconjunto de cada tipo
+  memorias_records.each do |m|
+    g = m.grupo_de_investigacion
+
+    pats = patentes_records.select { |p| p.grupo_de_investigacion_id == g.id }.sample(2, random: rng)
+    pubs = publicaciones_records.select { |p| p.grupo_de_investigacion_id == g.id }.sample(1, random: rng)
+    divs = articulos_records.select { |a| a.grupo_de_investigacion_id == g.id }.sample(1, random: rng)
+    trs  = trabajos_records.select { |t| t.grupo_de_investigacion_id == g.id }.sample(1, random: rng)
+
+    pats.each { |p| m.patentes << p unless m.patentes.exists?(p.id) }
+    pubs.each { |p| m.publicacion_en_libros << p unless m.publicacion_en_libros.exists?(p.id) }
+    divs.each { |a| m.articulo_de_divulgacions << a unless m.articulo_de_divulgacions.exists?(a.id) }
+    trs.each  { |t| m.trabajo_en_revistas << t unless m.trabajo_en_revistas.exists?(t.id) }
+  end
+
+  # -------------------------
+  # Usuario admin
+  # -------------------------
+  admin_email = ENV.fetch("ADMIN_EMAIL", "admin@utn.com")
+  admin_pass  = ENV.fetch("ADMIN_PASSWORD", "Admin1234!")
+
+  upsert_by(
+    User,
+    { email: admin_email },
+    { email: admin_email, password: admin_pass, password_confirmation: admin_pass, role: "admin" }
   )
-end
 
-puts "Personales cargados correctamente"
-puts "Total: #{Personal.count}"
-
-# Investigador
-Personal.all.each do |p|
-  Investigador.find_or_create_by!(
-    personal: p,
-    categoria: [ "Primera", "Segunda", "Tercera", "Cuarta" ].sample,
-    dedicacion: [ "Simple", "Semiexclusiva", "Exclusiva" ].sample
-  )
-end
-
-puts "Investigadores creados correctamente"
-puts "Total: #{Investigador.count}"
-
-# Pais
-
-paises = [
-  { nombre: "Argentina", codigo: "AR" },
-  { nombre: "Brasil", codigo: "BR" },
-  { nombre: "Chile", codigo: "CL" },
-  { nombre: "Uruguay", codigo: "UY" },
-  { nombre: "Paraguay", codigo: "PY" },
-  { nombre: "Bolivia", codigo: "BO" },
-  { nombre: "Perú", codigo: "PE" },
-  { nombre: "Colombia", codigo: "CO" },
-  { nombre: "Venezuela", codigo: "VE" },
-  { nombre: "Ecuador", codigo: "EC" },
-  { nombre: "México", codigo: "MX" },
-  { nombre: "Guatemala", codigo: "GT" },
-  { nombre: "Honduras", codigo: "HN" },
-  { nombre: "El Salvador", codigo: "SV" },
-  { nombre: "Panamá", codigo: "PA" },
-  { nombre: "Costa Rica", codigo: "CR" },
-  { nombre: "Nicaragua", codigo: "NI" },
-  { nombre: "Cuba", codigo: "CU" },
-  { nombre: "República Dominicana", codigo: "DO" },
-  { nombre: "Puerto Rico", codigo: "PR" },
-  { nombre: "Estados Unidos", codigo: "US" },
-  { nombre: "Canadá", codigo: "CA" },
-  { nombre: "España", codigo: "ES" },
-  { nombre: "Portugal", codigo: "PT" },
-  { nombre: "Francia", codigo: "FR" },
-  { nombre: "Alemania", codigo: "DE" },
-  { nombre: "Italia", codigo: "IT" },
-  { nombre: "Reino Unido", codigo: "GB" },
-  { nombre: "Irlanda", codigo: "IE" },
-  { nombre: "Países Bajos", codigo: "NL" },
-  { nombre: "Bélgica", codigo: "BE" },
-  { nombre: "Suiza", codigo: "CH" },
-  { nombre: "Austria", codigo: "AT" },
-  { nombre: "Dinamarca", codigo: "DK" },
-  { nombre: "Noruega", codigo: "NO" },
-  { nombre: "Suecia", codigo: "SE" },
-  { nombre: "Finlandia", codigo: "FI" },
-  { nombre: "Rusia", codigo: "RU" },
-  { nombre: "China", codigo: "CN" },
-  { nombre: "Japón", codigo: "JP" },
-  { nombre: "Corea del Sur", codigo: "KR" },
-  { nombre: "India", codigo: "IN" },
-  { nombre: "Australia", codigo: "AU" },
-  { nombre: "Nueva Zelanda", codigo: "NZ" },
-  { nombre: "Sudáfrica", codigo: "ZA" },
-  { nombre: "Egipto", codigo: "EG" },
-  { nombre: "Marruecos", codigo: "MA" },
-  { nombre: "Argelia", codigo: "DZ" },
-  { nombre: "Nigeria", codigo: "NG" },
-  { nombre: "Ghana", codigo: "GH" },
-  { nombre: "Kenya", codigo: "KE" },
-  { nombre: "Etiopía", codigo: "ET" },
-  { nombre: "Israel", codigo: "IL" },
-  { nombre: "Arabia Saudita", codigo: "SA" },
-  { nombre: "Turquía", codigo: "TR" },
-  { nombre: "Grecia", codigo: "GR" },
-  { nombre: "Polonia", codigo: "PL" },
-  { nombre: "Ucrania", codigo: "UA" },
-  { nombre: "Rumania", codigo: "RO" },
-  { nombre: "Hungría", codigo: "HU" },
-  { nombre: "Chequia", codigo: "CZ" },
-  { nombre: "Eslovaquia", codigo: "SK" }
-]
-
-paises.each do |pais|
-  Pais.find_or_create_by!(codigo: pais[:codigo]) do |p|
-    p.nombre = pais[:nombre]
-  end
-end
-puts "Paises creados correctamente"
-puts "Total: #{Pais.count}"
-
-# Grupos de investigacion
-grupos = [
-  {
-    correo_electronico: "ia@utn.edu.ar",
-    integrantes: 8,
-    nombre: "Grupo de IA Aplicada",
-    objetivos: "Aplicación de machine learning en ingeniería.",
-    sigla: "GIAA",
-    facultad_regional_id: FacultadRegional.first.id,
-    director_id: Investigador.first.id,
-    vicedirector_id: Investigador.second.id
-  },
-  {
-    correo_electronico: "robotica@utn.edu.ar",
-    integrantes: 5,
-    nombre: "Grupo de Robótica Industrial",
-    objetivos: "Automatización avanzada aplicada a la industria.",
-    sigla: "GRI",
-    facultad_regional_id: FacultadRegional.second.id,
-    director_id: Investigador.second.id,
-    vicedirector_id: Investigador.first.id
-  }
-]
-
-grupos.each do |g|
-  GrupoDeInvestigacion.find_or_create_by!(correo_electronico: g[:correo_electronico]) do |grupo|
-    grupo.integrantes = g[:integrantes]
-    grupo.nombre = g[:nombre]
-    grupo.objetivos = g[:objetivos]
-    grupo.sigla = g[:sigla]
-    grupo.facultad_regional_id = g[:facultad_regional_id]
-    grupo.director_id = g[:director_id]
-    grupo.vicedirector_id = g[:vicedirector_id]
-  end
-end
-
-# MEMORIAS
-memorias = [
-  { anio: "2023",  grupo_de_investigacion_id: GrupoDeInvestigacion.first.id },
-  { anio: "2024",  grupo_de_investigacion_id: GrupoDeInvestigacion.first.id }
-]
-
-memorias.each do |m|
-  Memoria.find_or_create_by!(anio: m[:anio]) do |mem|
-    mem.grupo_de_investigacion_id = m[:grupo_de_investigacion_id]
-   end
-end
-
-
-# PATENTES
-patentes = [
-  { identificador: "P-1234", titulo: "Control Inteligente", tipo: "Propiedad Intelectual", grupo_de_investigacion_id: GrupoDeInvestigacion.first.id },
-  { identificador: "P-5678", titulo: "Sistema Autónomo", tipo: "Propiedad Industrial", grupo_de_investigacion_id: GrupoDeInvestigacion.second.id }
-]
-
-patentes.each do |p|
-  Patente.find_or_create_by!(identificador: p[:identificador]) do |pat|
-    pat.titulo = p[:titulo]
-    pat.tipo = p[:tipo]
-    pat.grupo_de_investigacion_id = p[:grupo_de_investigacion_id]
-  end
-end
-
-
-# REVISTA + TRABAJO EN REVISTA
-revista = Revista.find_or_create_by!(
-  nombre: "Journal Ingeniería",
-  issn: "1111-2222",
-  editorial: "UTN Press",
-  pais_id: Pais.first.id
-)
-
-trabajos_revista = [
-  { titulo: "Redes Neuronales", codigo: "TR-001", revista_id: revista.id, grupo_de_investigacion_id: GrupoDeInvestigacion.first.id }
-]
-
-trabajos_revista.each do |t|
-  TrabajoEnRevista.find_or_create_by!(codigo: t[:codigo]) do |trab|
-    trab.titulo = t[:titulo]
-    trab.revista_id = t[:revista_id]
-    trab.grupo_de_investigacion_id = t[:grupo_de_investigacion_id]
-  end
-end
-
-# PUBLICACIÓN EN LIBROS
-publicaciones = [
-  { titulo: "ML Avanzado", libro: "Avances 2023", capitulo: "5", codigo: "LIB-111", grupo_de_investigacion_id: GrupoDeInvestigacion.first.id }
-]
-
-publicaciones.each do |pb|
-  PublicacionEnLibro.find_or_create_by!(codigo: pb[:codigo]) do |pub|
-    pub.titulo = pb[:titulo]
-    pub.libro = pb[:libro]
-    pub.capitulo = pb[:capitulo]
-    pub.grupo_de_investigacion_id = pb[:grupo_de_investigacion_id]
-  end
-end
-
-# ARTÍCULO DE DIVULGACIÓN
-articulos = [
-  { titulo: "Robótica Básica", nombre: "Ciencia Hoy", codigo: "DIV-789", grupo_de_investigacion_id: GrupoDeInvestigacion.second.id }
-]
-
-articulos.each do |a|
-  ArticuloDeDivulgacion.find_or_create_by!(codigo: a[:codigo]) do |art|
-    art.titulo = a[:titulo]
-    art.nombre = a[:nombre]
-    art.grupo_de_investigacion_id = a[:grupo_de_investigacion_id]
-  end
-end
-
-# Crear usuario admin
-admin_email  = ENV["ADMIN_EMAIL"]
-admin_pass   = ENV["ADMIN_PASSWORD"]
-if User.find_by(email: "admin@utn.com").nil?
-  User.create!(
-    email: admin_email,
-    password: admin_pass,
-    password_confirmation: admin_pass,
-    role: "admin"
-  )
+  puts "Seed OK"
+  puts "Facultades: #{FacultadRegional.count}"
+  puts "Personales: #{Personal.count} | Investigadores: #{Investigador.count}"
+  puts "Grupos: #{GrupoDeInvestigacion.count} | Memorias: #{Memoria.count}"
+  puts "Patentes: #{Patente.count} | Revistas: #{Revista.count} | Trabajos: #{TrabajoEnRevista.count}"
+  puts "Libros: #{PublicacionEnLibro.count} | Divulgación: #{ArticuloDeDivulgacion.count}"
+  puts "Users: #{User.count}"
 end
