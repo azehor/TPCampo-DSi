@@ -21,7 +21,7 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 # Set production environment variables and enable jemalloc for reduced memory usage and latency.
-ENV RAILS_ENV="production" \
+ENV RAILS_ENV="development" \
     BUNDLE_DEPLOYMENT="1" \
     BUNDLE_PATH="/usr/local/bundle" \
     BUNDLE_WITHOUT="development" \
@@ -66,10 +66,9 @@ COPY --chown=rails:rails --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
 COPY --chown=rails:rails --from=build /rails /rails
 
 # Entrypoint prepares the database.
+#ENTRYPOINT ["./bin/docker-entrypoint"]
 
 # Start server via Thruster by default, this can be overwritten at runtime
 EXPOSE 3000
-#CMD ["./bin/rails", "server"]
-#CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
-ENTRYPOINT ["./bin/docker-entrypoint"]
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
 
