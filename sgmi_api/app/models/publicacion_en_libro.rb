@@ -6,4 +6,14 @@ class PublicacionEnLibro < ApplicationRecord
   validates :libro, presence: true
   validates :capitulo, presence: true
   validates :codigo, presence: true
+
+  scope :query_tables, ->(query) {
+    columns = %w[titulo codigo libro capitulo grupo_de_investigacions.nombre]
+    where(
+      columns
+      .map { |e| "lower(#{e}) LIKE :search" }
+      .join(" OR "),
+    search: "%" + PublicacionEnLibro.sanitize_sql_like(query).downcase + "%"
+    )
+  }
 end

@@ -3,6 +3,11 @@ class TrabajoEnRevistaController < ApplicationController
 
   # GET /trabajo_en_revista
   def index
+    if params.has_key?(:query)
+      query = params[:query]
+    else
+      query = ""
+    end
     if params.has_key?(:page) && params.has_key?(:limit)
       page = params[:page].to_i
       per_page = params[:limit].to_i
@@ -11,7 +16,10 @@ class TrabajoEnRevistaController < ApplicationController
       per_page = 15
     end
     count = TrabajoEnRevista.count
-    revistas = TrabajoEnRevista.limit(per_page).offset(page * per_page)
+    revistas = TrabajoEnRevista
+      .joins(:grupo_de_investigacion, :revista)
+      .query_tables(query)
+      .limit(per_page).offset(page * per_page)
     render json: {
       content: revistas.as_json(include: {
           revista: {

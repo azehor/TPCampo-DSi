@@ -30,7 +30,7 @@ class PersonalsController < ApplicationController
     personal.destroy
     head :no_content
   end
-  
+
   def personal_params
     params.require(:personal).permit(:apellido, :nombre, :horas_semanales, :object_type)
   end

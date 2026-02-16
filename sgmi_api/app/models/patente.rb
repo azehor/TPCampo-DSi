@@ -7,4 +7,14 @@ class Patente < ApplicationRecord
   validates :identificador, presence: true
 
   validates :grupo_de_investigacion, presence: true
+
+  scope :query_tables, ->(query) {
+    columns = %w[identificador grupo_de_investigacions.nombre titulo tipo]
+    where(
+      columns
+      .map { |e| "lower(#{e}) LIKE :search" }
+      .join(" OR "),
+    search: "%" + PublicacionEnLibro.sanitize_sql_like(query).downcase + "%"
+    )
+  }
 end

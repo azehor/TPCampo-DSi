@@ -1,5 +1,10 @@
 class GrupoDeInvestigacionsController < ApplicationController
   def index
+    if params.has_key?(:query)
+      query = params[:query]
+    else
+      query = ""
+    end
     if params.has_key?(:page) && params.has_key?(:limit)
       page = params[:page].to_i
       per_page = params[:limit].to_i
@@ -8,7 +13,11 @@ class GrupoDeInvestigacionsController < ApplicationController
       per_page = 15
     end
     count = GrupoDeInvestigacion.count
-    grupos = GrupoDeInvestigacion.joins(director: :personal).limit(per_page).offset(page * per_page)
+    grupos = GrupoDeInvestigacion
+      .includes(:facultad_regional, [ { director: :personal }, { vicedirector: :personal } ])
+      .query_tables(query)
+      .references(:personal)
+      .limit(per_page).offset(page * per_page)
     render json: {
       content: grupos.as_json(
         include: {
@@ -81,7 +90,8 @@ class GrupoDeInvestigacionsController < ApplicationController
       :sigla,
       :facultad_regional_id,
       :director_id,
-      :vicedirector_id
+      :vicedirector_id,
+      :query
     )
   end
 end
