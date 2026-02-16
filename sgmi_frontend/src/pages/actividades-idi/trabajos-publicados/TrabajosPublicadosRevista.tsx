@@ -42,8 +42,6 @@ export default function TrabajosPublicados() {
   const [page, setPage] = React.useState(0);
   const [search, setSearch] = React.useState("");
 
-  
-
   const [openDialog, setOpenDialog] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
 
@@ -58,12 +56,12 @@ export default function TrabajosPublicados() {
 
   React.useEffect(() => {
     cargarPublicaciones();
-  }, [page]);
+  }, [page, search]);
 
 
   async function cargarPublicaciones() {
     try {
-      const res = await getTrabajosEnRevista(page, limit);
+      const res = await getTrabajosEnRevista(page, limit, search);
       const trabajosRaw = res.content || [];
       const total = res.metadata.total_count || trabajosRaw.length;
 
@@ -164,7 +162,11 @@ export default function TrabajosPublicados() {
               size="small"
               sx={{ width: 300 }}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setPage(0)
+                setPaginationModel({page: 0, pageSize: limit})
+                setSearch(e.target.value)
+              }}
             />
 
             <Button
@@ -215,7 +217,6 @@ export default function TrabajosPublicados() {
           columns={columns}
           pagination
           pageSizeOptions={[limit]}
-          paginationMode="server"
           paginationModel={paginationModel}
           onPaginationModelChange={(model) => {
             setPaginationModel(model);
@@ -223,6 +224,8 @@ export default function TrabajosPublicados() {
           }}
           disableColumnMenu
           disableColumnResize
+          paginationMode="server"
+          filterMode="server"
         />
       </Paper>
 

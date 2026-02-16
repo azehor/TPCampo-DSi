@@ -47,11 +47,11 @@ export default function TrabajosPublicadosDivulgacion() {
 
   React.useEffect(() => {
     cargarDivulgaciones();
-  }, [page]);
+  }, [page, search]);
 
   async function cargarDivulgaciones() {
     try {
-      const res = await getArticulosDivulgacion(page, limit);
+      const res = await getArticulosDivulgacion(page, limit, search);
 
 
       const articulos = res.content || [];
@@ -76,13 +76,6 @@ export default function TrabajosPublicadosDivulgacion() {
       console.error("Error cargando divulgaciones:", err);
     }
   }
-
-  const filtered = rows.filter((t) =>
-    [t.codigo, t.titulo, t.nombre]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
 
   const columns: GridColDef[] = [
     { field: "codigo", headerName: "Código", flex: 1, minWidth: 100  },
@@ -148,7 +141,11 @@ export default function TrabajosPublicadosDivulgacion() {
               size="small"
               sx={{ width: 300 }}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setPage(0)
+                setPaginationModel({page: 0, pageSize: limit})
+                setSearch(e.target.value)
+              }}
             />
             <Button
               variant="contained"
@@ -192,12 +189,11 @@ export default function TrabajosPublicadosDivulgacion() {
             color: "#000",
           },
         }}
-          rows={filtered}
+          rows={rows}
           rowCount={count}
           columns={columns}
           pagination
           pageSizeOptions={[limit]}
-          paginationMode="server"
           paginationModel={paginationModel}
           onPaginationModelChange={(model) => {
             setPaginationModel(model);
@@ -205,6 +201,8 @@ export default function TrabajosPublicadosDivulgacion() {
           }}
           disableColumnMenu
           disableColumnResize
+          paginationMode="server"
+          filterMode="server"
         />
       </Paper>
 

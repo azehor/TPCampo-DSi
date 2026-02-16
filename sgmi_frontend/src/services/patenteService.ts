@@ -1,10 +1,11 @@
 import { api } from "./api";
 
-export async function getPatentes(page = 0, limit = 10) {
+export async function getPatentes(page = 0, limit = 10, query = "") {
   const response = await api.get("/api/patentes", {
     params: {
       page,
-      limit
+      limit,
+      query
     }
   });
   
