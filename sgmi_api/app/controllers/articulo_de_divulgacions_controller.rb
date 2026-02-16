@@ -3,6 +3,11 @@ class ArticuloDeDivulgacionsController < ApplicationController
 
   # GET /articulo_de_divulgacions
   def index
+    if params.has_key?(:query)
+      query = params[:query].to_s
+    else
+      query = ""
+    end
     if params.has_key?(:page) && params.has_key?(:limit)
       page = params[:page].to_i
       per_page = params[:limit].to_i
@@ -11,7 +16,10 @@ class ArticuloDeDivulgacionsController < ApplicationController
       per_page = 15
     end
     count = ArticuloDeDivulgacion.count
-    articulos = ArticuloDeDivulgacion.limit(per_page).offset(page * per_page)
+    articulos = ArticuloDeDivulgacion
+      .joins(:grupo_de_investigacion)
+      .query_tables(query)
+      .limit(per_page).offset(page * per_page)
     render json: {
       content: articulos.as_json(include: {
           grupo_de_investigacion: {}
@@ -66,7 +74,8 @@ class ArticuloDeDivulgacionsController < ApplicationController
         :codigo,
         :nombre,
         :titulo,
-        :grupo_de_investigacion_id
+        :grupo_de_investigacion_id,
+        :query
       )
     end
 end

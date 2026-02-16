@@ -27,6 +27,17 @@ class GrupoDeInvestigacion < ApplicationRecord
   # El nombre debe ser unico
   validates :nombre, uniqueness: true
 
+  scope :query_tables, ->(query) {
+    columns = [ "grupo_de_investigacions.nombre", "sigla", "facultad_regionals.nombre", "(personals.nombre || ' ' || personals.apellido)",
+                "(personals_investigadors.nombre || ' ' || personals_investigadors.apellido)" ]
+    where(
+      columns
+      .map { |e| "lower(#{e}) LIKE :search" }
+      .join(" OR "),
+    search: "%" + PublicacionEnLibro.sanitize_sql_like(query).downcase + "%"
+    )
+  }
+
   private
 
   def director_y_vicedirector_distintos

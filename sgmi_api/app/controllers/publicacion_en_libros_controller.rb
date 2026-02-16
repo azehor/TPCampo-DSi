@@ -3,6 +3,11 @@ class PublicacionEnLibrosController < ApplicationController
 
   # GET /publicacion_en_libros
   def index
+    if params.has_key?(:query)
+      query = params[:query]
+    else
+      query = ""
+    end
     if params.has_key?(:page) && params.has_key?(:limit)
       page = params[:page].to_i
       per_page = params[:limit].to_i
@@ -11,7 +16,10 @@ class PublicacionEnLibrosController < ApplicationController
       per_page = 15
     end
     count = PublicacionEnLibro.count
-    publicaciones = PublicacionEnLibro.limit(per_page).offset(page * per_page)
+    publicaciones = PublicacionEnLibro
+      .joins(:grupo_de_investigacion)
+      .query_tables(query)
+      .limit(per_page).offset(page * per_page)
     render json: {
       content: publicaciones.as_json(include: {
           grupo_de_investigacion: {}
@@ -67,7 +75,8 @@ class PublicacionEnLibrosController < ApplicationController
         :titulo,
         :capitulo,
         :libro,
-        :grupo_de_investigacion_id
+        :grupo_de_investigacion_id,
+        :query
       )
     end
 end

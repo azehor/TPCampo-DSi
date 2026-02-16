@@ -3,6 +3,11 @@ class PatentesController < ApplicationController
 
   # GET /patentes
   def index
+    if params.has_key?(:query)
+      query = params[:query]
+    else
+      query = ""
+    end
     if params.has_key?(:page) && params.has_key?(:limit)
       page = params[:page].to_i
       per_page = params[:limit].to_i
@@ -11,7 +16,10 @@ class PatentesController < ApplicationController
       per_page = 15
     end
     count = Patente.count
-    patentes = Patente.limit(per_page).offset(page * per_page)
+    patentes = Patente
+      .joins(:grupo_de_investigacion)
+      .query_tables(query)
+      .limit(per_page).offset(page * per_page)
     render json: {
       content: patentes.as_json(include: {
           grupo_de_investigacion: {}
@@ -66,7 +74,8 @@ class PatentesController < ApplicationController
         :identificador,
         :titulo,
         :tipo,
-        :grupo_de_investigacion_id
+        :grupo_de_investigacion_id,
+        :query
       )
     end
 end
