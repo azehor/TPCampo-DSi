@@ -1,10 +1,11 @@
 import { api } from "./api";
 
-export async function getArticulosDivulgacion(page = 0, limit = 10) {
+export async function getArticulosDivulgacion(page = 0, limit = 10, query = "") {
   const response = await api.get("/api/articulo_de_divulgacions", {
     params: {
       page,
-      limit
+      limit,
+      query
     }
   });
 

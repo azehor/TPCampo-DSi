@@ -44,11 +44,11 @@ export default function PatentesRegistros() {
 
   React.useEffect(() => {
     cargarPatentes();
-  }, [page]);
+  }, [page, search]);
 
   async function cargarPatentes() {
     try {
-      const res = await getPatentes(page, limit);
+      const res = await getPatentes(page, limit, search);
 
       const patentes = res.content || [];
       const total = res.metadata.total_count || patentes.length;
@@ -68,13 +68,6 @@ export default function PatentesRegistros() {
       console.error("Error cargando patentes:", err);
     }
   }
-
-  const filtered = rows.filter((t) =>
-    [t.identificador, t.titulo, t.tipo, t.grupo]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
 
   const columns: GridColDef[] = [
     { field: "identificador", headerName: "Identificador", flex: 1.5, minWidth: 120 },
@@ -144,7 +137,11 @@ export default function PatentesRegistros() {
               size="small"
               sx={{ width: 300 }}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setPage(0)
+                setPaginationModel({page: 0, pageSize: limit})
+                setSearch(e.target.value)
+              }}
             />
 
             <Button
@@ -178,12 +175,11 @@ export default function PatentesRegistros() {
           },
         }}
 
-          rows={filtered}
+          rows={rows}
           rowCount={count}
           columns={columns}
           pagination
           pageSizeOptions={[limit]}
-          paginationMode="server"
           paginationModel={paginationModel}
           onPaginationModelChange={(model) => {
             setPaginationModel(model);
@@ -191,6 +187,8 @@ export default function PatentesRegistros() {
           }}
           disableColumnMenu
           disableColumnResize
+          paginationMode="server"
+          filterMode="server"
         />
 
       </Paper>

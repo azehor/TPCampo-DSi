@@ -51,11 +51,11 @@ export default function TrabajosPublicadosLibro() {
 
   React.useEffect(() => {
     cargarPublicaciones();
-  }, [page]);
+  }, [page, search]);
 
   async function cargarPublicaciones() {
     try {
-      const res = await getPublicaciones(page, limit);
+      const res = await getPublicaciones(page, limit, search);
 
       const publicaciones = res.content || [];
       const total = res.count || publicaciones.length;
@@ -97,19 +97,6 @@ export default function TrabajosPublicadosLibro() {
     console.error(error);
   }
 };
-
-
-  const filtered = rows.filter((t) =>
-    [
-      t?.codigo ?? "",
-      t?.titulo ?? "",
-      t?.libro ?? "",
-      t?.capitulo ?? ""
-    ]
-      .join(" ")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
 
   // Columnas DataGrid
   const columns: GridColDef[] = [
@@ -168,7 +155,11 @@ export default function TrabajosPublicadosLibro() {
               size="small"
               sx={{ width: 300 }}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setPage(0);
+                setPaginationModel({page: 0, pageSize: limit})
+                setSearch(e.target.value)}
+              }
             />
 
             <Button
@@ -217,12 +208,11 @@ export default function TrabajosPublicadosLibro() {
             color: "#000",
           },
         }}
-          rows={filtered}
+          rows={rows}
           rowCount={count}
           columns={columns}
           pagination
           pageSizeOptions={[limit]}
-          paginationMode="server"
           paginationModel={paginationModel}
           onPaginationModelChange={(model) => {
             setPaginationModel(model);
@@ -230,6 +220,8 @@ export default function TrabajosPublicadosLibro() {
           }}
           disableColumnMenu
           disableColumnResize
+          paginationMode="server"
+          filterMode="server"
         />
       </Paper>
 

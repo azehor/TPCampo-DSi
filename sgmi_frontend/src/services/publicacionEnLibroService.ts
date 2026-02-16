@@ -1,10 +1,11 @@
 import { api } from "./api";
 
-export async function getPublicaciones(page = 0, limit = 10) {
+export async function getPublicaciones(page = 0, limit = 10, query= "") {
   const response = await api.get("/api/publicacion_en_libros", {
     params: {
       page,
-      limit
+      limit,
+      query
     }
   });
 

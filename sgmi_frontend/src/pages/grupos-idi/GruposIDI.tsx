@@ -15,8 +15,7 @@ import ModificarGrupoDialog from "../../components/Grupos-idi/ModificarGrupoDial
 //function renderBotonAcciones(props Gri)
 export default function GruposIDI() {
   const [rows, setRows] = useState([]);
-  const [filterModel, setFilterModel] = useState({ items: [] });
-  const [sortModel, setSortModel] = useState([]);
+  const [page, setPage] = useState(0);
   const [openDialog, setOpenDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [grupoSeleccionado, setGrupoSeleccionado] = useState<any>(null);
@@ -33,8 +32,7 @@ export default function GruposIDI() {
     const res = await getGrupos(
       paginationModel.page,
       paginationModel.pageSize,
-      sortModel,
-      filterModel
+      search
     );
     const total = res.metadata.total_count || res.length;
     setRows(res.content);
@@ -43,7 +41,7 @@ export default function GruposIDI() {
 
   useEffect(() => {
     cargarGrupos();
-  }, [paginationModel, sortModel, filterModel]);
+  }, [page, search]);
 
   const handleDelete = async (id: number) => {
     const conf = confirm("¿Seguro que deseas eliminar el grupo?");
@@ -146,7 +144,11 @@ export default function GruposIDI() {
               size="small"
               sx={{ width: 300 }}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setPage(0)
+                setPaginationModel({page: 0, pageSize: limit})
+                setSearch(e.target.value)
+                }}
             />
 
             <Button
@@ -179,18 +181,19 @@ export default function GruposIDI() {
             },
           }}
           rows={rows}
-          columns={columns}
           rowCount={count}
+          columns={columns}
           pagination
-          paginationMode="server"
+          pageSizeOptions={[limit]}
           paginationModel={paginationModel}
-          onPaginationModelChange={(model) => setPaginationModel(model)}
-          sortingMode="server"
-          filterMode="server"
-          onSortModelChange={setSortModel}
-          onFilterModelChange={setFilterModel}
+          onPaginationModelChange={(model) => {
+            setPaginationModel(model);
+            setPage(model.page);
+          }}
           disableColumnMenu
           disableColumnResize
+          paginationMode="server"
+          filterMode="server"
         />
       </Paper>
 
