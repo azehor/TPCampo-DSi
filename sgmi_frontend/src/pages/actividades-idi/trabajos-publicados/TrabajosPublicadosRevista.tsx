@@ -11,6 +11,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTrabajoDialog";
 import ModificarTrabajoDialog from "../../../components/trabajos-publicados/ModificarTrabajoDialog";
+import RevistaABMDialog from "../../../components/trabajos-publicados/RevistaABMDialog";
 
 import { deleteTrabajoEnRevista, getTrabajosEnRevista } from "../../../services/trabajoEnRevistaService";
 
@@ -44,6 +45,7 @@ export default function TrabajosPublicados() {
 
   const [openDialog, setOpenDialog] = React.useState(false);
   const [openEditDialog, setOpenEditDialog] = React.useState(false);
+  const [openRevistaDialog, setOpenRevistaDialog] = React.useState(false);
 
   const [trabajoSeleccionado, setTrabajoSeleccionado] = React.useState<any>(null);
   const limit = 9;
@@ -176,6 +178,13 @@ export default function TrabajosPublicados() {
             >
               Añadir trabajo
             </Button>
+
+            <Button
+              variant="outlined"
+              onClick={() => setOpenRevistaDialog(true)}
+            >
+              Revistas
+            </Button>
           </Box>
         </Grid>
       </Grid>
@@ -250,6 +259,15 @@ export default function TrabajosPublicados() {
           initialData={trabajoSeleccionado}
         />
       )}
+
+      {/* Diálogo de ABM de Revistas */}
+      <RevistaABMDialog
+        open={openRevistaDialog}
+        onClose={() => setOpenRevistaDialog(false)}
+        onConfirm={() => {
+          cargarPublicaciones();
+        }}
+      />
     </div>
   );
 }

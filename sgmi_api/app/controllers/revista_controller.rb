@@ -3,9 +3,29 @@ class RevistaController < ApplicationController
 
   # GET /revista
   def index
-    @revista = Revista.all
-
-    render json: @revista
+    if params.has_key?(:page) && params.has_key?(:limit)
+      # Con paginación
+      page = params[:page].to_i
+      per_page = params[:limit].to_i
+      count = Revista.count
+      revistas = Revista
+        .order(created_at: :desc)
+        .limit(per_page)
+        .offset(page * per_page)
+      
+      render json: {
+        content: revistas.as_json(include: { pais: {} }),
+        metadata: {
+          page: page,
+          per_page: per_page,
+          total_count: count
+        }
+      }
+    else
+      # Sin paginación - traer todos
+      revistas = Revista.order(created_at: :desc)
+      render json: revistas.as_json(include: { pais: {} })
+    end
   end
 
   # GET /revista/1

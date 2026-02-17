@@ -15,11 +15,7 @@ import { getGruposList } from "../../services/gruposService";
 import { updateTrabajoEnRevista } from "../../services/trabajoEnRevistaService";
 import { updatePublicacionEnLibro } from "../../services/publicacionEnLibroService";
 import { updateArticuloDeDivulgacion } from "../../services/articuloDeDivulgacionService";
-
-interface Revista {
-  id: number;
-  nombre: string;
-}
+import type { Revista } from "../../models/revista.model";
 
 interface Grupo {
   id: number;
