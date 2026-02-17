@@ -84,6 +84,28 @@ ActiveRecord::Base.transaction do
     )
   end
 
+# Para cada investigador creamos un User asociado.
+investigadores_records.each do |invest|
+    personal = invest.personal
+    base = "#{personal.nombre}.#{personal.apellido}".downcase.gsub(/\s+/, '')
+    domain = "utn.com"
+    email = "#{base}@#{domain}"
+
+    seq = 1
+    while User.exists?(email: email)
+      email = "#{base}#{seq}@#{domain}"
+      seq += 1
+    end
+
+    user = upsert_by(
+      User,
+      { email: email },
+      { email: email, password: "123456", password_confirmation: "123456", role: "investigador" }
+    )
+
+    invest.update!(user: user) if invest.user != user
+  end
+
   raise "No hay Investigadores para armar grupos" if investigadores_records.empty?
 
   # -------------------------

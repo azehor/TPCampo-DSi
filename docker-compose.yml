@@ -12,6 +12,8 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+    volumes:
+      - ./sgmi_api:/rails    
     develop:
       watch:
         - action: rebuild
