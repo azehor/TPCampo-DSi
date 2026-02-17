@@ -15,11 +15,20 @@ class ArticuloDeDivulgacionsController < ApplicationController
       page = 0
       per_page = 15
     end
+    if params.has_key?(:field) && params.has_key?(:sort)
+      field = params[:field]
+      sort = params[:sort]
+    else
+      field = "articulo_de_divulgacions.created_at"
+      sort = "desc"
+    end
     count = ArticuloDeDivulgacion.count
     articulos = ArticuloDeDivulgacion
       .joins(:grupo_de_investigacion)
+      .select("grupo_de_investigacions.nombre as grupo", :codigo, :titulo, :nombre, :grupo_de_investigacion_id, :id)
       .query_tables(query)
       .limit(per_page).offset(page * per_page)
+      .order(ArticuloDeDivulgacion.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
       content: articulos.as_json(include: {
           grupo_de_investigacion: {}
@@ -75,7 +84,9 @@ class ArticuloDeDivulgacionsController < ApplicationController
         :nombre,
         :titulo,
         :grupo_de_investigacion_id,
-        :query
+        :query,
+        :field,
+        :sort
       )
     end
 end

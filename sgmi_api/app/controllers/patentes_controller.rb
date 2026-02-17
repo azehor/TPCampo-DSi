@@ -15,11 +15,20 @@ class PatentesController < ApplicationController
       page = 0
       per_page = 15
     end
+    if params.has_key?(:field) && params.has_key?(:sort)
+      field = params[:field]
+      sort = params[:sort]
+    else
+      field = "patentes.created_at"
+      sort = "desc"
+    end
     count = Patente.count
     patentes = Patente
       .joins(:grupo_de_investigacion)
+      .select("grupo_de_investigacions.nombre as grupo", :identificador, :titulo, :tipo, :grupo_de_investigacion_id, :id)
       .query_tables(query)
       .limit(per_page).offset(page * per_page)
+      .order(Patente.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
       content: patentes.as_json(include: {
           grupo_de_investigacion: {}
@@ -75,7 +84,9 @@ class PatentesController < ApplicationController
         :titulo,
         :tipo,
         :grupo_de_investigacion_id,
-        :query
+        :query,
+        :field,
+        :sort
       )
     end
 end

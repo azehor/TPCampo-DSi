@@ -15,11 +15,20 @@ class TrabajoEnRevistaController < ApplicationController
       page = 0
       per_page = 15
     end
+    if params.has_key?(:field) && params.has_key?(:sort)
+      field = params[:field]
+      sort = params[:sort]
+    else
+      field = "trabajo_en_revista.created_at"
+      sort = "desc"
+    end
     count = TrabajoEnRevista.count
     revistas = TrabajoEnRevista
       .joins(:grupo_de_investigacion, :revista)
+      .select("grupo_de_investigacions.nombre as grupo", :codigo, :titulo, :revista_id, :grupo_de_investigacion_id, :id)
       .query_tables(query)
       .limit(per_page).offset(page * per_page)
+      .order(TrabajoEnRevista.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
       content: revistas.as_json(include: {
           revista: {
@@ -77,7 +86,9 @@ class TrabajoEnRevistaController < ApplicationController
         :titulo,
         :codigo,
         :revista_id,
-        :grupo_de_investigacion_id
+        :grupo_de_investigacion_id,
+        :field,
+        :sort
       )
     end
 end
