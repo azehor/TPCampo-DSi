@@ -1,12 +1,14 @@
 class MemoriasController < ApplicationController
   before_action :set_memoria, only: [
-  :show, :update, :destroy,
+  :show, :update, :destroy, :restore,
   :add_patente, :remove_patente,
   :add_trabajo_en_revista, :remove_trabajo_en_revista,
   :add_publicacion_en_libro, :remove_publicacion_en_libro,
   :add_articulo_de_divulgacion, :remove_articulo_de_divulgacion,
   :patentes, :trabajos_en_revista, :publicaciones_en_libro, :articulos_de_divulgacion
-]
+  ]
+  before_action :authorize_admin_for_restore, only: :restore
+  before_action :authorize_admin_for_deleted, only: :deleted
 
   # GET /memorias
   def index
@@ -16,6 +18,17 @@ class MemoriasController < ApplicationController
     else
       render json: Memoria.all.as_json(include: full_includes)
     end
+  end
+
+  # GET /memorias/deleted (Solo admin)
+  def deleted
+    if params.has_key?(:grupo)
+      grupo_id = params[:grupo].to_i
+      memorias = Memoria.only_deleted.where(grupo_de_investigacion_id: grupo_id).as_json(include: full_includes)
+    else
+      memorias = Memoria.only_deleted.as_json(include: full_includes)
+    end
+    render json: memorias
   end
 
   # GET /memorias/:id
@@ -43,10 +56,16 @@ class MemoriasController < ApplicationController
     end
   end
 
-  # DELETE /memorias/:id
+  # DELETE /memorias/:id (Soft Delete)
   def destroy
-    @memoria.destroy
+    @memoria.soft_delete
     head :no_content
+  end
+
+  # POST /memorias/:id/restore (Solo admin)
+  def restore
+    @memoria.restore
+    render json: @memoria, status: :ok
   end
 
   # ASOCIACIONES CON LAS OTRAS TABLAS
@@ -206,7 +225,19 @@ class MemoriasController < ApplicationController
   private
 
   def set_memoria
-    @memoria = Memoria.find(params[:id])
+    if action_name == 'restore'
+      @memoria = Memoria.with_deleted.find(params[:id])
+    else
+      @memoria = Memoria.find(params[:id])
+    end
+  end
+
+  def authorize_admin_for_restore
+    render json: { error: "No autorizado" }, status: :forbidden unless @current_user.role == 'admin'
+  end
+
+  def authorize_admin_for_deleted
+    render json: { error: "No autorizado" }, status: :forbidden unless @current_user.role == 'admin'
   end
 
   def memoria_params

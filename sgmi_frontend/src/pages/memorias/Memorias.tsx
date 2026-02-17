@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import { useLocation } from "react-router";
 import { getMemorias, createMemoria } from "../../services/memoriasService";
 import MemoriaAccordion from "../../components/memorias/MemoriaAcordion";
-import { Button } from "@mui/material";
+import { Button, Box, Alert, Tooltip } from "@mui/material";
 import NuevaMemoriaDialog from "../../components/memorias/NuevaMemoriaDialog";
+import MemoriasEliminadasDialog from "../../components/memorias/MemoriasEliminadasDialog";
+import RestoreIcon from "@mui/icons-material/Restore";
+import { useCurrentUser, isAdmin } from "../../hooks/useCurrentUser";
 
 interface Memoria {
   id: number;
@@ -13,10 +16,11 @@ interface Memoria {
 export default function Memorias() {
   const state = useLocation().state || {};
   const grupoId = state.grupo.id;
-  console.log(state)
+  const { user } = useCurrentUser();
 
   const [memorias, setMemorias] = useState<Memoria[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
+  const [openDeletedDialog, setOpenDeletedDialog] = useState(false);
 
   async function cargarMemorias() {
     if (!grupoId) return;
@@ -37,6 +41,11 @@ export default function Memorias() {
     }
   }
 
+  // ELIMINAR MEMORIA
+  async function handleEliminarMemoria() {
+    await cargarMemorias();
+  }
+
   useEffect(() => {
     cargarMemorias();
   }, []);
@@ -55,25 +64,59 @@ export default function Memorias() {
         Gestión de Memorias - Grupo {state.grupo.sigla}
       </h2>
 
-      <Button
-        variant="contained"
-        onClick={() => setOpenDialog(true)}
-        sx={{ textTransform: "none" }}
-      >
-        Añadir memoria
-      </Button>
+      <Box sx={{ display: "flex", gap: 2 }}>
+        {isAdmin(user) && (
+          <Tooltip title="Ver memorias eliminadas">
+            <Button
+              variant="outlined"
+              startIcon={<RestoreIcon />}
+              onClick={() => setOpenDeletedDialog(true)}
+              sx={{ textTransform: "none" }}
+            >
+              Eliminadas
+            </Button>
+          </Tooltip>
+        )}
+        <Button
+          variant="contained"
+          onClick={() => setOpenDialog(true)}
+          sx={{ textTransform: "none" }}
+        >
+          Añadir memoria
+        </Button>
+      </Box>
     </div>
 
+    {memorias.length === 0 && (
+      <Alert severity="info">
+        No hay memorias creadas. Haga clic en "Añadir memoria" para crear una nueva.
+      </Alert>
+    )}
 
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {memorias.map((memoria) => (
-        <MemoriaAccordion key={memoria.id} memoria={memoria} />
+        <MemoriaAccordion 
+          key={memoria.id} 
+          memoria={memoria} 
+          onDelete={handleEliminarMemoria}
+        />
       ))}
+    </Box>
 
       <NuevaMemoriaDialog
         open={openDialog}
         onClose={() => setOpenDialog(false)}
         onConfirm={handleCrearMemoria}
       />
+
+      {isAdmin(user) && (
+        <MemoriasEliminadasDialog
+          open={openDeletedDialog}
+          onClose={() => setOpenDeletedDialog(false)}
+          grupoId={grupoId}
+          onRestore={cargarMemorias}
+        />
+      )}
     </div>
   );
 }

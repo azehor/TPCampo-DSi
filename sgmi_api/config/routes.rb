@@ -20,7 +20,15 @@ Rails.application.routes.draw do
 
     # MEMORIAS
     resources :memorias do
+      collection do
+        # VER MEMORIAS ELIMINADAS Solo admin
+        get "deleted", to: "memorias#deleted"
+      end
+
       member do
+        # RESTAURAR MEMORIA ELIMINADA Solo admin
+        post "restore", to: "memorias#restore"
+
         # MEMORIA-PATENTES
         post   "patentes/:patente_id", to: "memorias#add_patente"
         delete "patentes/:patente_id", to: "memorias#remove_patente"

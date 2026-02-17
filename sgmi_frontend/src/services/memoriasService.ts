@@ -82,3 +82,22 @@ export async function removePublicacionLibroFromMemoria(memoriaId: number, publi
 export async function removeArticuloDivulgacionFromMemoria(memoriaId: number, articuloId: number) {
   await api.delete(`/api/memorias/${memoriaId}/articulo_de_divulgacions/${articuloId}`);
 }
+
+// DELETE (Soft Delete)
+export async function deleteMemoria(memoriaId: number) {
+  await api.delete(`/api/memorias/${memoriaId}`);
+}
+
+// Restaurar memoria (Solo admin)
+export async function restaurarMemoria(memoriaId: number) {
+  const res = await api.post(`/api/memorias/${memoriaId}/restore`);
+  return res.data;
+}
+
+// Obtener eliminados (Solo admin)
+export async function getMemoriasEliminadas(grupo_id?: number) {
+  const res = await api.get("/api/memorias/deleted", {
+    params: grupo_id ? { grupo: grupo_id } : {},
+  });
+  return res.data;
+}
