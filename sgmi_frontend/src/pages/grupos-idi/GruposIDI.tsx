@@ -28,11 +28,19 @@ export default function GruposIDI() {
       pageSize: limit
   });
 
+  const [sortingModel, setSortingModel] = useState([{
+    field: "",
+    sort: ""
+  }])
+
   async function cargarGrupos() {
+    console.log(sortingModel)
     const res = await getGrupos(
       paginationModel.page,
       paginationModel.pageSize,
-      search
+      search,
+      sortingModel[0].field,
+      sortingModel[0].sort
     );
     const total = res.metadata.total_count || res.length;
     setRows(res.content);
@@ -41,7 +49,7 @@ export default function GruposIDI() {
 
   useEffect(() => {
     cargarGrupos();
-  }, [page, search]);
+  }, [page, search, sortingModel]);
 
   const handleDelete = async (id: number) => {
     const conf = confirm("¿Seguro que deseas eliminar el grupo?");
@@ -190,10 +198,15 @@ export default function GruposIDI() {
             setPaginationModel(model);
             setPage(model.page);
           }}
+          sortingModel={sortingModel}
+          onSortModelChange={(model) => {
+            setSortingModel(model)
+          }}
           disableColumnMenu
           disableColumnResize
           paginationMode="server"
           filterMode="server"
+          sortingMode="server"
         />
       </Paper>
 

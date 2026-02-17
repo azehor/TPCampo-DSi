@@ -1,7 +1,7 @@
 import { api } from "./api";
 
-export async function getGrupos(page = 0, limit = 10, query = "") {
-  const res = await api.get("api/grupo_de_investigacions", {params: {limit, page, query}})
+export async function getGrupos(page = 0, limit = 10, query = "", field = "", sort = "") {
+  const res = await api.get("api/grupo_de_investigacions", {params: {limit, page, query, field, sort}})
   return res.data
 }
 

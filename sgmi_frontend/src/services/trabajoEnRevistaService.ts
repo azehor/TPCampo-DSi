@@ -1,8 +1,8 @@
 import { api } from "./api";
 
-export async function getTrabajosEnRevista(page = 0, limit = 10, query = "") {
+export async function getTrabajosEnRevista(page = 0, limit = 10, query = "", field = "", sort = "") {
   const response = await api.get("/api/trabajo_en_revista", {
-    params: { page, limit, query }
+    params: { page, limit, query, field, sort }
   });
 
   return response.data;
