@@ -1,5 +1,5 @@
 import axios from "axios";
-import { getToken } from "./auth";
+import { getToken, clearToken } from "./auth";
 
 export const api = axios.create({
   baseURL: "http://localhost:3000",
@@ -24,6 +24,14 @@ api.interceptors.response.use(
     const message = error.response?.data || error.message;
 
     console.error("API ERROR:", status, message);
+
+    // Token expirado o inválido
+    if (status === 401) {
+      clearToken();
+      // Redirigir al login
+      window.location.href = "/login";
+    }
+
     return Promise.reject(error);
   }
 );
