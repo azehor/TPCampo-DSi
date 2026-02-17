@@ -15,6 +15,7 @@ import TrabajosPublicadosDivulgacion from "./pages/actividades-idi/trabajos-publ
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { getToken } from "./services/auth";
+import PerfilPage from "./pages/perfil";
 
 export default function App() {
   const location = useLocation();
@@ -50,6 +51,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Home />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/perfil"
+              element={
+                <ProtectedRoute>
+                  <PerfilPage />
                 </ProtectedRoute>
               }
             />

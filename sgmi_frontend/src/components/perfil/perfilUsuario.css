@@ -1,0 +1,29 @@
+.user-profile-container {
+  display: flex;
+  gap: 2rem;
+  padding: 2rem;
+  width: 100%;
+}
+
+.user-profile-card {
+  flex: 1;
+  min-width: 300px;
+}
+
+.user-profile-card h6 {
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.user-profile-card p {
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.investigador-card {
+  background-color: #f9f9f9;
+}
+
+.investigador-card button {
+  margin-top: 1rem;
+}

@@ -12,6 +12,8 @@ services:
     depends_on:
       postgresql:
         condition: service_healthy
+    volumes:
+      - ./sgmi_api:/rails    
     develop:
       watch:
         - action: rebuild
@@ -26,7 +28,7 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data/
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: pg_isready -U postgres -h 127.0.0.1
       interval: 5s
