@@ -49,13 +49,18 @@ export default function TrabajosPublicadosLibro() {
     pageSize: limit
   });
 
+  const [sortingModel, setSortingModel] = React.useState([{
+    field: "",
+    sort: ""
+  }])
+
   React.useEffect(() => {
     cargarPublicaciones();
-  }, [page, search]);
+  }, [page, search, sortingModel]);
 
   async function cargarPublicaciones() {
     try {
-      const res = await getPublicaciones(page, limit, search);
+      const res = await getPublicaciones(page, limit, search, sortingModel[0].field, sortingModel[0].sort);
 
       const publicaciones = res.content || [];
       const total = res.count || publicaciones.length;
@@ -218,10 +223,15 @@ export default function TrabajosPublicadosLibro() {
             setPaginationModel(model);
             setPage(model.page);
           }}
+          sortingModel={sortingModel}
+          onSortModelChange={(model) => {
+            setSortingModel(model)
+          }}
           disableColumnMenu
           disableColumnResize
           paginationMode="server"
           filterMode="server"
+          sortingMode="server"
         />
       </Paper>
 

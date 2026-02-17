@@ -43,15 +43,20 @@ export default function TrabajosPublicadosDivulgacion() {
   const [paginationModel, setPaginationModel] = React.useState({
       page: 0,
       pageSize: limit
-    });
+  });
+
+  const [sortingModel, setSortingModel] = React.useState([{
+    field: "",
+    sort: ""
+  }])
 
   React.useEffect(() => {
     cargarDivulgaciones();
-  }, [page, search]);
+  }, [page, search, sortingModel]);
 
   async function cargarDivulgaciones() {
     try {
-      const res = await getArticulosDivulgacion(page, limit, search);
+      const res = await getArticulosDivulgacion(page, limit, search, sortingModel[0].field, sortingModel[0].sort);
 
 
       const articulos = res.content || [];
@@ -199,10 +204,15 @@ export default function TrabajosPublicadosDivulgacion() {
             setPaginationModel(model);
             setPage(model.page);
           }}
+          sortingModel={sortingModel}
+          onSortModelChange={(model) => {
+            setSortingModel(model)
+          }}
           disableColumnMenu
           disableColumnResize
           paginationMode="server"
           filterMode="server"
+          sortingMode="server"
         />
       </Paper>
 

@@ -42,13 +42,18 @@ export default function PatentesRegistros() {
       pageSize: limit
   });
 
+  const [sortingModel, setSortingModel] = React.useState([{
+    field: "",
+    sort: ""
+  }])
+
   React.useEffect(() => {
     cargarPatentes();
-  }, [page, search]);
+  }, [page, search, sortingModel]);
 
   async function cargarPatentes() {
     try {
-      const res = await getPatentes(page, limit, search);
+      const res = await getPatentes(page, limit, search, sortingModel[0].field, sortingModel[0].sort);
 
       const patentes = res.content || [];
       const total = res.metadata.total_count || patentes.length;
@@ -185,10 +190,15 @@ export default function PatentesRegistros() {
             setPaginationModel(model);
             setPage(model.page);
           }}
+          sortingModel={sortingModel}
+          onSortModelChange={(model) => {
+            setSortingModel(model)
+          }}
           disableColumnMenu
           disableColumnResize
           paginationMode="server"
           filterMode="server"
+          sortingMode="server"
         />
 
       </Paper>

@@ -55,15 +55,19 @@ export default function TrabajosPublicados() {
     pageSize: limit
   });
 
+  const [sortingModel, setSortingModel] = React.useState([{
+    field: "",
+    sort: ""
+  }])
 
   React.useEffect(() => {
     cargarPublicaciones();
-  }, [page, search]);
+  }, [page, search, sortingModel]);
 
 
   async function cargarPublicaciones() {
     try {
-      const res = await getTrabajosEnRevista(page, limit, search);
+      const res = await getTrabajosEnRevista(page, limit, search, sortingModel[0].field, sortingModel[0].sort);
       const trabajosRaw = res.content || [];
       const total = res.metadata.total_count || trabajosRaw.length;
 
@@ -231,10 +235,15 @@ export default function TrabajosPublicados() {
             setPaginationModel(model);
             setPage(model.page);
           }}
+          sortingModel={sortingModel}
+          onSortModelChange={(model) => {
+            setSortingModel(model)
+          }}
           disableColumnMenu
           disableColumnResize
           paginationMode="server"
           filterMode="server"
+          sortingMode="server"
         />
       </Paper>
 
