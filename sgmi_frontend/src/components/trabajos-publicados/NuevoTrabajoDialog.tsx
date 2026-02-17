@@ -14,6 +14,7 @@ import { crearPublicacionEnLibro } from "../../services/publicacionEnLibroServic
 import { crearArticuloDeDivulgacion } from "../../services/articuloDeDivulgacionService";
 import { getRevistas } from "../../services/revistaService.ts";
 import { getGruposList } from "../../services/gruposService";
+import type { Revista } from "../../models/revista.model";
 
 
 type TipoTrabajo = "revista" | "libro" | "divulgacion";
@@ -27,11 +28,6 @@ interface TrabajoData {
   revista_id?: number; 
   capitulo?: string;
   nombreArticulo?: string;
-}
-
-interface Revista {
-  id: number;
-  nombre: string;
 }
 
 interface Grupo {
