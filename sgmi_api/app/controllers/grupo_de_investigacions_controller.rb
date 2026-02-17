@@ -12,12 +12,23 @@ class GrupoDeInvestigacionsController < ApplicationController
       page = 0
       per_page = 15
     end
+    if params.has_key?(:field) && params.has_key?(:sort)
+      field = params[:field]
+      sort = params[:sort]
+    else
+      field = "grupo_de_investigacion.created_at"
+      sort = "desc"
+    end
     count = GrupoDeInvestigacion.count
     grupos = GrupoDeInvestigacion
       .includes(:facultad_regional, [ { director: :personal }, { vicedirector: :personal } ])
+      .select("grupo_de_investigacions.nombre as nombre", :sigla, "facultad_regionals.nombre as facultad_regional",
+              "personals.nombre as director", "personals_investigadors.nombre as vicedirector",
+              :director_id, :vicedirector_id, :facultad_regional_id, :id)
       .query_tables(query)
       .references(:personal)
       .limit(per_page).offset(page * per_page)
+      .order(GrupoDeInvestigacion.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
       content: grupos.as_json(
         include: {
@@ -91,7 +102,9 @@ class GrupoDeInvestigacionsController < ApplicationController
       :facultad_regional_id,
       :director_id,
       :vicedirector_id,
-      :query
+      :query,
+      :field,
+      :sort
     )
   end
 end
