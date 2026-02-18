@@ -3,6 +3,13 @@ class PublicacionEnLibrosController < ApplicationController
 
   # GET /publicacion_en_libros
   def index
+    curr = current_user
+    if curr.role == "admin"
+      currGrupo = nil
+    else
+      currGrupo = User.includes(investigador: :grupos_de_investigacion).references(:investigadors)
+        .where(id: curr.id).first.investigador.grupos_de_investigacion_ids
+    end
     if params.has_key?(:query)
       query = params[:query]
     else
@@ -27,6 +34,7 @@ class PublicacionEnLibrosController < ApplicationController
       .joins(:grupo_de_investigacion)
       .select("grupo_de_investigacions.nombre as grupo", :codigo, :titulo, :libro, :capitulo, :grupo_de_investigacion_id, :id)
       .query_tables(query)
+      .user_visibility(currGrupo)
       .limit(per_page).offset(page * per_page)
       .order(PublicacionEnLibro.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
