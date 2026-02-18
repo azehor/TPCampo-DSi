@@ -17,4 +17,8 @@ class ArticuloDeDivulgacion < ApplicationRecord
     search: "%" + ArticuloDeDivulgacion.sanitize_sql_like(query).downcase + "%"
     )
   }
+
+  scope :user_visibility, ->(grupo_id) {
+    where(id: grupo_id) if grupo_id.present?
+  }
 end

@@ -1,17 +1,17 @@
 class UsersController < ApplicationController
   # Solo el admin puede crear usuarios
-  before_action :authorize_admin!, only: [:create]
+  before_action :authorize_admin!, only: [ :create ]
 
   def profile
-    user = @current_user.as_json(only: [:id, :email, :role])
-    
+    user = @current_user.as_json(only: [ :id, :email, :role ])
+
     if @current_user.investigador
-      investigador_data = @current_user.investigador.as_json(only: [:id])
-      personal_data = @current_user.investigador.personal.as_json(only: [:id, :nombre, :apellido]) if @current_user.investigador.personal
+      investigador_data = @current_user.investigador.as_json(only: [ :id ])
+      personal_data = @current_user.investigador.personal.as_json(only: [ :id, :nombre, :apellido ]) if @current_user.investigador.personal
       user[:investigador] = investigador_data
       user[:personal] = personal_data
     end
-    
+
     render json: user
   end
 

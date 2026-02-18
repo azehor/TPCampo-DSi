@@ -1,5 +1,12 @@
 class GrupoDeInvestigacionsController < ApplicationController
   def index
+    curr = current_user
+    if curr.role == "admin"
+      currGrupo = nil
+    else
+      currGrupo = User.includes(investigador: :grupos_de_investigacion).references(:investigadors)
+        .where(id: curr.id).first.investigador.grupos_de_investigacion_ids
+    end
     if params.has_key?(:query)
       query = params[:query]
     else
@@ -26,6 +33,7 @@ class GrupoDeInvestigacionsController < ApplicationController
               "personals.nombre as director", "personals_investigadors.nombre as vicedirector",
               :director_id, :vicedirector_id, :facultad_regional_id, :id)
       .query_tables(query)
+      .user_visibility(currGrupo)
       .references(:personal)
       .limit(per_page).offset(page * per_page)
       .order(GrupoDeInvestigacion.sanitize_sql_for_order("#{field} #{sort}"))

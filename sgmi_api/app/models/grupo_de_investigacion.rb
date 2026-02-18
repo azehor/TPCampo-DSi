@@ -5,7 +5,7 @@ class GrupoDeInvestigacion < ApplicationRecord
 
   has_many :grupo_investigadors, dependent: :destroy
   has_many :investigadors, through: :grupo_investigadors
-  
+
   # Validaciones
   validates :nombre, presence: true, length: { minimum: 3 }
   validates :sigla, presence: true, length: { maximum: 10 }
@@ -39,6 +39,10 @@ class GrupoDeInvestigacion < ApplicationRecord
       .join(" OR "),
     search: "%" + PublicacionEnLibro.sanitize_sql_like(query).downcase + "%"
     )
+  }
+
+  scope :user_visibility, ->(grupo_id) {
+    where(id: grupo_id) if grupo_id.present?
   }
 
   private
