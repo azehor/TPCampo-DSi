@@ -10,6 +10,11 @@ export async function getGruposList() {
   return res.data?.content ?? res.data ?? [];
 }
 
+export async function getGrupo(id: number) {
+  const res = await api.get(`/api/grupo_de_investigacions/${id}`);
+  return res.data;
+}
+
 export async function deleteGrupo({ id }: { id: number; }): Promise<void> {
   await api.delete(`/api/grupo_de_investigacions/${id}`)
 }

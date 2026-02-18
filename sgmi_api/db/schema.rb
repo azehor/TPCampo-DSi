@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_16_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_17_221612) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -44,6 +44,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_16_000001) do
     t.index ["director_id"], name: "index_grupo_de_investigacions_on_director_id"
     t.index ["facultad_regional_id"], name: "index_grupo_de_investigacions_on_facultad_regional_id"
     t.index ["vicedirector_id"], name: "index_grupo_de_investigacions_on_vicedirector_id"
+  end
+
+  create_table "grupo_investigadors", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "grupo_de_investigacion_id", null: false
+    t.bigint "investigador_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["grupo_de_investigacion_id", "investigador_id"], name: "idx_grupo_investigador_unique", unique: true
+    t.index ["grupo_de_investigacion_id"], name: "idx_grupo_investigador_grupo"
+    t.index ["investigador_id"], name: "idx_grupo_investigador_investigador"
   end
 
   create_table "investigadors", force: :cascade do |t|
@@ -166,6 +176,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_16_000001) do
   add_foreign_key "grupo_de_investigacions", "facultad_regionals"
   add_foreign_key "grupo_de_investigacions", "investigadors", column: "director_id"
   add_foreign_key "grupo_de_investigacions", "investigadors", column: "vicedirector_id"
+  add_foreign_key "grupo_investigadors", "grupo_de_investigacions"
+  add_foreign_key "grupo_investigadors", "investigadors"
   add_foreign_key "investigadors", "personals"
   add_foreign_key "investigadors", "users"
   add_foreign_key "memorias", "grupo_de_investigacions"

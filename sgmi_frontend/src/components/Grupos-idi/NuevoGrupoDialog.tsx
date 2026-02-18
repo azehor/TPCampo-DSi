@@ -9,12 +9,21 @@ import {
   MenuItem,
   Box,
   Stack,
+  FormControl,
+  InputLabel,
+  Select,
+  OutlinedInput,
+  Checkbox,
+  ListItemText,
 } from "@mui/material";
 import { getInvestigadores } from "../../services/investigadorService";
 import { getFacultadesRegionales } from "../../services/facultadRegionalService";
 import { crearGrupo } from "../../services/gruposService";
+import { addInvestigadorToGrupo } from "../../services/grupoInvestigadorService";
+import type { Investigador } from "../../models/investigador.model";
+import type { FacultadRegional } from "../../models/facultad-regional.model";
 
-interface GrupoData {
+type GrupoFormData = {
   nombre: string;
   sigla: string;
   correo_electronico: string;
@@ -22,25 +31,12 @@ interface GrupoData {
   director_id?: number;
   vicedirector_id?: number;
   objetivo: string;
-}
-
-interface Investigador {
-  id: number;
-  personal: {
-    nombre: string,
-    apellido: string
-  }
-}
-
-interface Facultad {
-  id: number;
-  nombre: string;
-}
+};
 
 interface Props {
   open: boolean;
   onClose: () => void;
-  onConfirm: (data: GrupoData) => void;
+  onConfirm: (data: GrupoFormData) => void;
 }
 
 export default function NuevoGrupoDialog({
@@ -50,17 +46,20 @@ export default function NuevoGrupoDialog({
 }: Props) {
 
   const [investigadores, setInvestigadores] = React.useState<Investigador[]>([]);
-  const [facultades, setFacultades] = React.useState<Facultad[]>([]);
+  const [facultades, setFacultades] = React.useState<FacultadRegional[]>([]);
+  const [selectedInvestigadores, setSelectedInvestigadores] = React.useState<number[]>([]);
 
-  const [form, setForm] = React.useState<GrupoData>({
-    nombre: "",
-    sigla: "",
-    correo_electronico: "",
-    facultad_id: undefined,
-    director_id: undefined,
-    vicedirector_id: undefined,
-    objetivo: "",
-  });
+  const [form, setForm] = React.useState<GrupoFormData>(
+    {
+      nombre: "",
+      sigla: "",
+      correo_electronico: "",
+      facultad_id: undefined,
+      director_id: undefined,
+      vicedirector_id: undefined,
+      objetivo: "",
+    }
+  );
 
   // Cargar investigadores
   useEffect(() => {
@@ -69,10 +68,11 @@ export default function NuevoGrupoDialog({
     async function cargarInvestigadores() {
       try {
         const res = await getInvestigadores();
-        setInvestigadores(res.content);
+        setInvestigadores(res.content ?? res);
 
-        if (res.length > 0) {
-          setForm((prev) => ({ ...prev, director_id: res[0].id, vicedirector_id: res[0].id }));
+        if ((res.content ?? res).length > 0) {
+          const firstId = (res.content ?? res)[0].id;
+          setForm((prev) => ({ ...prev, director_id: firstId, vicedirector_id: firstId }));
         }
       } catch (e) {
         console.error("Error cargando investigadores", e);
@@ -103,7 +103,7 @@ export default function NuevoGrupoDialog({
   }, [open]);
 
   const handleChange =
-    (field: keyof GrupoData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (field: keyof GrupoFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [field]: e.target.value });
     };
 
@@ -124,7 +124,7 @@ export default function NuevoGrupoDialog({
     }
 
     try {
-      await crearGrupo({
+      const created = await crearGrupo({
         correo_electronico,
         integrantes: 1,
         nombre,
@@ -134,6 +134,12 @@ export default function NuevoGrupoDialog({
         director_id,
         vicedirector_id,
       });
+
+      const groupId = created?.id;
+      // Guardar los investigadores seleccionados
+      if (groupId && selectedInvestigadores.length > 0) {
+        await Promise.all(selectedInvestigadores.map((invId) => addInvestigadorToGrupo(groupId, invId)));
+      }
 
       onConfirm(form);
 
@@ -147,6 +153,8 @@ export default function NuevoGrupoDialog({
           objetivo: "",
         });
 
+      setSelectedInvestigadores([]);
+
       onClose();
     }catch (err) {
       console.error("Error creando grupo", err);
@@ -156,7 +164,7 @@ export default function NuevoGrupoDialog({
 
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="md">
       <DialogTitle
         sx={{
           fontWeight: 600,
@@ -170,6 +178,7 @@ export default function NuevoGrupoDialog({
 
       <DialogContent dividers sx={{ px: 4, pt: 2 }}>
         <Stack spacing={3}>
+          {/* Fila 1*/}
           <TextField
             label="Nombre del Grupo*"
             value={form.nombre}
@@ -177,69 +186,75 @@ export default function NuevoGrupoDialog({
             fullWidth
           />
 
-          <TextField
-            label="Sigla"
-            value={form.sigla}
-            onChange={handleChange("sigla")}
-            fullWidth
-          />
+          {/* Fila 2*/}
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+            <TextField
+              label="Sigla"
+              value={form.sigla}
+              onChange={handleChange("sigla")}
+              fullWidth
+            />
+            <TextField
+              label="Correo electrónico*"
+              value={form.correo_electronico}
+              onChange={handleChange("correo_electronico")}
+              fullWidth
+              type="email"
+            />
+          </Box>
 
-          <TextField
-            label="Correo electrónico*"
-            value={form.correo_electronico}
-            onChange={handleChange("correo_electronico")}
-            fullWidth
-            type="email"
-          />
+          {/* Fila 3*/}
+          <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 2 }}>
+            <TextField
+              label="Facultad Regional*"
+              value={form.facultad_id}
+              onChange={(e) =>
+                setForm({ ...form, facultad_id: Number(e.target.value) })
+              }
+              fullWidth
+              select
+            >
+              {facultades.map((f) => (
+                <MenuItem key={f.id} value={f.id}>
+                  {f.nombre}
+                </MenuItem>
+              ))}
+            </TextField>
 
-          <TextField
-            label="Facultad Regional*"
-            value={form.facultad_id}
-            onChange={(e) =>
-              setForm({ ...form, facultad_id: Number(e.target.value) })
-            }
-            fullWidth
-            select
-          >
-            {facultades.map((f) => (
-              <MenuItem key={f.id} value={f.id}>
-                {f.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
+            <TextField
+              label="Director/a*"
+              value={form.director_id}
+              onChange={(e) =>
+                setForm({ ...form, director_id: Number(e.target.value) })
+              }
+              fullWidth
+              select
+            >
+              {investigadores.map((i:any) => (
+                <MenuItem key={i.id} value={i.id}>
+                  {i.personal.nombre} {i.personal.apellido}
+                </MenuItem>
+              ))}
+            </TextField>
 
-          <TextField
-            label="Director/a*"
-            value={form.director_id}
-            onChange={(e) =>
-              setForm({ ...form, director_id: Number(e.target.value) })
-            }
-            fullWidth
-            select
-          >
-            {investigadores.map((i:any) => (
-              <MenuItem key={i.id} value={i.id}>
-                {i.personal.nombre} {i.personal.apellido}
-              </MenuItem>
-            ))}
-          </TextField>
+            <TextField
+              label="Vicedirector/a*"
+              value={form.vicedirector_id}
+              onChange={(e) =>
+                setForm({ ...form, vicedirector_id: Number(e.target.value) })
+              }
+              fullWidth
+              select
+            >
+              {investigadores.map((i:any) => (
+                <MenuItem key={i.id} value={i.id}>
+                  {i.personal.nombre} {i.personal.apellido}
+                </MenuItem>
+              ))}
+            </TextField>
+          </Box>
 
-          <TextField
-            label="Vicedirector/a*"
-            value={form.vicedirector_id}
-            onChange={(e) =>
-              setForm({ ...form, vicedirector_id: Number(e.target.value) })
-            }
-            fullWidth
-            select
-          >
-            {investigadores.map((i:any) => (
-              <MenuItem key={i.id} value={i.id}>
-                {i.personal.nombre} {i.personal.apellido}
-              </MenuItem>
-            ))}
-          </TextField>
-
+          {/* Fila 4*/}
           <TextField
             label="Objetivo*"
             value={form.objetivo}
@@ -251,6 +266,32 @@ export default function NuevoGrupoDialog({
             helperText={`${form.objetivo.length}/200 caracteres`}
             FormHelperTextProps={{ sx: { textAlign: "right", mt: 0.5 } }}
           />
+
+          {/* Fila 5*/}
+          <FormControl fullWidth>
+            <InputLabel id="select-investigadores-label">Investigadores</InputLabel>
+            <Select
+              labelId="select-investigadores-label"
+              multiple
+              value={selectedInvestigadores}
+              onChange={(e) => setSelectedInvestigadores(typeof e.target.value === 'string' ? e.target.value.split(',').map(Number) : e.target.value as number[])}
+              input={<OutlinedInput label="Investigadores" />}
+              renderValue={(selected) => {
+                const names = (selected as number[]).map(s => {
+                  const inv = investigadores.find(i => i.id === s);
+                  return inv ? `${inv.personal.nombre} ${inv.personal.apellido}` : '';
+                }).filter(Boolean);
+                return names.join(', ');
+              }}
+            >
+              {investigadores.map((i) => (
+                <MenuItem key={i.id} value={i.id}>
+                  <Checkbox checked={selectedInvestigadores.indexOf(i.id) > -1} />
+                  <ListItemText primary={`${i.personal.nombre} ${i.personal.apellido}`} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Stack>
       </DialogContent>
 

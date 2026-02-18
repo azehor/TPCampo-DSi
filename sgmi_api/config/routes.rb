@@ -10,13 +10,21 @@ Rails.application.routes.draw do
     resources :facultad_regionales
     resources :personals
     resources :investigadors
-    resources :grupo_de_investigacions
     resources :pais
     resources :patentes
     resources :revista
     resources :trabajo_en_revista
     resources :articulo_de_divulgacions
     resources :publicacion_en_libros
+
+    resources :grupo_de_investigacions do
+      member do
+        # GRUPO - INVESTIGADORES
+        post   "investigadores/:investigador_id", to: "grupo_de_investigacions#add_investigador"
+        delete "investigadores/:investigador_id", to: "grupo_de_investigacions#remove_investigador"
+        get    "investigadores",                 to: "grupo_de_investigacions#investigadores"
+      end
+    end
 
     # MEMORIAS
     resources :memorias do
