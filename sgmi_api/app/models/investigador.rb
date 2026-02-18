@@ -2,6 +2,9 @@ class Investigador < ApplicationRecord
   belongs_to :personal
   belongs_to :user, optional: true
 
+  has_many :grupo_investigadors, dependent: :destroy
+  has_many :grupos_de_investigacion, through: :grupo_investigadors, source: :grupo_de_investigacion
+
   # Un investigador puede ser director o vicedirector de muchos grupos
   has_many :grupos_dirigidos,
            class_name: "GrupoDeInvestigacion",

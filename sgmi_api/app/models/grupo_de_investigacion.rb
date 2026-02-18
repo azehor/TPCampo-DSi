@@ -3,6 +3,9 @@ class GrupoDeInvestigacion < ApplicationRecord
   belongs_to :vicedirector, class_name: "Investigador"
   belongs_to :facultad_regional
 
+  has_many :grupo_investigadors, dependent: :destroy
+  has_many :investigadors, through: :grupo_investigadors
+  
   # Validaciones
   validates :nombre, presence: true, length: { minimum: 3 }
   validates :sigla, presence: true, length: { maximum: 10 }

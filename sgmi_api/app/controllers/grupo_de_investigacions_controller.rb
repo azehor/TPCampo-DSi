@@ -12,11 +12,11 @@ class GrupoDeInvestigacionsController < ApplicationController
       page = 0
       per_page = 15
     end
-    if params.has_key?(:field) && params.has_key?(:sort)
+    if params.has_key?(:field) && params.has_key?(:sort) && params[:field].present? && params[:sort].present?
       field = params[:field]
       sort = params[:sort]
     else
-      field = "grupo_de_investigacion.created_at"
+      field = "grupo_de_investigacions.created_at"
       sort = "desc"
     end
     count = GrupoDeInvestigacion.count
@@ -89,6 +89,50 @@ class GrupoDeInvestigacionsController < ApplicationController
     grupo.destroy
     head :no_content
   end
+
+  # GET /api/grupo_de_investigacions/:id/investigadores
+  def investigadores
+    grupo = GrupoDeInvestigacion.find(params[:id])
+
+    investigadores = grupo.investigadors.includes(:personal)
+
+    render json: {
+      content: investigadores.as_json(include: { personal: {} })
+    }
+  end
+
+  # POST /api/grupo_de_investigacions/:id/investigadores/:investigador_id
+  def add_investigador
+    grupo = GrupoDeInvestigacion.find(params[:id])
+    investigador = Investigador.find(params[:investigador_id])
+
+    GrupoInvestigador.find_or_create_by!(
+      grupo_de_investigacion_id: grupo.id,
+      investigador_id: investigador.id
+    )
+
+    render json: { message: "Investigador asignado al grupo" }, status: :created
+  rescue ActiveRecord::RecordNotFound => e
+    render json: { error: e.message }, status: :not_found
+  rescue ActiveRecord::RecordInvalid => e
+    render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
+  end
+
+  # DELETE /api/grupo_de_investigacions/:id/investigadores/:investigador_id
+  def remove_investigador
+    grupo = GrupoDeInvestigacion.find(params[:id])
+
+    relacion = GrupoInvestigador.find_by!(
+      grupo_de_investigacion_id: grupo.id,
+      investigador_id: params[:investigador_id]
+    )
+
+    relacion.destroy
+    head :no_content
+  rescue ActiveRecord::RecordNotFound => e
+    render json: { error: e.message }, status: :not_found
+  end
+
 
   private
 
