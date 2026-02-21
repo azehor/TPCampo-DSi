@@ -1,9 +1,9 @@
 export interface Personal {
-  id: number;
+  id?: number;
   apellido: string;
   nombre: string;
   horas_semanales?: number;
-  object_type: string;
+  object_type?: string;
   created_at?: string;
   updated_at?: string;
 }

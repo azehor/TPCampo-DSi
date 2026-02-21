@@ -26,6 +26,16 @@ class UsersController < ApplicationController
     end
   end
 
+  def update
+    user = User.find(params[:id])
+
+    if user.update(user_update_params)
+      render json: { message: "Usuario actualizado", user: user }, status: :ok
+    else
+      render json: user.errors, status: :unprocessable_entity
+    end
+  end
+
   def change_password
     # Verificar si contraseña actual ingresasa es correcta
     unless @current_user.authenticate(params[:current_password])
@@ -57,5 +67,9 @@ class UsersController < ApplicationController
 
   def user_params
     params.permit(:email, :password)
+  end
+
+  def user_update_params
+    params.permit(:email)
   end
 end
