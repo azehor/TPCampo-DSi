@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 
-import { getInvestigadores } from "../../services/investigadorService";
+import { getAllInvestigadores } from "../../services/investigadorService";
 import { getFacultadesRegionales } from "../../services/facultadRegionalService";
 import { updateGrupo, getGrupo } from "../../services/gruposService";
 import { getGrupoInvestigadores, addInvestigadorToGrupo, removeInvestigadorFromGrupo } from "../../services/grupoInvestigadorService";
@@ -125,8 +125,8 @@ export default function ModificarGrupoDialog({
 
     async function loadInvestigadores() {
       try {
-        const res = await getInvestigadores();
-        setInvestigadores(res.content ?? res);
+        const res = await getAllInvestigadores();
+        setInvestigadores(res);
       } catch (error) {
         console.error("Error cargando investigadores", error);
       }
