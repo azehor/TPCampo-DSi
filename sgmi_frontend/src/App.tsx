@@ -16,6 +16,7 @@ import TrabajosPublicadosDivulgacion from "./pages/actividades-idi/trabajos-publ
 import ProtectedRoute from "./components/ProtectedRoute";
 import { getToken } from "./services/auth";
 import PerfilPage from "./pages/perfil";
+import { AdminPanel } from "./pages/AdminPanel";
 
 export default function App() {
   const location = useLocation();
@@ -59,6 +60,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <PerfilPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route path="/admin-panel"
+              element={
+                <ProtectedRoute>
+                  <AdminPanel />
                 </ProtectedRoute>
               }
             />

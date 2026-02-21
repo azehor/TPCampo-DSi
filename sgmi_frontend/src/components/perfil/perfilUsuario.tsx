@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, Typography, Box, CircularProgress, Button } from "@mui/material";
 import { getPerfilUsuario } from "../../services/userService";
-import type { UserProfile } from "../../services/userService";
+import type { UserProfile } from "../../models/user.model";
 import CambiarContraseniaDialog from "./cambiarContraseniaDialog";
 import "./perfilUsuario.css";
 

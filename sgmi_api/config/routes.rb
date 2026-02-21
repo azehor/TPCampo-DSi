@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   # Rutas protegidas por autenticación
   scope "/api" do
     get "/profile", to: "users#profile"
-    resources :users, only: [ :create ]  # Solo admin
+    resources :users, only: [ :create, :update ]  # Solo admin
 
     resources :facultad_regionales
     resources :personals

@@ -295,7 +295,7 @@ export default function ModificarGrupoDialog({
             >
               {investigadores.map((i) => (
                 <MenuItem key={i.id} value={i.id}>
-                  {i.personal.nombre} {i.personal.apellido}
+                  {i?.personal?.nombre} {i?.personal?.apellido}
                 </MenuItem>
               ))}
             </TextField>
@@ -311,7 +311,7 @@ export default function ModificarGrupoDialog({
             >
               {investigadores.map((i) => (
                 <MenuItem key={i.id} value={i.id}>
-                  {i.personal.nombre} {i.personal.apellido}
+                  {i?.personal?.nombre} {i?.personal?.apellido}
                 </MenuItem>
               ))}
             </TextField>
@@ -338,11 +338,11 @@ export default function ModificarGrupoDialog({
             <List>
               {grupoInvestigadores.map((inv) => (
                 <ListItem key={inv.id} secondaryAction={
-                  <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveInvestigador(inv.id)}>
+                  <IconButton edge="end" aria-label="delete" onClick={() => inv.id && handleRemoveInvestigador(inv.id)}>
                     <DeleteIcon />
                   </IconButton>
                 }>
-                  <ListItemText primary={`${inv.personal.nombre} ${inv.personal.apellido}`} />
+                  <ListItemText primary={`${inv?.personal?.nombre} ${inv?.personal?.apellido}`} />
                 </ListItem>
               ))}
               {grupoInvestigadores.length === 0 && <ListItem><ListItemText primary="No hay investigadores asignados." /></ListItem>}
@@ -359,7 +359,7 @@ export default function ModificarGrupoDialog({
                 >
                   {investigadores.map((i) => (
                     <MenuItem key={i.id} value={i.id}>
-                      {i.personal.nombre} {i.personal.apellido}
+                      {i.personal?.nombre} {i.personal?.apellido}
                     </MenuItem>
                   ))}
                 </Select>

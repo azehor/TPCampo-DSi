@@ -279,15 +279,15 @@ export default function NuevoGrupoDialog({
               renderValue={(selected) => {
                 const names = (selected as number[]).map(s => {
                   const inv = investigadores.find(i => i.id === s);
-                  return inv ? `${inv.personal.nombre} ${inv.personal.apellido}` : '';
+                  return inv && inv.personal ? `${inv.personal.nombre} ${inv.personal.apellido}` : '';
                 }).filter(Boolean);
                 return names.join(', ');
               }}
             >
               {investigadores.map((i) => (
                 <MenuItem key={i.id} value={i.id}>
-                  <Checkbox checked={selectedInvestigadores.indexOf(i.id) > -1} />
-                  <ListItemText primary={`${i.personal.nombre} ${i.personal.apellido}`} />
+                  <Checkbox checked={i.id !== undefined && selectedInvestigadores.indexOf(i.id) > -1} />
+                  <ListItemText primary={`${i.personal?.nombre ?? ''} ${i.personal?.apellido ?? ''}`} />
                 </MenuItem>
               ))}
             </Select>
