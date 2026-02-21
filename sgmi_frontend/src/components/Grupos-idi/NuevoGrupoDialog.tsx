@@ -16,7 +16,7 @@ import {
   Checkbox,
   ListItemText,
 } from "@mui/material";
-import { getInvestigadores } from "../../services/investigadorService";
+import { getAllInvestigadores } from "../../services/investigadorService";
 import { getFacultadesRegionales } from "../../services/facultadRegionalService";
 import { crearGrupo } from "../../services/gruposService";
 import { addInvestigadorToGrupo } from "../../services/grupoInvestigadorService";
@@ -67,11 +67,11 @@ export default function NuevoGrupoDialog({
 
     async function cargarInvestigadores() {
       try {
-        const res = await getInvestigadores();
-        setInvestigadores(res.content ?? res);
+        const res = await getAllInvestigadores();
+        setInvestigadores(res);
 
-        if ((res.content ?? res).length > 0) {
-          const firstId = (res.content ?? res)[0].id;
+        if (res.length > 0) {
+          const firstId = res[0].id;
           setForm((prev) => ({ ...prev, director_id: firstId, vicedirector_id: firstId }));
         }
       } catch (e) {

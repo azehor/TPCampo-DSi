@@ -21,6 +21,18 @@ export async function getInvestigadores(page = 0, perPage = 10): Promise<Investi
   return response.data;
 }
 
+export async function getAllInvestigadores(): Promise<Investigador[]> {
+  const primera = await getInvestigadores(0, 1);
+  const totalInvestigadores = primera.metadata?.total_count ?? primera.content?.length ?? 0;
+
+  if (totalInvestigadores <= 1) {
+    return primera.content ?? [];
+  }
+
+  const fullResponse = await getInvestigadores(0, totalInvestigadores);
+  return fullResponse.content ?? [];
+}
+
 export async function getInvestigadorById(id: number): Promise<Investigador> {
   const response = await api.get(`/api/investigadors/${id}`);
   return response.data;
