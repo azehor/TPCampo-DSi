@@ -145,12 +145,12 @@ investigadores_records.each do |invest|
   # Grupos de investigación
   # -------------------------
   grupos_seed = [
-    { sigla: "GIAA", nombre: "Grupo de IA Aplicada", correo: "ia@utn.edu.ar", integrantes: 8, objetivos: "Aplicación de machine learning en ingeniería.", facultad: "FRLP - La Plata" },
-    { sigla: "GRI",  nombre: "Grupo de Robótica Industrial", correo: "robotica@utn.edu.ar", integrantes: 5, objetivos: "Automatización avanzada aplicada a la industria.", facultad: "FRBA - Buenos Aires" },
-    { sigla: "GDATA", nombre: "Grupo de Datos y Ciencias", correo: "datos@utn.edu.ar", integrantes: 7, objetivos: "Análisis de datos para optimización de procesos.", facultad: "FRLP - La Plata" },
-    { sigla: "GSOFT", nombre: "Grupo de Desarrollo de Software", correo: "software@utn.edu.ar", integrantes: 9, objetivos: "Buenas prácticas y herramientas para desarrollo de software en la industria.", facultad: "FRBA - Buenos Aires" },
-    { sigla: "GBIO", nombre: "Grupo de Bioingeniería", correo: "bio@utn.edu.ar", integrantes: 6, objetivos: "Aplicaciones biomédicas y sensores.", facultad: "FRM - Mendoza" },
-    { sigla: "GIoT", nombre: "Grupo de IoT y Automatización", correo: "iot@utn.edu.ar", integrantes: 10, objetivos: "Sistemas embebidos, redes y automatización industrial.", facultad: "FRRo - Rosario" }
+    { sigla: "GIAA", nombre: "Grupo de IA Aplicada", correo: "ia@utn.edu.ar", objetivos: "Aplicación de machine learning en ingeniería.", facultad: "FRLP - La Plata" },
+    { sigla: "GRI",  nombre: "Grupo de Robótica Industrial", correo: "robotica@utn.edu.ar", objetivos: "Automatización avanzada aplicada a la industria.", facultad: "FRBA - Buenos Aires" },
+    { sigla: "GDATA", nombre: "Grupo de Datos y Ciencias", correo: "datos@utn.edu.ar", objetivos: "Análisis de datos para optimización de procesos.", facultad: "FRLP - La Plata" },
+    { sigla: "GSOFT", nombre: "Grupo de Desarrollo de Software", correo: "software@utn.edu.ar", objetivos: "Buenas prácticas y herramientas para desarrollo de software en la industria.", facultad: "FRBA - Buenos Aires" },
+    { sigla: "GBIO", nombre: "Grupo de Bioingeniería", correo: "bio@utn.edu.ar", objetivos: "Aplicaciones biomédicas y sensores.", facultad: "FRM - Mendoza" },
+    { sigla: "GIoT", nombre: "Grupo de IoT y Automatización", correo: "iot@utn.edu.ar", objetivos: "Sistemas embebidos, redes y automatización industrial.", facultad: "FRRo - Rosario" }
   ]
 
   grupos_records = grupos_seed.map.with_index do |g, idx|
@@ -166,7 +166,6 @@ investigadores_records.each do |invest|
         sigla: g[:sigla],
         nombre: g[:nombre],
         correo_electronico: g[:correo],
-        integrantes: g[:integrantes],
         objetivos: g[:objetivos],
         facultad_regional: fac,
         director: director,

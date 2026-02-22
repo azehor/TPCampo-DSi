@@ -90,6 +90,7 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
           label="Contraseña Actual"
           type="password"
           fullWidth
+          sx={{ mt: 1 }}
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
           disabled={loading}

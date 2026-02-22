@@ -21,7 +21,6 @@ export async function deleteGrupo({ id }: { id: number; }): Promise<void> {
 
 export async function crearGrupo(data: {
   correo_electronico: string;
-  integrantes:number;
   nombre: string;
   objetivos: string;
   sigla: string;
@@ -32,7 +31,6 @@ export async function crearGrupo(data: {
   const body = {
     grupo_de_investigacion: {
       correo_electronico: data.correo_electronico,
-      integrantes: data.integrantes,
       nombre: data.nombre,
       objetivos: data.objetivos,
       sigla: data.sigla,
@@ -49,7 +47,6 @@ export async function crearGrupo(data: {
 
 export async function updateGrupo(id: number, data: {
   correo_electronico: string;
-  integrantes:number;
   nombre: string;
   objetivos: string;
   sigla: string;

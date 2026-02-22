@@ -9,7 +9,6 @@ class GrupoDeInvestigacion < ApplicationRecord
   # Validaciones
   validates :nombre, presence: true, length: { minimum: 3 }
   validates :sigla, presence: true, length: { maximum: 10 }
-  validates :integrantes, presence: true, numericality: { only_integer: true, greater_than: 0 }
 
   # Validación del correo
   validates :correo_electronico,
@@ -44,6 +43,10 @@ class GrupoDeInvestigacion < ApplicationRecord
   scope :user_visibility, ->(grupo_id) {
     where(id: grupo_id) if grupo_id.present?
   }
+
+  def integrantes
+    investigadors.distinct.count
+  end
 
   private
 
