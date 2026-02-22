@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -6,7 +6,7 @@ import {
   DialogActions,
   TextField,
   Button,
-  MenuItem,
+  Autocomplete,
   Stack,
   Box,
 } from "@mui/material";
@@ -101,38 +101,20 @@ export default function AsociarTrabajoDialog({
 
           />
 
-          {tipo !== "patente" && (
-            <TextField
-              label="Codigo"
-              value={selectedId}
-              select
-              fullWidth
-              onChange={(e) => { console.log("selected"); setSelectedId(Number(e.target.value))}}
-              >
-                {trabajos.map((t) => (
-                  <MenuItem key={t.id} value={t.id}>
-                    {t.codigo}
-                  </MenuItem>
-                ))}
-            </TextField>
-          )}
-
-          { tipo === "patente" && (
-            <TextField
-              label="Identificador"
-              value={selectedId}
-              select
-              fullWidth
-              onChange={(e) => { console.log("selected"); setSelectedId(Number(e.target.value))}}
-              >
-                {trabajos.map((t) => (
-                  <MenuItem key={t.id} value={t.id}>
-                    {t.identificador}
-                  </MenuItem>
-                ))}
-            </TextField>
-
-          )}
+          <Autocomplete
+            options={trabajos}
+            getOptionLabel={(option) => (tipo === "patente" ? option.identificador ?? "" : option.codigo ?? "")}
+            value={trabajos.find((t) => t.id === selectedId) ?? null}
+            onChange={(_, value) => setSelectedId(value?.id ?? "")}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label={tipo === "patente" ? "Identificador" : "Código"}
+                fullWidth
+              />
+            )}
+          />
 
           <TextField
             label="Título:"

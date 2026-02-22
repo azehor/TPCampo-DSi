@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box, Button, Paper, Tabs, Tab
 } from "@mui/material";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import { DataGrid, type GridColDef, type GridFilterModel, type GridSortModel } from "@mui/x-data-grid";
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import AsociarTrabajoDialog from "./AsociarTrabajoDialog";
@@ -37,8 +37,8 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
       page: 0,
       pageSize: limit
   });
-  const [filterModel, setFilterModel] = useState({ items: [] });
-  const [sortModel, setSortModel] = useState([]);
+  const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
+  const [, setSortModel] = useState<GridSortModel>([]);
 
   useEffect(() => {
     cargarDatos();
@@ -67,19 +67,19 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
 
   async function cargarDisponibles() {
     if (tab === 0) {
-      const res = await api.get("/api/trabajo_en_revista")
+      const res = await api.get("/api/trabajo_en_revista", { params: { page: 0, limit: 1000 } })
       setTrabajosDisponibles(res.data.content);
     }
     if (tab === 1) {
-      const res = await api.get("/api/publicacion_en_libros")
+      const res = await api.get("/api/publicacion_en_libros", { params: { page: 0, limit: 1000 } })
       setTrabajosDisponibles(res.data.content);
     }
     if (tab === 2) {
-      const res = await api.get("/api/articulo_de_divulgacions")
+      const res = await api.get("/api/articulo_de_divulgacions", { params: { page: 0, limit: 1000 } })
       setTrabajosDisponibles(res.data.content);
     }
     if (tab === 3) {
-      const res = await api.get("/api/patentes")
+      const res = await api.get("/api/patentes", { params: { page: 0, limit: 1000 } })
       setTrabajosDisponibles(res.data.content);
     }
   }
@@ -102,13 +102,6 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
 
     await cargarDatos();
   }
-
-  const etiquetas = [
-    "Trabajo en Revista",
-    "Publicación en Libro",
-    "Artículo de Divulgación",
-    "Patente"
-  ];
 
   const columnas: GridColDef[][] = [
     [
@@ -257,6 +250,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
           onPaginationModelChange={(model) => setPaginationModel(model)}
           sortingMode="server"
           filterMode="server"
+          filterModel={filterModel}
           onSortModelChange={setSortModel}
           onFilterModelChange={setFilterModel}
           disableColumnMenu

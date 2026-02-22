@@ -6,7 +6,15 @@ export async function getGrupos(page = 0, limit = 10, query = "", field = "", so
 }
 
 export async function getGruposList() {
-  const res = await api.get("/api/grupo_de_investigacions");
+  const res = await api.get("/api/grupo_de_investigacions", {
+    params: {
+      page: 0,
+      limit: 1000,
+      query: "",
+      field: "grupo_de_investigacions.nombre",
+      sort: "asc",
+    },
+  });
   return res.data?.content ?? res.data ?? [];
 }
 

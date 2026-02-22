@@ -6,7 +6,7 @@ import {
   DialogActions,
   TextField,
   Button,
-  MenuItem,
+  Autocomplete,
   Stack,
 } from "@mui/material";
 import { crearTrabajoEnRevista } from "../../services/trabajoEnRevistaService";
@@ -192,42 +192,36 @@ export default function NuevoTrabajoDialog({
           />
 
           {/* SELECT GRUPO */}
-          <TextField
-            label="Grupo de Investigación"
-            value={form.grupo_id}
-            select
-            fullWidth
-            onChange={(e) =>
-              setForm({ ...form, grupo_id: Number(e.target.value) })
+          <Autocomplete
+            options={grupos}
+            getOptionLabel={(option) => option.nombre}
+            value={grupos.find((g) => g.id === form.grupo_id) ?? null}
+            onChange={(_, value) =>
+              setForm({ ...form, grupo_id: value?.id })
             }
-          >
-            {(grupos ?? []).map((g) => (
-              <MenuItem key={g.id} value={g.id}>
-                {g.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderInput={(params) => (
+              <TextField {...params} label="Grupo de Investigación" fullWidth />
+            )}
+          />
 
           {/* -------- REVISTA -------- */}
           {form.tipo === "revista" && (
-            <TextField
-              label="Revista"
-              value={form.revista_id ?? ""}
-              onChange={(e) =>
+            <Autocomplete
+              options={revistas}
+              getOptionLabel={(option) => option.nombre}
+              value={revistas.find((r) => r.id === form.revista_id) ?? null}
+              onChange={(_, value) =>
                 setForm({
                   ...form,
-                  revista_id: e.target.value ? Number(e.target.value) : undefined,
+                  revista_id: value?.id,
                 })
               }
-              fullWidth
-              select
-            >
-              {revistas.map((r) => (
-                <MenuItem key={r.id} value={r.id}>
-                  {r.nombre}
-                </MenuItem>
-              ))}
-            </TextField>
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              renderInput={(params) => (
+                <TextField {...params} label="Revista" fullWidth />
+              )}
+            />
           )}
 
            {/* -------- LIBRO -------- */}
