@@ -28,10 +28,10 @@ export default function App() {
     <div className="app-container">
       {!hideHeader && <Header />}
 
-      <div style={{ display: "flex" }}>
+      <div className="main-layout">
         {!hideSidebar && <Sidebar />}
 
-        <div style={{ flex: 1, padding: "20px" }}>
+        <div className="content-area">
           <Routes>
             {/* Redirigir*/}
             <Route
