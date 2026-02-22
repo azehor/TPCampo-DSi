@@ -107,6 +107,16 @@ export default function NuevoGrupoDialog({
       setForm({ ...form, [field]: e.target.value });
     };
 
+  const investigadoresDisponibles = investigadores.filter(
+    (i) => i.id !== form.director_id && i.id !== form.vicedirector_id
+  );
+
+  useEffect(() => {
+    setSelectedInvestigadores((prev) =>
+      prev.filter((id) => id !== form.director_id && id !== form.vicedirector_id)
+    );
+  }, [form.director_id, form.vicedirector_id]);
+
   const handleConfirm = async () => {
     const {
       nombre,
@@ -283,7 +293,7 @@ export default function NuevoGrupoDialog({
                 return names.join(', ');
               }}
             >
-              {investigadores.map((i) => (
+              {investigadoresDisponibles.map((i) => (
                 <MenuItem key={i.id} value={i.id}>
                   <Checkbox checked={i.id !== undefined && selectedInvestigadores.indexOf(i.id) > -1} />
                   <ListItemText primary={`${i.personal?.nombre ?? ''} ${i.personal?.apellido ?? ''}`} />
