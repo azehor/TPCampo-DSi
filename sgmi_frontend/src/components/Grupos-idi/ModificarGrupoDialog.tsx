@@ -68,6 +68,14 @@ export default function ModificarGrupoDialog({
     objetivo: "",
   });
 
+  const investigadoresDisponibles = investigadores.filter(
+    (inv) => inv.id !== form.director_id && inv.id !== form.vicedirector_id
+  );
+
+  const integrantesVisibles = grupoInvestigadores.filter(
+    (inv) => inv.id !== form.director_id && inv.id !== form.vicedirector_id
+  );
+
   /** Cargar datos iniciales del grupo a editar */
   useEffect(() => {
     if (initialData && open) {
@@ -134,6 +142,12 @@ export default function ModificarGrupoDialog({
     loadInvestigadores();
   }, [open]);
 
+  useEffect(() => {
+    if (nuevoInvestigadorId === form.director_id || nuevoInvestigadorId === form.vicedirector_id) {
+      setNuevoInvestigadorId("");
+    }
+  }, [form.director_id, form.vicedirector_id, nuevoInvestigadorId]);
+
   /** Cargar facultades */
   useEffect(() => {
     if (!open) return;
@@ -153,6 +167,50 @@ export default function ModificarGrupoDialog({
     (field: keyof GrupoFormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
       setForm({ ...form, [field]: e.target.value });
     };
+
+  const confirmarYQuitarDeIntegrantesSiCorresponde = async (
+    investigadorId?: number,
+    cargo?: "director" | "vicedirector"
+  ): Promise<boolean> => {
+    if (!form.id || !investigadorId) return true;
+
+    const integrante = grupoInvestigadores.find((inv) => inv.id === investigadorId);
+    if (!integrante) return true;
+
+    const nombreCompleto = `${integrante.personal?.nombre ?? ""} ${integrante.personal?.apellido ?? ""}`.trim();
+    const confirmado = confirm(
+      `${nombreCompleto || "El investigador seleccionado"} ya figura como integrante. ¿Querés quitarlo de integrantes y asignarlo como ${cargo}?`
+    );
+
+    if (!confirmado) {
+      return false;
+    }
+
+    try {
+      await removeInvestigadorFromGrupo(form.id, investigadorId);
+      const res = await getGrupoInvestigadores(form.id);
+      setGrupoInvestigadores(res);
+      return true;
+    } catch (err) {
+      console.error(err);
+      alert(`No se pudo quitar de integrantes al ${cargo}.`);
+      return false;
+    }
+  };
+
+  const handleDirectorChange = async (directorId: number) => {
+    const ok = await confirmarYQuitarDeIntegrantesSiCorresponde(directorId, "director");
+    if (!ok) return;
+
+    setForm((prev) => ({ ...prev, director_id: directorId }));
+  };
+
+  const handleVicedirectorChange = async (vicedirectorId: number) => {
+    const ok = await confirmarYQuitarDeIntegrantesSiCorresponde(vicedirectorId, "vicedirector");
+    if (!ok) return;
+
+    setForm((prev) => ({ ...prev, vicedirector_id: vicedirectorId }));
+  };
 
   const handleConfirm = async () => {
   const {
@@ -202,6 +260,7 @@ export default function ModificarGrupoDialog({
 
   const handleAddInvestigador = async () => {
     if (!form.id || !nuevoInvestigadorId) return;
+
     try {
       await addInvestigadorToGrupo(form.id, Number(nuevoInvestigadorId));
       const res = await getGrupoInvestigadores(form.id);
@@ -209,7 +268,11 @@ export default function ModificarGrupoDialog({
       setNuevoInvestigadorId("");
     } catch (err) {
       console.error(err);
-      alert("Error al asignar investigador");
+      const message =
+        (err as any)?.response?.data?.error?.join?.(" ") ||
+        (err as any)?.response?.data?.error ||
+        "Error al asignar investigador";
+      alert(message);
     }
   };
 
@@ -286,9 +349,7 @@ export default function ModificarGrupoDialog({
             <TextField
               label="Director/a*"
               value={form.director_id ?? ""}
-              onChange={(e) =>
-                setForm({ ...form, director_id: Number(e.target.value) })
-              }
+              onChange={(e) => void handleDirectorChange(Number(e.target.value))}
               fullWidth
               select
             >
@@ -302,9 +363,7 @@ export default function ModificarGrupoDialog({
             <TextField
               label="Vicedirector/a*"
               value={form.vicedirector_id ?? ""}
-              onChange={(e) =>
-                setForm({ ...form, vicedirector_id: Number(e.target.value) })
-              }
+              onChange={(e) => void handleVicedirectorChange(Number(e.target.value))}
               fullWidth
               select
             >
@@ -332,10 +391,10 @@ export default function ModificarGrupoDialog({
           {/* Fila 5*/}
           <Box>
             <Box mb={1}>
-              <strong>Investigadores del grupo ({grupoInvestigadores.length})</strong>
+              <strong>Investigadores del grupo ({integrantesVisibles.length})</strong>
             </Box>
             <List>
-              {grupoInvestigadores.map((inv) => (
+              {integrantesVisibles.map((inv) => (
                 <ListItem key={inv.id} secondaryAction={
                   <IconButton edge="end" aria-label="delete" onClick={() => inv.id && handleRemoveInvestigador(inv.id)}>
                     <DeleteIcon />
@@ -344,7 +403,7 @@ export default function ModificarGrupoDialog({
                   <ListItemText primary={`${inv?.personal?.nombre} ${inv?.personal?.apellido}`} />
                 </ListItem>
               ))}
-              {grupoInvestigadores.length === 0 && <ListItem><ListItemText primary="No hay investigadores asignados." /></ListItem>}
+              {integrantesVisibles.length === 0 && <ListItem><ListItemText primary="No hay investigadores asignados." /></ListItem>}
             </List>
 
             <Box display="flex" gap={2} mt={2} alignItems="center">
@@ -356,7 +415,7 @@ export default function ModificarGrupoDialog({
                   onChange={(e) => setNuevoInvestigadorId(e.target.value as number)}
                   input={<OutlinedInput label="Agregar investigador" />}
                 >
-                  {investigadores.map((i) => (
+                  {investigadoresDisponibles.map((i) => (
                     <MenuItem key={i.id} value={i.id}>
                       {i.personal?.nombre} {i.personal?.apellido}
                     </MenuItem>
