@@ -12,6 +12,7 @@ import NuevoRegistroDialog from "../../../components/patentes-registros/NuevoReg
 import ModificarRegistroDialog from "../../../components/patentes-registros/ModificarRegistroDialog";
 
 import { deletePatente, getPatentes } from "../../../services/patenteService";
+import { mostrarConfirmacion, manejadorDeMensajes } from "../../../components/common/ManejadorDeMensajes";
 
 import "./patentesRegistros.css";
 
@@ -112,7 +113,9 @@ export default function PatentesRegistros() {
   ];
 
   const handleDelete = async (id: number) => {
-    const conf = confirm("¿Seguro que deseas eliminar la patente?");
+    const conf = await mostrarConfirmacion({
+      mensaje: "¿Está seguro de que desea eliminar la patente?",
+    });
     if (!conf) return;
 
     try {
@@ -120,7 +123,7 @@ export default function PatentesRegistros() {
       await cargarPatentes();
     } catch (error) {
       console.error("Error al eliminar:", error);
-      alert("Ocurrió un error eliminando la patente.");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al eliminar la patente." });
     }
   };
 

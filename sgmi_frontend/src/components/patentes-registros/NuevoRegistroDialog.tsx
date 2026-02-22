@@ -12,6 +12,7 @@ import {
 } from "@mui/material";
 import { getGruposList } from "../../services/gruposService";
 import { crearPatente } from "../../services/patenteService";
+import { manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 interface RegistroData {
   grupo_id?: number;
@@ -75,7 +76,7 @@ export default function NuevoRegistroDialog({
     const { grupo_id, titulo, identificador, tipo } = form;
 
     if (!grupo_id || !titulo || !identificador || !tipo) {
-      alert("Por favor completá todos los campos.");
+      manejadorDeMensajes({ tipo: "alerta", mensaje: "Por favor completá todos los campos." });
       return;
     }
 
@@ -97,7 +98,7 @@ export default function NuevoRegistroDialog({
       onClose();
     } catch (err) {
       console.error("Error creando patente", err);
-      alert("Ocurrió un error al guardar la patente.");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al guardar la patente." });
     }
   };
 

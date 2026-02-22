@@ -16,6 +16,7 @@ import { updateTrabajoEnRevista } from "../../services/trabajoEnRevistaService";
 import { updatePublicacionEnLibro } from "../../services/publicacionEnLibroService";
 import { updateArticuloDeDivulgacion } from "../../services/articuloDeDivulgacionService";
 import type { Revista } from "../../models/revista.model";
+import { manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 interface Grupo {
   id: number;
@@ -80,12 +81,12 @@ export default function ModificarTrabajoDialog({
   async function handleSave() {
     try {
       if (!form.codigo || !form.titulo) {
-        alert("Código y título son obligatorios.");
+        manejadorDeMensajes({ tipo: "alerta", mensaje: "Código y título son obligatorios." });
         return;
       }
 
       if (!form.grupo_id) {
-        alert("Debe seleccionar un grupo.");
+        manejadorDeMensajes({ tipo: "alerta", mensaje: "Debe seleccionar un grupo." });
         return;
       }
 
@@ -100,7 +101,7 @@ export default function ModificarTrabajoDialog({
 
       if (form.tipo === "libro") {
         if (!form.libro || !form.capitulo) {
-          alert("Faltan datos del libro.");
+          manejadorDeMensajes({ tipo: "alerta", mensaje: "Faltan datos del libro." });
           return;
         }
 
@@ -115,7 +116,7 @@ export default function ModificarTrabajoDialog({
 
       if (form.tipo === "divulgacion") {
         if (!form.nombre) {
-          alert("Falta el nombre del artículo.");
+          manejadorDeMensajes({ tipo: "alerta", mensaje: "Falta el nombre del artículo." });
           return;
         }
 
@@ -131,7 +132,7 @@ export default function ModificarTrabajoDialog({
       onClose();
     } catch (err) {
       console.error(err);
-      alert("Error al modificar el trabajo.");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al modificar el trabajo." });
     }
   }
 

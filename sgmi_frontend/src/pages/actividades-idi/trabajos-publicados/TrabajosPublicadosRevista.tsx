@@ -14,6 +14,7 @@ import ModificarTrabajoDialog from "../../../components/trabajos-publicados/Modi
 import RevistaABMDialog from "../../../components/trabajos-publicados/RevistaABMDialog";
 
 import { deleteTrabajoEnRevista, getTrabajosEnRevista } from "../../../services/trabajoEnRevistaService";
+import { mostrarConfirmacion, manejadorDeMensajes } from "../../../components/common/ManejadorDeMensajes";
 
 import "./trabajosPublicados.css";
 
@@ -136,7 +137,9 @@ export default function TrabajosPublicados() {
   ];
 
   const handleDelete = async (id: number) => {
-    const conf = confirm("¿Seguro que deseas eliminar el trabajo en revista?");
+    const conf = await mostrarConfirmacion({
+      mensaje: "¿Está seguro de que desea eliminar el trabajo en revista?",
+    });
     if (!conf) return;
 
     try {
@@ -144,7 +147,7 @@ export default function TrabajosPublicados() {
       await cargarPublicaciones();
     } catch (error) {
       console.error("Error eliminando trabajo en revista:", error);
-      alert("Ocurrió un error al eliminar el trabajo.");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al eliminar el trabajo." });
     }
   };
 

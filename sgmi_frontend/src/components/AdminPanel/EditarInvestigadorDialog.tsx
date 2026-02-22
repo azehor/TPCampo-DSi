@@ -20,6 +20,7 @@ import type { Investigador } from "../../models/investigador.model";
 import * as userService from "../../services/userService";
 import * as personalService from "../../services/personalService";
 import * as investigadorService from "../../services/investigadorService";
+import { manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 interface EditInvestigadorDialogProps {
   open: boolean;
@@ -108,7 +109,7 @@ export function EditInvestigadorDialog({
               .slice(0, 2);
             errorMessage = errors.join("\n");
           }
-          setError(errorMessage);
+          manejadorDeMensajes({ tipo: "error", mensaje: errorMessage });
           setLoading(false);
           return;
         }
@@ -145,7 +146,7 @@ export function EditInvestigadorDialog({
               .slice(0, 2);
             errorMessage = errors.join("\n");
           }
-          setError(errorMessage);
+          manejadorDeMensajes({ tipo: "error", mensaje: errorMessage });
           setLoading(false);
           return;
         }
@@ -183,7 +184,7 @@ export function EditInvestigadorDialog({
               .slice(0, 2);
             errorMessage = errors.join("\n");
           }
-          setError(errorMessage);
+          manejadorDeMensajes({ tipo: "error", mensaje: errorMessage });
           setLoading(false);
           return;
         }

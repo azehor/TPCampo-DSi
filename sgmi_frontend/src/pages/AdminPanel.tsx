@@ -10,13 +10,9 @@ import {
   Button,
   Box,
   CircularProgress,
-  Alert,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   IconButton,
   TablePagination,
+  Alert,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -27,15 +23,14 @@ import type { Investigador } from "../models/investigador.model";
 import * as investigadorService from "../services/investigadorService";
 import { CreateInvestigadorDialog } from "../components/AdminPanel/CrearInvestigadorDialog";
 import { EditInvestigadorDialog } from "../components/AdminPanel/EditarInvestigadorDialog";
+import { mostrarConfirmacion, manejadorDeMensajes } from "../components/common/ManejadorDeMensajes";
 
 export function AdminPanel() {
   const [investigadores, setInvestigadores] = useState<
     (Investigador & { user?: User; personal?: Personal })[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -50,13 +45,12 @@ export function AdminPanel() {
 
   const fetchInvestigadores = async () => {
     setLoading(true);
-    setError(null);
     try {
       const response = await investigadorService.getInvestigadores(page, rowsPerPage);
       setInvestigadores(response.content || []);
       setTotalInvestigadores(response.metadata?.total_count || 0);
     } catch (err: any) {
-      setError(`Error al cargar investigadores: ${err.message}`);
+      manejadorDeMensajes({ tipo: "error", mensaje: `Error al cargar investigadores: ${err.message}` });
     } finally {
       setLoading(false);
     }
@@ -67,9 +61,20 @@ export function AdminPanel() {
   };
 
 
-  const handleDeleteClick = (investigador: Investigador & { user?: User; personal?: Personal }) => {
+  const handleDeleteClick = async (investigador: Investigador & { user?: User; personal?: Personal }) => {
     setSelectedInvestigador(investigador);
-    setOpenDeleteDialog(true);
+
+    const confirmado = await mostrarConfirmacion({
+      mensaje: `¿Está seguro de que desea eliminar a ${investigador.personal?.nombre ?? ""} ${investigador.personal?.apellido ?? ""}?`,
+      textoConfirmar: "Eliminar",
+    });
+
+    if (!confirmado) {
+      setSelectedInvestigador(null);
+      return;
+    }
+
+    await handleDeleteConfirm(investigador.id);
   };
 
   const handleEditClick = (investigador: Investigador & { user?: User; personal?: Personal }) => {
@@ -77,17 +82,16 @@ export function AdminPanel() {
     setOpenEditDialog(true);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (!selectedInvestigador?.id) return;
+  const handleDeleteConfirm = async (investigadorId?: number) => {
+    const id = investigadorId ?? selectedInvestigador?.id;
+    if (!id) return;
 
     try {
-      await investigadorService.deleteInvestigador(selectedInvestigador.id);
-      setOpenDeleteDialog(false);
+      await investigadorService.deleteInvestigador(id);
       setSelectedInvestigador(null);
       fetchInvestigadores();
     } catch (err: any) {
-      setError(`Error al eliminar: ${err.message}`);
-      setOpenDeleteDialog(false);
+      manejadorDeMensajes({ tipo: "error", mensaje: `Error al eliminar el investigador: ${err.message}` });
     }
   };
 
@@ -118,8 +122,6 @@ export function AdminPanel() {
           Crear Investigador
         </Button>
       </Box>
-
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
       {loading ? (
         <Paper>
@@ -205,25 +207,6 @@ export function AdminPanel() {
         rowsPerPageOptions={[5, 10, 25, 50]}
         labelRowsPerPage="Filas por página"
       />
-
-      {/* Dialog de confirmación de eliminación */}
-      <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>¿Eliminar Investigador?</DialogTitle>
-        <DialogContent>
-          ¿Estás seguro de que deseas eliminar a{" "}
-          <strong>
-            {selectedInvestigador?.personal?.nombre}{" "}
-            {selectedInvestigador?.personal?.apellido}
-          </strong>
-          ?
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDeleteDialog(false)}>Cancelar</Button>
-          <Button onClick={handleDeleteConfirm} color="error" variant="contained">
-            Eliminar
-          </Button>
-        </DialogActions>
-      </Dialog>
 
       {/* Dialog de edición */}
       <EditInvestigadorDialog

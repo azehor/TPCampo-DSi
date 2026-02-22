@@ -22,6 +22,7 @@ import { crearGrupo } from "../../services/gruposService";
 import { addInvestigadorToGrupo } from "../../services/grupoInvestigadorService";
 import type { Investigador } from "../../models/investigador.model";
 import type { FacultadRegional } from "../../models/facultad-regional.model";
+import { manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 type GrupoFormData = {
   nombre: string;
@@ -129,7 +130,7 @@ export default function NuevoGrupoDialog({
     } = form;
 
     if (!nombre || !correo_electronico || !director_id || !objetivo || !facultad_id || !vicedirector_id) {
-      alert("Por favor completá todos los campos obligatorios.");
+      manejadorDeMensajes({ tipo: "alerta", mensaje: "Por favor completá todos los campos obligatorios." });
       return;
     }
 
@@ -167,7 +168,7 @@ export default function NuevoGrupoDialog({
       onClose();
     }catch (err) {
       console.error("Error creando grupo", err);
-      alert("Ocurrió un error al guardar el grupo.");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al guardar el grupo." });
     }
   };
 

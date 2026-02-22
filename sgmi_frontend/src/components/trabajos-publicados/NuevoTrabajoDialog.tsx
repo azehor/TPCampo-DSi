@@ -15,6 +15,7 @@ import { crearArticuloDeDivulgacion } from "../../services/articuloDeDivulgacion
 import { getRevistas } from "../../services/revistaService.ts";
 import { getGruposList } from "../../services/gruposService";
 import type { Revista } from "../../models/revista.model";
+import { manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 
 type TipoTrabajo = "revista" | "libro" | "divulgacion";
@@ -114,13 +115,13 @@ export default function NuevoTrabajoDialog({
   async function handleSave() {
     try {
       if (!form.codigo || !form.titulo) {
-        alert("Completá código y título.");
+        manejadorDeMensajes({ tipo: "alerta", mensaje: "Completá código y título." });
         return;
       }
 
       if (form.tipo === "revista") {
         if (!form.revista_id) {
-          alert("Debe ingresar una revista.");
+          manejadorDeMensajes({ tipo: "alerta", mensaje: "Debe ingresar una revista." });
           return;
         }
 
@@ -134,7 +135,7 @@ export default function NuevoTrabajoDialog({
 
       if (form.tipo === "libro") {
         if (!form.libro || !form.capitulo) {
-          alert("Debe completar libro y capítulo.");
+          manejadorDeMensajes({ tipo: "alerta", mensaje: "Debe completar libro y capítulo." });
           return;
         }
 
@@ -149,7 +150,7 @@ export default function NuevoTrabajoDialog({
 
       if (form.tipo === "divulgacion") {
         if (!form.nombreArticulo) {
-          alert("Debe ingresar el nombre del artículo.");
+          manejadorDeMensajes({ tipo: "alerta", mensaje: "Debe ingresar el nombre del artículo." });
           return;
         }
 
@@ -166,7 +167,7 @@ export default function NuevoTrabajoDialog({
 
     } catch (err) {
       console.error(err);
-      alert("Error guardando el registro.");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error guardando el registro." });
     }
   }
 

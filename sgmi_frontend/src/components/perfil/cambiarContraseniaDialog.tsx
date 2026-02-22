@@ -10,6 +10,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { cambiarContrasenia } from "../../services/userService";
+import { manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 interface CambiarContraseniaDialogProps {
   open: boolean;
@@ -22,7 +23,6 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
   const handleChangePassword = async () => {
     // Validaciones
@@ -48,11 +48,10 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
 
     setLoading(true);
     setError(null);
-    setSuccess(null);
 
     try {
       const result = await cambiarContrasenia(currentPassword, newPassword);
-      setSuccess(result.message);
+      manejadorDeMensajes({ tipo: "exito", mensaje: result.message });
       
       // Limpiar fields después de 2 segundos
       setTimeout(() => {
@@ -62,9 +61,10 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
         onClose();
       }, 1500);
     } catch (err: any) {
-      setError(
-        err.response?.data?.error || "Error al cambiar la contraseña"
-      );
+      manejadorDeMensajes({
+        tipo: "error",
+        mensaje: err.response?.data?.error || "Error al cambiar la contraseña.",
+      });
     } finally {
       setLoading(false);
     }
@@ -75,7 +75,6 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
     setNewPassword("");
     setConfirmPassword("");
     setError(null);
-    setSuccess(null);
     onClose();
   };
 
@@ -84,7 +83,6 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
       <DialogTitle>Cambiar Contraseña</DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
         {error && <Alert severity="error">{error}</Alert>}
-        {success && <Alert severity="success">{success}</Alert>}
 
         <TextField
           label="Contraseña Actual"

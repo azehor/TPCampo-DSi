@@ -17,6 +17,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { getToken } from "./services/auth";
 import PerfilPage from "./pages/perfil";
 import { AdminPanel } from "./pages/AdminPanel";
+import ManejadorDeMensajes from "./components/common/ManejadorDeMensajes";
 
 export default function App() {
   const location = useLocation();
@@ -125,6 +126,8 @@ export default function App() {
           </Routes>
         </div>
       </div>
+
+      <ManejadorDeMensajes />
     </div>
   );
 }

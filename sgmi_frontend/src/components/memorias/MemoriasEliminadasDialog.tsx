@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import RestoreIcon from "@mui/icons-material/Restore";
 import { getMemoriasEliminadas, restaurarMemoria } from "../../services/memoriasService";
+import { manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 interface MemoriasEliminadasDialogProps {
   open: boolean;
@@ -40,7 +41,6 @@ export default function MemoriasEliminadasDialog({
   const [memorias, setMemorias] = useState<MemoriaEliminada[]>([]);
   const [loading, setLoading] = useState(false);
   const [restoringId, setRestoringId] = useState<number | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (open) {
@@ -50,13 +50,12 @@ export default function MemoriasEliminadasDialog({
 
   const cargarMemoriasEliminadas = async () => {
     setLoading(true);
-    setError(null);
     try {
       const res = await getMemoriasEliminadas(grupoId);
       setMemorias(res);
     } catch (err) {
       console.error("Error cargando memorias eliminadas:", err);
-      setError("Error al cargar las memorias eliminadas");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al cargar las memorias eliminadas" });
     } finally {
       setLoading(false);
     }
@@ -70,7 +69,7 @@ export default function MemoriasEliminadasDialog({
       onRestore?.();
     } catch (err) {
       console.error("Error recuperando memoria:", err);
-      alert("Error al recuperar la memoria");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al recuperar la memoria" });
     } finally {
       setRestoringId(null);
     }
@@ -91,7 +90,6 @@ export default function MemoriasEliminadasDialog({
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Memorias Eliminadas</DialogTitle>
       <DialogContent>
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
 
         {loading ? (
           <Box sx={{ display: "flex", justifyContent: "center", py: 3 }}>

@@ -26,6 +26,7 @@ import { updateGrupo, getGrupo } from "../../services/gruposService";
 import { getGrupoInvestigadores, addInvestigadorToGrupo, removeInvestigadorFromGrupo } from "../../services/grupoInvestigadorService";
 import type { Investigador } from "../../models/investigador.model";
 import type { FacultadRegional } from "../../models/facultad-regional.model";
+import { mostrarConfirmacion, manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 type GrupoFormData = {
   id?: number;
@@ -178,9 +179,9 @@ export default function ModificarGrupoDialog({
     if (!integrante) return true;
 
     const nombreCompleto = `${integrante.personal?.nombre ?? ""} ${integrante.personal?.apellido ?? ""}`.trim();
-    const confirmado = confirm(
-      `${nombreCompleto || "El investigador seleccionado"} ya figura como integrante. ¿Querés quitarlo de integrantes y asignarlo como ${cargo}?`
-    );
+    const confirmado = await mostrarConfirmacion({
+      mensaje: `${nombreCompleto || "El investigador seleccionado"} ya figura como integrante. ¿Querés quitarlo de integrantes y asignarlo como ${cargo}?`,
+    });
 
     if (!confirmado) {
       return false;
@@ -193,7 +194,7 @@ export default function ModificarGrupoDialog({
       return true;
     } catch (err) {
       console.error(err);
-      alert(`No se pudo quitar de integrantes al ${cargo}.`);
+      manejadorDeMensajes({ tipo: "error", mensaje: `No se pudo quitar de integrantes al ${cargo}.` });
       return false;
     }
   };
@@ -231,12 +232,12 @@ export default function ModificarGrupoDialog({
     !facultad_id ||
     !vicedirector_id
   ) {
-    alert("Por favor completá todos los campos obligatorios.");
+    manejadorDeMensajes({ tipo: "alerta", mensaje: "Por favor completá todos los campos obligatorios." });
     return;
   }
 
   if (!form.id) {
-    alert("No se encontró el ID del grupo a actualizar.");
+    manejadorDeMensajes({ tipo: "error", mensaje: "No se encontró el ID del grupo a actualizar." });
     return;
   }
 
@@ -254,7 +255,7 @@ export default function ModificarGrupoDialog({
     onConfirm(form);
   } catch (err) {
     console.error(err);
-    alert("Error al actualizar el grupo");
+    manejadorDeMensajes({ tipo: "error", mensaje: "Error al actualizar el grupo." });
   }
 };
 
@@ -272,19 +273,28 @@ export default function ModificarGrupoDialog({
         (err as any)?.response?.data?.error?.join?.(" ") ||
         (err as any)?.response?.data?.error ||
         "Error al asignar investigador";
-      alert(message);
+      manejadorDeMensajes({ tipo: "error", mensaje: message });
     }
   };
 
   const handleRemoveInvestigador = async (investigadorId: number) => {
     if (!form.id) return;
+
+    const investigador = grupoInvestigadores.find((inv) => inv.id === investigadorId);
+    const nombreCompleto = `${investigador?.personal?.nombre ?? ""} ${investigador?.personal?.apellido ?? ""}`.trim();
+    const confirmado = await mostrarConfirmacion({
+      mensaje: `¿Está seguro de que desea quitar al investigador ${nombreCompleto || "seleccionado"}?`,
+    });
+
+    if (!confirmado) return;
+
     try {
       await removeInvestigadorFromGrupo(form.id, investigadorId);
       const res = await getGrupoInvestigadores(form.id);
       setGrupoInvestigadores(res);
     } catch (err) {
       console.error(err);
-      alert("Error al quitar investigador");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al quitar al investigador." });
     }
   };
 

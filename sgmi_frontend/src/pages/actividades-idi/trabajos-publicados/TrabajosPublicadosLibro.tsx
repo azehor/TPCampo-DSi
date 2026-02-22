@@ -18,6 +18,7 @@ import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTra
 import ModificarTrabajoDialog from "../../../components/trabajos-publicados/ModificarTrabajoDialog";
 
 import { deletePublicacionEnLibro, getPublicaciones } from "../../../services/publicacionEnLibroService";
+import { mostrarConfirmacion, manejadorDeMensajes } from "../../../components/common/ManejadorDeMensajes";
 
 import "./trabajosPublicados.css";
 
@@ -91,14 +92,16 @@ export default function TrabajosPublicadosLibro() {
   };
 
   const handleDelete = async (id: number) => {
-  const conf = confirm("¿Seguro que deseas eliminar la publicación del libro?");
+  const conf = await mostrarConfirmacion({
+    mensaje: "¿Está seguro de que desea eliminar la publicación del libro?",
+  });
   if (!conf) return;
 
   try {
     await deletePublicacionEnLibro({ id });
     await cargarPublicaciones();
   } catch (error) {
-    alert("Ocurrió un error al eliminar la publicación.");
+    manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al eliminar la publicación." });
     console.error(error);
   }
 };
