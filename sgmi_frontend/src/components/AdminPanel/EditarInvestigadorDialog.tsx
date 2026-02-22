@@ -48,6 +48,7 @@ export function EditInvestigadorDialog({
   const [personalForm, setPersonalForm] = useState({
     nombre: "",
     apellido: "",
+    dni: "",
     horas_semanales: "",
   });
 
@@ -64,6 +65,7 @@ export function EditInvestigadorDialog({
       setPersonalForm({
         nombre: investigador.personal?.nombre || "",
         apellido: investigador.personal?.apellido || "",
+        dni: investigador.personal?.dni || "",
         horas_semanales: investigador.personal?.horas_semanales?.toString() || "",
       });
       setInvestigadorForm({
@@ -124,6 +126,7 @@ export function EditInvestigadorDialog({
           await personalService.updatePersonal(investigador.personal.id, {
             nombre: personalForm.nombre,
             apellido: personalForm.apellido,
+            dni: personalForm.dni,
             horas_semanales: personalForm.horas_semanales
               ? parseInt(personalForm.horas_semanales)
               : undefined,
@@ -253,6 +256,18 @@ export function EditInvestigadorDialog({
               label="Apellido"
               value={personalForm.apellido}
               onChange={(e) => setPersonalForm({ ...personalForm, apellido: e.target.value })}
+              fullWidth
+            />
+            <TextField
+              label="DNI"
+              value={personalForm.dni}
+              onChange={(e) =>
+                setPersonalForm({
+                  ...personalForm,
+                  dni: e.target.value.replace(/\D/g, "").slice(0, 10),
+                })
+              }
+              inputProps={{ maxLength: 8, inputMode: "numeric", pattern: "[0-9]*" }}
               fullWidth
             />
             <TextField

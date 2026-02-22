@@ -44,6 +44,7 @@ export function CreateInvestigadorDialog({
   const [personalForm, setPersonalForm] = useState({
     nombre: "",
     apellido: "",
+    dni: "",
     horas_semanales: 40,
     object_type: "Investigador",
   });
@@ -100,6 +101,7 @@ export function CreateInvestigadorDialog({
       const response = await personalService.createPersonal({
         nombre: personalForm.nombre,
         apellido: personalForm.apellido,
+        dni: personalForm.dni,
         horas_semanales: personalForm.horas_semanales,
         object_type: personalForm.object_type,
       });
@@ -175,7 +177,7 @@ export function CreateInvestigadorDialog({
     setPasoActivo(0);
     setError(null);
     setUserForm({ email: "", password: "" });
-    setPersonalForm({ nombre: "", apellido: "", horas_semanales: 40, object_type: "Investigador" });
+    setPersonalForm({ nombre: "", apellido: "", dni: "", horas_semanales: 40, object_type: "Investigador" });
     setInvestigadorForm({ categoria: "", dedicacion: "Simple" });
     setUserCreated(null);
     setPersonalCreated(null);
@@ -248,6 +250,18 @@ export function CreateInvestigadorDialog({
                 onChange={(e) => setPersonalForm({ ...personalForm, apellido: e.target.value })}
                 fullWidth
                 placeholder="Pérez"
+              />
+              <TextField
+                label="DNI"
+                value={personalForm.dni}
+                onChange={(e) =>
+                  setPersonalForm({
+                    ...personalForm,
+                    dni: e.target.value.replace(/\D/g, "").slice(0, 10),
+                  })
+                }
+                inputProps={{ maxLength: 8, inputMode: "numeric", pattern: "[0-9]*" }}
+                fullWidth
               />
               <TextField
                 label="Horas Semanales"

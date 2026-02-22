@@ -5,6 +5,7 @@ export async function createPersonal(data: Personal): Promise<{ personal: Person
   const response = await api.post("/api/personals", {
     nombre: data.nombre,
     apellido: data.apellido,
+    dni: data.dni,
     horas_semanales: data.horas_semanales || 40,
     object_type: data.object_type || "Docente",
   });
