@@ -32,6 +32,6 @@ class PersonalsController < ApplicationController
   end
 
   def personal_params
-    params.require(:personal).permit(:apellido, :nombre, :horas_semanales, :object_type)
+    params.require(:personal).permit(:apellido, :nombre, :dni, :horas_semanales, :object_type)
   end
 end

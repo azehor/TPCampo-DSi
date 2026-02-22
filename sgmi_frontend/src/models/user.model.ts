@@ -14,6 +14,7 @@ export interface UserProfile extends User {
     id: number;
     nombre: string;
     apellido: string;
+    dni?: string;
   };
 }
 

@@ -7,7 +7,7 @@ class UsersController < ApplicationController
 
     if @current_user.investigador
       investigador_data = @current_user.investigador.as_json(only: [ :id ])
-      personal_data = @current_user.investigador.personal.as_json(only: [ :id, :nombre, :apellido ]) if @current_user.investigador.personal
+      personal_data = @current_user.investigador.personal.as_json(only: [ :id, :nombre, :apellido, :dni ]) if @current_user.investigador.personal
       user[:investigador] = investigador_data
       user[:personal] = personal_data
     end

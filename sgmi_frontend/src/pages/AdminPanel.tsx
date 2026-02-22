@@ -153,6 +153,7 @@ export function AdminPanel() {
                 <TableCell><strong>Email (Usuario)</strong></TableCell>
                 <TableCell><strong>Nombre</strong></TableCell>
                 <TableCell><strong>Apellido</strong></TableCell>
+                <TableCell><strong>DNI</strong></TableCell>
                 <TableCell><strong>Categoría</strong></TableCell>
                 <TableCell><strong>Dedicación</strong></TableCell>
                 <TableCell><strong>Horas Semanales</strong></TableCell>
@@ -165,6 +166,7 @@ export function AdminPanel() {
                   <TableCell>{investigador.user?.email || "-"}</TableCell>
                   <TableCell>{investigador.personal?.nombre || "-"}</TableCell>
                   <TableCell>{investigador.personal?.apellido || "-"}</TableCell>
+                  <TableCell>{investigador.personal?.dni || "-"}</TableCell>
                   <TableCell>{investigador.categoria}</TableCell>
                   <TableCell>{investigador.dedicacion}</TableCell>
                   <TableCell>{investigador.personal?.horas_semanales || "-"}</TableCell>

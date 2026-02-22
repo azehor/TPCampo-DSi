@@ -79,6 +79,9 @@ const PerfilUsuario = () => {
               <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
                 <strong>Apellido:</strong> {profile.personal.apellido}
               </Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ mt: 1 }}>
+                <strong>DNI:</strong> {profile.personal.dni || "-"}
+              </Typography>
             </CardContent>
           </Card>
         )}
