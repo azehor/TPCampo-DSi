@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -7,6 +7,8 @@ import {
   TextField,
   Button,
   Box,
+  MenuItem,
+  Typography,
 } from "@mui/material";
 
 interface Props {
@@ -16,18 +18,20 @@ interface Props {
 }
 
 export default function NuevaMemoriaDialog({ open, onClose, onConfirm }: Props) {
-  const [anio, setAnio] = useState("");
+  const anioActual = new Date().getFullYear();
+  const [anio, setAnio] = useState(String(anioActual));
+  const anios = Array.from({ length: anioActual - 1990 }, (_, index) => anioActual - index);
 
   const handleConfirm = () => {
     const valor = parseInt(anio);
     if (isNaN(valor) || valor < 1900) return;
 
     onConfirm(valor);
-    setAnio("");
+    setAnio(String(anioActual));
   };
 
   const handleClose = () => {
-    setAnio("");
+    setAnio(String(anioActual));
     onClose();
   };
 
@@ -35,17 +39,43 @@ export default function NuevaMemoriaDialog({ open, onClose, onConfirm }: Props) 
     <Dialog open={open} onClose={handleClose} maxWidth="xs" fullWidth>
       <DialogTitle sx={{ textAlign: "center", pt: 3 }}>Nueva Memoria</DialogTitle>
 
-      <DialogContent sx={{ pb: 2 }}>
+      <DialogContent sx={{ pb: 2}}>
+        <Typography variant="body2" sx={{ mb: 1 }}>
+          Año
+        </Typography>
         <TextField
-          label="Año"
+          select
           fullWidth
           value={anio}
           onChange={(e) => setAnio(e.target.value)}
+          SelectProps={{
+            MenuProps: {
+              anchorOrigin: {
+                vertical: "center",
+                horizontal: "left",
+              },
+              transformOrigin: {
+                vertical: "center",
+                horizontal: "left",
+              },
+              PaperProps: {
+                sx: {
+                  maxHeight: 200,
+                },
+              },
+            },
+          }}
           autoFocus
-        />
+        >
+          {anios.map((anio) => (
+            <MenuItem key={anio} value={String(anio)}>
+              {anio}
+            </MenuItem>
+          ))}
+        </TextField>
       </DialogContent>
 
-      <DialogActions sx={{ justifyContent: "center", pb: 3 }}>
+      <DialogActions sx={{ justifyContent: "center", pb: 3}}>
         <Box display="flex" gap={2}>
           <Button
             onClick={handleClose}

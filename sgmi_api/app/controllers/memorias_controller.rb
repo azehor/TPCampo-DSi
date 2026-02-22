@@ -14,10 +14,12 @@ class MemoriasController < ApplicationController
   def index
     if params.has_key?(:grupo)
       grupo_id = params[:grupo].to_i
-      render json: Memoria.where(grupo_de_investigacion_id: grupo_id).as_json(include: full_includes)
+      memorias = Memoria.order(anio: :desc, id: :desc).where(grupo_de_investigacion_id: grupo_id)
     else
-      render json: Memoria.all.as_json(include: full_includes)
+      memorias = Memoria.order(anio: :desc, id: :desc)
     end
+
+    render json: memorias.as_json(include: full_includes)
   end
 
   # GET /memorias/deleted (Solo admin)
