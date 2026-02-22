@@ -6,7 +6,7 @@ import {
   DialogActions,
   TextField,
   Button,
-  MenuItem,
+  Autocomplete,
   Stack,
   Paper,
   Box,
@@ -285,20 +285,19 @@ export default function RevistaABMDialog({
               fullWidth
               disabled={loading}
             />
-            <TextField
-              label="País"
-              select
-              value={form.pais_id}
-              onChange={(e) => setForm({ ...form, pais_id: e.target.value })}
-              fullWidth
+            <Autocomplete
+              options={paises}
+              getOptionLabel={(option) => option.nombre}
+              value={paises.find((p) => p.id === Number(form.pais_id)) ?? null}
+              onChange={(_, value) =>
+                setForm({ ...form, pais_id: value ? String(value.id) : "" })
+              }
+              isOptionEqualToValue={(option, value) => option.id === value.id}
               disabled={loading}
-            >
-              {paises.map((p) => (
-                <MenuItem key={p.id} value={p.id}>
-                  {p.nombre}
-                </MenuItem>
-              ))}
-            </TextField>
+              renderInput={(params) => (
+                <TextField {...params} label="País" fullWidth />
+              )}
+            />
           </Stack>
         )}
       </DialogContent>

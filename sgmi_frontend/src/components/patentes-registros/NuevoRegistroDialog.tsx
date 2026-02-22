@@ -7,6 +7,7 @@ import {
   TextField,
   Button,
   MenuItem,
+  Autocomplete,
   Box,
   Stack,
 } from "@mui/material";
@@ -118,21 +119,16 @@ export default function NuevoRegistroDialog({
       <DialogContent dividers sx={{ px: 4, pt: 2 }}>
         <Stack spacing={3}>
           {/* GRUPO */}
-          <TextField
-            label="Grupo"
-            value={form.grupo_id}
-            onChange={(e) =>
-              setForm({ ...form, grupo_id: Number(e.target.value) })
+          <Autocomplete
+            options={grupos}
+            getOptionLabel={(option) => option.nombre}
+            value={grupos.find((g) => g.id === form.grupo_id) ?? null}
+            onChange={(_, value) =>
+              setForm({ ...form, grupo_id: value?.id })
             }
-            fullWidth
-            select
-          >
-            {grupos.map((g) => (
-              <MenuItem key={g.id} value={g.id}>
-                {g.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderInput={(params) => <TextField {...params} label="Grupo" fullWidth />}
+          />
 
           <TextField
             label="Título"

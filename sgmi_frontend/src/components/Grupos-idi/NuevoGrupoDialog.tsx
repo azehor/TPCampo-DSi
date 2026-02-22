@@ -6,15 +6,9 @@ import {
   DialogActions,
   TextField,
   Button,
-  MenuItem,
+  Autocomplete,
   Box,
   Stack,
-  FormControl,
-  InputLabel,
-  Select,
-  OutlinedInput,
-  Checkbox,
-  ListItemText,
 } from "@mui/material";
 import { getAllInvestigadores } from "../../services/investigadorService";
 import { getFacultadesRegionales } from "../../services/facultadRegionalService";
@@ -215,53 +209,44 @@ export default function NuevoGrupoDialog({
 
           {/* Fila 3*/}
           <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 2 }}>
-            <TextField
-              label="Facultad Regional*"
-              value={form.facultad_id}
-              onChange={(e) =>
-                setForm({ ...form, facultad_id: Number(e.target.value) })
+            <Autocomplete
+              options={facultades}
+              getOptionLabel={(option) => option.nombre}
+              value={facultades.find((f) => f.id === form.facultad_id) ?? null}
+              onChange={(_, value) =>
+                setForm({ ...form, facultad_id: value?.id })
               }
-              fullWidth
-              select
-            >
-              {facultades.map((f) => (
-                <MenuItem key={f.id} value={f.id}>
-                  {f.nombre}
-                </MenuItem>
-              ))}
-            </TextField>
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              renderInput={(params) => (
+                <TextField {...params} label="Facultad Regional*" fullWidth />
+              )}
+            />
 
-            <TextField
-              label="Director/a*"
-              value={form.director_id}
-              onChange={(e) =>
-                setForm({ ...form, director_id: Number(e.target.value) })
+            <Autocomplete
+              options={investigadores}
+              getOptionLabel={(option: any) => `${option.personal?.nombre ?? ""} ${option.personal?.apellido ?? ""}`.trim()}
+              value={investigadores.find((i) => i.id === form.director_id) ?? null}
+              onChange={(_, value) =>
+                setForm({ ...form, director_id: value?.id })
               }
-              fullWidth
-              select
-            >
-              {investigadores.map((i:any) => (
-                <MenuItem key={i.id} value={i.id}>
-                  {i.personal.nombre} {i.personal.apellido}
-                </MenuItem>
-              ))}
-            </TextField>
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              renderInput={(params) => (
+                <TextField {...params} label="Director/a*" fullWidth />
+              )}
+            />
 
-            <TextField
-              label="Vicedirector/a*"
-              value={form.vicedirector_id}
-              onChange={(e) =>
-                setForm({ ...form, vicedirector_id: Number(e.target.value) })
+            <Autocomplete
+              options={investigadores}
+              getOptionLabel={(option: any) => `${option.personal?.nombre ?? ""} ${option.personal?.apellido ?? ""}`.trim()}
+              value={investigadores.find((i) => i.id === form.vicedirector_id) ?? null}
+              onChange={(_, value) =>
+                setForm({ ...form, vicedirector_id: value?.id })
               }
-              fullWidth
-              select
-            >
-              {investigadores.map((i:any) => (
-                <MenuItem key={i.id} value={i.id}>
-                  {i.personal.nombre} {i.personal.apellido}
-                </MenuItem>
-              ))}
-            </TextField>
+              isOptionEqualToValue={(option, value) => option.id === value.id}
+              renderInput={(params) => (
+                <TextField {...params} label="Vicedirector/a*" fullWidth />
+              )}
+            />
           </Box>
 
           {/* Fila 4*/}
@@ -278,30 +263,18 @@ export default function NuevoGrupoDialog({
           />
 
           {/* Fila 5*/}
-          <FormControl fullWidth>
-            <InputLabel id="select-investigadores-label">Investigadores</InputLabel>
-            <Select
-              labelId="select-investigadores-label"
-              multiple
-              value={selectedInvestigadores}
-              onChange={(e) => setSelectedInvestigadores(typeof e.target.value === 'string' ? e.target.value.split(',').map(Number) : e.target.value as number[])}
-              input={<OutlinedInput label="Investigadores" />}
-              renderValue={(selected) => {
-                const names = (selected as number[]).map(s => {
-                  const inv = investigadores.find(i => i.id === s);
-                  return inv && inv.personal ? `${inv.personal.nombre} ${inv.personal.apellido}` : '';
-                }).filter(Boolean);
-                return names.join(', ');
-              }}
-            >
-              {investigadoresDisponibles.map((i) => (
-                <MenuItem key={i.id} value={i.id}>
-                  <Checkbox checked={i.id !== undefined && selectedInvestigadores.indexOf(i.id) > -1} />
-                  <ListItemText primary={`${i.personal?.nombre ?? ''} ${i.personal?.apellido ?? ''}`} />
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Autocomplete
+            multiple
+            options={investigadoresDisponibles}
+            getOptionLabel={(option: any) => `${option.personal?.nombre ?? ""} ${option.personal?.apellido ?? ""}`.trim()}
+            value={investigadoresDisponibles.filter((i) => selectedInvestigadores.includes(i.id))}
+            onChange={(_, value) => setSelectedInvestigadores(value.map((i) => i.id))}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            filterSelectedOptions
+            renderInput={(params) => (
+              <TextField {...params} label="Investigadores" fullWidth />
+            )}
+          />
         </Stack>
       </DialogContent>
 
