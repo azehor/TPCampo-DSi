@@ -9,10 +9,10 @@ import {
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
-import ConfirmarEliminacionMemoriaDialog from "./ConfirmarEliminacionMemoriaDialog";
 import { useState } from "react";
 import { deleteMemoria } from "../../services/memoriasService";
 import SeccionAccordion from "./SeccionAcordion";
+import { manejadorDeMensajes, mostrarConfirmacion } from "../common/ManejadorDeMensajes";
 
 const secciones = [
   "I. Administración",
@@ -29,22 +29,23 @@ interface MemoriaAcordionProps {
 }
 
 export default function MemoriaAccordion({ memoria, onDelete }: MemoriaAcordionProps) {
-  const [openConfirm, setOpenConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const handleDeleteClick = () => {
-    setOpenConfirm(true);
-  };
+  const handleDeleteClick = async () => {
+    const confirmado = await mostrarConfirmacion({
+      mensaje: `¿Está seguro de que desea eliminar la memoria del año ${memoria.anio}?`,
+      textoConfirmar: "Eliminar",
+    });
 
-  const handleConfirmDelete = async () => {
+    if (!confirmado) return;
+
     setIsDeleting(true);
     try {
       await deleteMemoria(memoria.id);
-      setOpenConfirm(false);
       onDelete?.();
     } catch (err) {
       console.error("Error eliminando memoria:", err);
-      alert("Error al eliminar la memoria");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al eliminar la memoria" });
     } finally {
       setIsDeleting(false);
     }
@@ -68,6 +69,7 @@ export default function MemoriaAccordion({ memoria, onDelete }: MemoriaAcordionP
               <IconButton
                 size="small"
                 color="error"
+                disabled={isDeleting}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDeleteClick();
@@ -84,14 +86,6 @@ export default function MemoriaAccordion({ memoria, onDelete }: MemoriaAcordionP
         ))}
       </AccordionDetails>
       </Accordion>
-
-      <ConfirmarEliminacionMemoriaDialog
-        open={openConfirm}
-        anio={memoria.anio}
-        onConfirm={handleConfirmDelete}
-        onCancel={() => setOpenConfirm(false)}
-        isLoading={isDeleting}
-      />
     </>
   );
 }

@@ -11,6 +11,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import NuevoGrupoDialog from "../../components/Grupos-idi/NuevoGrupoDialog.tsx";
 import ModificarGrupoDialog from "../../components/Grupos-idi/ModificarGrupoDialog.tsx";
+import { mostrarConfirmacion, manejadorDeMensajes } from "../../components/common/ManejadorDeMensajes";
 
 //function renderBotonAcciones(props Gri)
 export default function GruposIDI() {
@@ -52,16 +53,18 @@ export default function GruposIDI() {
   }, [page, search, sortingModel]);
 
   const handleDelete = async (id: number) => {
-    const conf = confirm("¿Seguro que deseas eliminar el grupo?");
+    const conf = await mostrarConfirmacion({
+      mensaje: "¿Está seguro de que desea eliminar el grupo?",
+    });
     if (!conf) return;
 
     try {
       await deleteGrupo({ id });
       await cargarGrupos();
-      alert("Grupo eliminado.");
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Grupo eliminado." });
     } catch (err) {
       console.error(err);
-      alert("Error eliminando el grupo.");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al eliminar el grupo." });
     }
   };
 

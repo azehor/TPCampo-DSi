@@ -21,6 +21,7 @@ import { getRevistas, createRevista, updateRevista, deleteRevista } from "../../
 import { getPaises } from "../../services/paisService";
 import type { Revista } from "../../models/revista.model";
 import type { Pais } from "../../models/pais.model";
+import { mostrarConfirmacion, manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 interface Props {
   open: boolean;
@@ -79,7 +80,7 @@ export default function RevistaABMDialog({
       setCount(total);
     } catch (e) {
       console.error("Error cargando revistas", e);
-      alert("Error al cargar revistas");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al cargar las revistas." });
     } finally {
       setLoading(false);
     }
@@ -110,7 +111,9 @@ export default function RevistaABMDialog({
   };
 
   const handleDelete = async (id: number) => {
-    const conf = confirm("¿Seguro que deseas eliminar esta revista?");
+    const conf = await mostrarConfirmacion({
+      mensaje: "¿Está seguro de que desea eliminar esta revista?",
+    });
     if (!conf) return;
 
     try {
@@ -120,7 +123,7 @@ export default function RevistaABMDialog({
       await cargarRevistas();
     } catch (error) {
       console.error("Error eliminando revista:", error);
-      alert("Error al eliminar revista");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al eliminar la revista." });
     } finally {
       setLoading(false);
     }
@@ -129,7 +132,7 @@ export default function RevistaABMDialog({
   async function handleSave() {
     try {
       if (!form.nombre || !form.issn || !form.editorial || !form.pais_id) {
-        alert("Complete todos los campos");
+        manejadorDeMensajes({ tipo: "alerta", mensaje: "Completá todos los campos." });
         return;
       }
 
@@ -157,7 +160,7 @@ export default function RevistaABMDialog({
       onConfirm?.();
     } catch (error) {
       console.error("Error guardando revista:", error);
-      alert("Error guardando revista");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al guardar la revista." });
     } finally {
       setLoading(false);
     }

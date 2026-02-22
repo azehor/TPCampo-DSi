@@ -13,6 +13,7 @@ import {
 
 import { getGruposList } from "../../services/gruposService";
 import { updatePatente } from "../../services/patenteService";
+import { manejadorDeMensajes } from "../common/ManejadorDeMensajes";
 
 interface RegistroData {
   id: number;
@@ -76,7 +77,7 @@ export default function ModificarRegistroDialog({
     const { id, grupo_id, titulo, identificador, tipo } = form;
 
     if (!grupo_id || !titulo || !identificador || !tipo) {
-      alert("Por favor completá todos los campos.");
+      manejadorDeMensajes({ tipo: "alerta", mensaje: "Por favor completá todos los campos." });
       return;
     }
 
@@ -92,7 +93,7 @@ export default function ModificarRegistroDialog({
       onClose();
     } catch (err) {
       console.error("Error modificando patente", err);
-      alert("Ocurrió un error al modificar la patente.");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al modificar la patente." });
     }
   };
 

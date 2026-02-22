@@ -7,6 +7,7 @@ import NuevaMemoriaDialog from "../../components/memorias/NuevaMemoriaDialog";
 import MemoriasEliminadasDialog from "../../components/memorias/MemoriasEliminadasDialog";
 import RestoreIcon from "@mui/icons-material/Restore";
 import { useCurrentUser, isAdmin } from "../../hooks/useCurrentUser";
+import { manejadorDeMensajes } from "../../components/common/ManejadorDeMensajes";
 
 interface Memoria {
   id: number;
@@ -37,7 +38,7 @@ export default function Memorias() {
       setOpenDialog(false);
     } catch (err) {
       console.error("Error creando memoria:", err);
-      alert("Error creando memoria");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al crear la memoria." });
     }
   }
 

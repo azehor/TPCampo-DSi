@@ -13,6 +13,7 @@ import NuevoTrabajoDialog from "../../../components/trabajos-publicados/NuevoTra
 import ModificarTrabajoDialog from "../../../components/trabajos-publicados/ModificarTrabajoDialog";
 
 import { deleteArticulosDivulgacion, getArticulosDivulgacion } from "../../../services/articuloDeDivulgacionService";
+import { mostrarConfirmacion, manejadorDeMensajes } from "../../../components/common/ManejadorDeMensajes";
 
 import "./trabajosPublicados.css";
 
@@ -105,14 +106,16 @@ export default function TrabajosPublicadosDivulgacion() {
 
           <Button size="small" color="error"
             onClick={async () => {
-              const conf = confirm("¿Seguro que deseas eliminar el artículo de divulgación?");
+              const conf = await mostrarConfirmacion({
+                mensaje: "¿Está seguro de que desea eliminar el artículo de divulgación?",
+              });
               if (!conf) return;
 
               try {
                 await deleteArticulosDivulgacion(params.row.id);
                 await cargarDivulgaciones();
               } catch (error) {
-                alert("Ocurrió un error al eliminar el artículo.");
+                manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al eliminar el artículo." });
                 console.error(error);
               }
             }}>
