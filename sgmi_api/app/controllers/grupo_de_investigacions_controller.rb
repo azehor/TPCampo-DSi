@@ -39,6 +39,7 @@ class GrupoDeInvestigacionsController < ApplicationController
       .order(GrupoDeInvestigacion.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
       content: grupos.as_json(
+        methods: :integrantes,
         include: {
           director: {
             include: {
@@ -147,7 +148,6 @@ class GrupoDeInvestigacionsController < ApplicationController
   def grupo_params
     params.require(:grupo_de_investigacion).permit(
       :correo_electronico,
-      :integrantes,
       :nombre,
       :objetivos,
       :sigla,

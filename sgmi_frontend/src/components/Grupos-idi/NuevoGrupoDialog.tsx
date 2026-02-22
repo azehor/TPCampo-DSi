@@ -126,7 +126,6 @@ export default function NuevoGrupoDialog({
     try {
       const created = await crearGrupo({
         correo_electronico,
-        integrantes: 1,
         nombre,
         objetivos: objetivo,
         sigla,

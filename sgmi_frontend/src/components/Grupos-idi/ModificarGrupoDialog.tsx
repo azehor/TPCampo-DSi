@@ -185,7 +185,6 @@ export default function ModificarGrupoDialog({
   try {
     await updateGrupo(form.id, {
       correo_electronico,
-      integrantes: 1,
       nombre,
       objetivos: objetivo,
       sigla,
@@ -333,7 +332,7 @@ export default function ModificarGrupoDialog({
           {/* Fila 5*/}
           <Box>
             <Box mb={1}>
-              <strong>Investigadores del grupo</strong>
+              <strong>Investigadores del grupo ({grupoInvestigadores.length})</strong>
             </Box>
             <List>
               {grupoInvestigadores.map((inv) => (
