@@ -1,6 +1,6 @@
 class MemoriasController < ApplicationController
   before_action :set_memoria, only: [
-  :show, :update, :destroy, :restore,
+  :show, :update, :destroy, :restore, :finalize,
   :add_patente, :remove_patente,
   :add_trabajo_en_revista, :remove_trabajo_en_revista,
   :add_publicacion_en_libro, :remove_publicacion_en_libro,
@@ -60,13 +60,19 @@ class MemoriasController < ApplicationController
 
   # DELETE /memorias/:id (Soft Delete)
   def destroy
-    @memoria.soft_delete
+    @memoria.soft_delete(current_user.id)
     head :no_content
   end
 
   # POST /memorias/:id/restore (Solo admin)
   def restore
     @memoria.restore
+    render json: @memoria, status: :ok
+  end
+
+  # POST /memorias/:id/finalize
+  def finalize
+    @memoria.finalize(current_user.id)
     render json: @memoria, status: :ok
   end
 
@@ -220,14 +226,16 @@ class MemoriasController < ApplicationController
       patentes: {},
       trabajo_en_revistas: {},
       publicacion_en_libros: {},
-      articulo_de_divulgacions: {}
+      articulo_de_divulgacions: {},
+      deleted_by: { only: [], include: { investigador: { only: [], include: { personal: { only: [ :id, :apellido, :nombre, :dni ] } } } } },
+      finalized_by: { only: [], include: { investigador: { only: [], include: { personal: { only: [ :id, :apellido, :nombre ] } } } } }
     }
   end
 
   private
 
   def set_memoria
-    if action_name == 'restore'
+    if action_name == "restore"
       @memoria = Memoria.with_deleted.find(params[:id])
     else
       @memoria = Memoria.find(params[:id])
@@ -235,11 +243,11 @@ class MemoriasController < ApplicationController
   end
 
   def authorize_admin_for_restore
-    render json: { error: "No autorizado" }, status: :forbidden unless @current_user.role == 'admin'
+    render json: { error: "No autorizado" }, status: :forbidden unless @current_user.role == "admin"
   end
 
   def authorize_admin_for_deleted
-    render json: { error: "No autorizado" }, status: :forbidden unless @current_user.role == 'admin'
+    render json: { error: "No autorizado" }, status: :forbidden unless @current_user.role == "admin"
   end
 
   def memoria_params
