@@ -105,7 +105,9 @@ export default function MemoriasEliminadasDialog({
               <ListItem key={memoria.id}>
                 <ListItemText
                   primary={`Año ${memoria.anio}`}
-                  secondary={`Eliminada: ${formatDate(memoria.deleted_at)}`}
+                  secondary={`Eliminada el: ${formatDate(memoria.deleted_at)},
+                            por: ${memoria.deleted_by.investigador.personal.nombre
+                            + ' ' + memoria.deleted_by.investigador.personal.apellido}, DNI: ${memoria.deleted_by.investigador.personal.dni}`}
                 />
                 <ListItemSecondaryAction>
                   <Tooltip title="Recuperar memoria">

@@ -68,7 +68,9 @@ export default function TrabajosPublicados() {
 
   async function cargarPublicaciones() {
     try {
-      const res = await getTrabajosEnRevista(page, limit, search, sortingModel[0].field, sortingModel[0].sort);
+      const sortBy = sortingModel[0]?.field || "";
+      const sortDirection = sortingModel[0]?.sort || "";
+      const res = await getTrabajosEnRevista(page, limit, search, sortBy, sortDirection);
       const trabajosRaw = res.content || [];
       const total = res.metadata.total_count || trabajosRaw.length;
 

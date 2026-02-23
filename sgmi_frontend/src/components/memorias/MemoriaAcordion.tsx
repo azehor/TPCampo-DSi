@@ -6,11 +6,12 @@ import {
   Box,
   IconButton,
   Tooltip,
+  Button
 } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
-import { deleteMemoria } from "../../services/memoriasService";
+import { deleteMemoria, finalizeMemoria } from "../../services/memoriasService";
 import SeccionAccordion from "./SeccionAcordion";
 import { manejadorDeMensajes, mostrarConfirmacion } from "../common/ManejadorDeMensajes";
 
@@ -28,7 +29,7 @@ interface MemoriaAcordionProps {
   onDelete?: () => void;
 }
 
-export default function MemoriaAccordion({ memoria, onDelete }: MemoriaAcordionProps) {
+export default function MemoriaAccordion({ memoria, onDelete, onFinalize }: MemoriaAcordionProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDeleteClick = async () => {
@@ -51,6 +52,27 @@ export default function MemoriaAccordion({ memoria, onDelete }: MemoriaAcordionP
     }
   };
 
+  const handleFinalizeClick = async () => {
+    try {
+      await finalizeMemoria(memoria.id);
+      onFinalize?.();
+    } catch (err) {
+      console.error("Error finalizando memoria:", err)
+      manejadorDeMensajes({ tipo: "error", mensaje: "Error al finalizar la memoria" })
+    }
+  }
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
     <>
       <Accordion>
@@ -65,6 +87,22 @@ export default function MemoriaAccordion({ memoria, onDelete }: MemoriaAcordionP
             }}
           >
             <Typography>{memoria.anio}</Typography>
+            {memoria.finalized ? (
+              <Typography>Memoria finalizada el {formatDate(memoria.updated_at)}, por {
+                memoria.finalized_by.investigador.personal.nombre + ' ' +
+                memoria.finalized_by.investigador.personal.apellido}</Typography>
+            ) : (
+            <div>
+              <Button
+                variant="contained"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleFinalizeClick();
+                }}
+                sx={{ textTransform: "none" }}
+              >
+                Finalizar memoria
+              </Button>
             <Tooltip title="Eliminar memoria">
               <IconButton
                 size="small"
@@ -78,11 +116,13 @@ export default function MemoriaAccordion({ memoria, onDelete }: MemoriaAcordionP
                 <DeleteIcon />
               </IconButton>
             </Tooltip>
+            </div>
+            )}
           </Box>
         </AccordionSummary>
         <AccordionDetails>
         {secciones.map((titulo, index) => (
-          <SeccionAccordion key={index} titulo={titulo}  memoriaId={memoria.id} />
+          <SeccionAccordion key={index} titulo={titulo}  memoriaId={memoria.id} finalizada={memoria.finalized}/>
         ))}
       </AccordionDetails>
       </Accordion>

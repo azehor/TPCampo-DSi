@@ -47,6 +47,10 @@ export default function Memorias() {
     await cargarMemorias();
   }
 
+  async function handleFinalizarMemoria() {
+    await cargarMemorias();
+  }
+
   useEffect(() => {
     cargarMemorias();
   }, []);
@@ -100,6 +104,7 @@ export default function Memorias() {
           key={memoria.id} 
           memoria={memoria} 
           onDelete={handleEliminarMemoria}
+          onFinalize={handleFinalizarMemoria}
         />
       ))}
     </Box>
