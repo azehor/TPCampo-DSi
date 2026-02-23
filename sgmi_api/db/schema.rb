@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_21_141000) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_23_173411) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -71,9 +71,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_21_141000) do
     t.string "anio"
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
+    t.bigint "deleted_by_id"
+    t.boolean "finalized", default: false
+    t.bigint "finalized_by_id"
     t.bigint "grupo_de_investigacion_id", null: false
     t.datetime "updated_at", null: false
     t.index ["deleted_at"], name: "index_memorias_on_deleted_at"
+    t.index ["deleted_by_id"], name: "index_memorias_on_deleted_by_id"
+    t.index ["finalized_by_id"], name: "index_memorias_on_finalized_by_id"
     t.index ["grupo_de_investigacion_id"], name: "index_memorias_on_grupo_de_investigacion_id"
   end
 
@@ -181,6 +186,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_21_141000) do
   add_foreign_key "investigadors", "personals"
   add_foreign_key "investigadors", "users"
   add_foreign_key "memorias", "grupo_de_investigacions"
+  add_foreign_key "memorias", "users", column: "deleted_by_id"
+  add_foreign_key "memorias", "users", column: "finalized_by_id"
   add_foreign_key "patentes", "grupo_de_investigacions"
   add_foreign_key "publicacion_en_libros", "grupo_de_investigacions"
   add_foreign_key "revista", "pais", column: "pais_id"

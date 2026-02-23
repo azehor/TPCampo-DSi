@@ -34,6 +34,8 @@ Rails.application.routes.draw do
       end
 
       member do
+        # FINALIZAR MEMORIA
+        post "finalize", to: "memorias#finalize"
         # RESTAURAR MEMORIA ELIMINADA Solo admin
         post "restore", to: "memorias#restore"
 

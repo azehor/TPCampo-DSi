@@ -1,6 +1,9 @@
 class Memoria < ApplicationRecord
   belongs_to :grupo_de_investigacion, class_name: "GrupoDeInvestigacion"
 
+  belongs_to :deleted_by, class_name: "User", optional: true
+  belongs_to :finalized_by, class_name: "User", optional: true
+
   has_and_belongs_to_many :patentes
 
   has_and_belongs_to_many :trabajo_en_revistas,
@@ -31,13 +34,20 @@ class Memoria < ApplicationRecord
     end
   end
 
-  def soft_delete
+  def finalize(user_id)
+    update_column(:finalized, true)
+    update_column(:finalized_by_id, user_id)
+  end
+
+  def soft_delete(user_id)
     update_column(:deleted_at, Time.current)
+    update_column(:deleted_by_id, user_id)
   end
 
   # Restaurar memoria
   def restore
     update_column(:deleted_at, nil)
+    update_column(:deleted_by_id, nil)
   end
 
   def deleted?
