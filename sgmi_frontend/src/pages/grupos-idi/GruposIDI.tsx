@@ -35,13 +35,14 @@ export default function GruposIDI() {
   }])
 
   async function cargarGrupos() {
-    console.log(sortingModel)
+    const sortBy = sortingModel[0]?.field || "";
+    const sortDirection = sortingModel[0]?.sort || "";
     const res = await getGrupos(
       paginationModel.page,
       paginationModel.pageSize,
       search,
-      sortingModel[0].field,
-      sortingModel[0].sort
+      sortBy,
+      sortDirection
     );
     const total = res.metadata.total_count || res.length;
     setRows(res.content);

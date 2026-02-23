@@ -88,6 +88,10 @@ export async function deleteMemoria(memoriaId: number) {
   await api.delete(`/api/memorias/${memoriaId}`);
 }
 
+// Finalizar memoria
+export async function finalizeMemoria(memoriaId: number) {
+  const res = await api.post(`/api/memorias/${memoriaId}/finalize`)
+}
 // Restaurar memoria (Solo admin)
 export async function restaurarMemoria(memoriaId: number) {
   const res = await api.post(`/api/memorias/${memoriaId}/restore`);

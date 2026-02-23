@@ -24,7 +24,7 @@ import {
 
 import { api } from "../../services/api"
 
-export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
+export default function SeccionActividad({ memoriaId, finalizada }: { memoriaId: number, finalizada: boolean }) {
 
   const [tab, setTab] = useState(0);
   const [rows, setRows] = useState<any[]>([]);
@@ -128,6 +128,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
           </Box>
         ),
       },
+
     ],
     [
       { field: "codigo", headerName: "Código", flex: 1, minWidth: 120 },
@@ -179,8 +180,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
     [
       { field: "identificador", headerName: "Identificador", flex: 1.5, minWidth: 120 },
       { field: "titulo", headerName: "Título", flex: 3.5, minWidth: 200 },
-      { field: "tipo", headerName: "Tipo", flex: 1.5, minWidth: 120 },
-
+      { field: "tipo", headerName: "Tipo", flex: 1.5, minWidth: 120 }, 
       {
         field: "acciones",
         headerName: "Acciones",
@@ -212,6 +212,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
           <Tab label="Patentes" />
         </Tabs>
 
+        {!finalizada &&
         <Button
           variant="outlined"
           size="small"
@@ -221,6 +222,7 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
         >
           Asociar
         </Button>
+        }
       </Box>
 
       <Paper sx={{ mt: 2, height: 450 }}>
@@ -255,6 +257,13 @@ export default function SeccionActividad({ memoriaId }: { memoriaId: number }) {
           onFilterModelChange={setFilterModel}
           disableColumnMenu
           disableColumnResize
+          initialState={{
+            columns: {
+              columnVisibilityModel: {
+                acciones: !finalizada
+              }
+            }
+          }}
         />
       </Paper>
 

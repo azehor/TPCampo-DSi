@@ -57,12 +57,11 @@ export default function TrabajosPublicadosDivulgacion() {
 
   async function cargarDivulgaciones() {
     try {
-      const res = await getArticulosDivulgacion(page, limit, search, sortingModel[0].field, sortingModel[0].sort);
-
+      const sortBy = sortingModel[0]?.field || "";
+      const sortDirection = sortingModel[0]?.sort || "";
+      const res = await getArticulosDivulgacion(page, limit, search, sortBy, sortDirection);
 
       const articulos = res.content || [];
-      console.log(articulos);
-      
       const total = res.metadata.total_count || articulos.length;
 
       const articulosMap = articulos.map((a: { id: any; codigo: any; titulo: any; nombre: any; grupo_de_investigacion_id: any; grupo_de_investigacion: { nombre: any; }; }) => ({

@@ -10,9 +10,11 @@ import SeccionActividad from "./SeccionActividad";
 export default function SeccionAccordion({
   titulo,
   memoriaId,
+  finalizada,
 }: {
   titulo: string;
   memoriaId: number;
+  finalizada: boolean
 }) {
   const esActividades = titulo.startsWith("II.");
 
@@ -24,7 +26,7 @@ export default function SeccionAccordion({
 
       <AccordionDetails>
         {esActividades ? (
-          <SeccionActividad memoriaId={memoriaId} />
+          <SeccionActividad memoriaId={memoriaId} finalizada={finalizada}/>
         ) : (
           <Typography variant="body2" color="text.secondary">
             Contenido no disponible aún.

@@ -54,7 +54,9 @@ export default function PatentesRegistros() {
 
   async function cargarPatentes() {
     try {
-      const res = await getPatentes(page, limit, search, sortingModel[0].field, sortingModel[0].sort);
+      const sortBy = sortingModel[0]?.field || "";
+      const sortDirection = sortingModel[0]?.sort || "";
+      const res = await getPatentes(page, limit, search, sortBy, sortDirection);
 
       const patentes = res.content || [];
       const total = res.metadata.total_count || patentes.length;
