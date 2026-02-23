@@ -33,32 +33,42 @@ export default function SeccionActividad({ memoriaId, finalizada }: { memoriaId:
 
   const limit = 6;
   const [count, setCount] = useState(0);
+
   const [paginationModel, setPaginationModel] = useState({
       page: 0,
       pageSize: limit
   });
-  const [filterModel, setFilterModel] = useState<GridFilterModel>({ items: [] });
-  const [, setSortModel] = useState<GridSortModel>([]);
+
+  const [sortingModel, setSortingModel] = useState([{
+    field: "",
+    sort: ""
+  }])
 
   useEffect(() => {
     cargarDatos();
     cargarDisponibles();
-  }, [tab, paginationModel]);
+  }, [tab]);
+
+  useEffect(() => {
+    cargarDatos();
+  }, [paginationModel, sortingModel]);
 
   async function cargarDatos() {
     let res;
 
+    const sortBy = sortingModel[0]?.field || "";
+    const sortDirection = sortingModel[0]?.sort || "";
     if (tab === 0) {
-      res = await getTrabajosEnRevistaPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize);
+      res = await getTrabajosEnRevistaPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize, sortBy, sortDirection);
     }
     if (tab === 1) {
-      res = await getPublicacionesEnLibroPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize);
+      res = await getPublicacionesEnLibroPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize, sortBy, sortDirection);
     }
     if (tab === 2) {
-      res = await getArticulosDivulgacionPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize);
+      res = await getArticulosDivulgacionPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize, sortBy, sortDirection);
     }
     if (tab === 3) {
-      res = await getPatentesPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize);
+      res = await getPatentesPorMemoria(memoriaId, paginationModel.page, paginationModel.pageSize, sortBy, sortDirection);
     }
     setRows(res.content);
     const total = res.metadata.total_count || res.length;
@@ -251,10 +261,8 @@ export default function SeccionActividad({ memoriaId, finalizada }: { memoriaId:
           paginationModel={paginationModel}
           onPaginationModelChange={(model) => setPaginationModel(model)}
           sortingMode="server"
-          filterMode="server"
-          filterModel={filterModel}
-          onSortModelChange={setSortModel}
-          onFilterModelChange={setFilterModel}
+          sortingModel={sortingModel}
+          onSortModelChange={(model) => setSortingModel(model)}
           disableColumnMenu
           disableColumnResize
           initialState={{

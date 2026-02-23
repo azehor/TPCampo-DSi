@@ -24,23 +24,23 @@ export async function getMemoria(id: number) {
   return res.data;
 }
 
-export async function getPatentesPorMemoria(id: number, page: number, limit: number) {
-  const res = await api.get(`/api/memorias/${id}/patentes`, {params: {limit, page}});
+export async function getPatentesPorMemoria(id: number, page: number, limit: number, field = "", sort = "") {
+  const res = await api.get(`/api/memorias/${id}/patentes`, {params: {limit, page, field, sort}});
   return res.data;
 }
 
-export async function getTrabajosEnRevistaPorMemoria(id: number, page: number, limit: number) {
-  const res = await api.get(`/api/memorias/${id}/trabajos_en_revista`, {params: {limit, page}});
+export async function getTrabajosEnRevistaPorMemoria(id: number, page: number, limit: number, field = "", sort = "") {
+  const res = await api.get(`/api/memorias/${id}/trabajos_en_revista`, {params: {limit, page, field, sort}});
   return res.data;
 }
 
-export async function getPublicacionesEnLibroPorMemoria(id: number, page: number, limit: number) {
-  const res = await api.get(`/api/memorias/${id}/publicaciones_en_libro`, {params: {limit, page}});
+export async function getPublicacionesEnLibroPorMemoria(id: number, page: number, limit: number, field = "", sort = "") {
+  const res = await api.get(`/api/memorias/${id}/publicaciones_en_libro`, {params: {limit, page, field, sort}});
   return res.data;
 }
 
-export async function getArticulosDivulgacionPorMemoria(id: number, page: number, limit: number) {
-  const res = await api.get(`/api/memorias/${id}/articulos_de_divulgacion`, {params: {limit, page}});
+export async function getArticulosDivulgacionPorMemoria(id: number, page: number, limit: number, field = "", sort = "") {
+  const res = await api.get(`/api/memorias/${id}/articulos_de_divulgacion`, {params: {limit, page, field, sort}});
   return res.data;
 }
 
