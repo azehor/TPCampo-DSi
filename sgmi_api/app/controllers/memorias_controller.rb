@@ -100,8 +100,17 @@ class MemoriasController < ApplicationController
       page = 0
       per_page = 15
     end
+    if params.has_key?(:field) && params.has_key?(:sort)
+      field = params[:field]
+      sort = params[:sort]
+    else
+      field = "created_at"
+      sort = "desc"
+    end
     count = @memoria.patentes.count
-    content = @memoria.patentes.limit(per_page).offset(page * per_page)
+    content = @memoria.patentes
+      .limit(per_page).offset(page * per_page)
+      .order(Memoria.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
       content: content.as_json(),
       metadata: {
@@ -135,8 +144,19 @@ class MemoriasController < ApplicationController
       page = 0
       per_page = 15
     end
+    if params.has_key?(:field) && params.has_key?(:sort)
+      field = params[:field]
+      sort = params[:sort]
+    else
+      field = "created_at"
+      sort = "desc"
+    end
     count = @memoria.trabajo_en_revistas.count
-    content = @memoria.trabajo_en_revistas.limit(per_page).offset(page * per_page)
+    content = @memoria.trabajo_en_revistas
+      .joins(revista: :pais)
+      .select(:codigo, :titulo, :revista_id, :id, :pais_id)
+      .limit(per_page).offset(page * per_page)
+      .order(Memoria.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
       content: content.as_json(include: {
         revista: {
@@ -175,8 +195,17 @@ class MemoriasController < ApplicationController
       page = 0
       per_page = 15
     end
+    if params.has_key?(:field) && params.has_key?(:sort)
+      field = params[:field]
+      sort = params[:sort]
+    else
+      field = "created_at"
+      sort = "desc"
+    end
     count = @memoria.publicacion_en_libros.count
-    content = @memoria.publicacion_en_libros.limit(per_page).offset(page * per_page)
+    content = @memoria.publicacion_en_libros
+      .limit(per_page).offset(page * per_page)
+      .order(Memoria.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
       content: content.as_json(),
       metadata: {
@@ -209,8 +238,17 @@ class MemoriasController < ApplicationController
       page = 0
       per_page = 15
     end
+    if params.has_key?(:field) && params.has_key?(:sort)
+      field = params[:field]
+      sort = params[:sort]
+    else
+      field = "created_at"
+      sort = "desc"
+    end
     count = @memoria.articulo_de_divulgacions.count
-    content = @memoria.articulo_de_divulgacions.limit(per_page).offset(page * per_page)
+    content = @memoria.articulo_de_divulgacions
+      .limit(per_page).offset(page * per_page)
+      .order(Memoria.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
       content: content.as_json(),
       metadata: {
