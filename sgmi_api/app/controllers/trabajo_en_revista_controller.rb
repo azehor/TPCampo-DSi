@@ -35,7 +35,7 @@ class TrabajoEnRevistaController < ApplicationController
       .query_tables(query)
       .user_visibility(currGrupo)
       .memoria_visibility(params[:memoria_id])
-    count = revistas.count
+    count = revistas.size
     revistas = revistas
       .limit(per_page).offset(page * per_page)
       .order(TrabajoEnRevista.sanitize_sql_for_order("#{field} #{sort}"))

@@ -34,7 +34,7 @@ class GrupoDeInvestigacionsController < ApplicationController
       .query_tables(query)
       .user_visibility(currGrupo)
       .references(:personal)
-    count = grupos.count
+    count = grupos.size
     grupos = grupos
       .limit(per_page).offset(page * per_page)
       .order(GrupoDeInvestigacion.sanitize_sql_for_order("#{field} #{sort}"))

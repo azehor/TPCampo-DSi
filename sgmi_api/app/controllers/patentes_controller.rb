@@ -35,7 +35,7 @@ class PatentesController < ApplicationController
       .query_tables(query)
       .user_visibility(currGrupo)
       .memoria_visibility(params[:memoria_id])
-    count = patentes.count
+    count = patentes.size
     patentes = patentes
       .limit(per_page).offset(page * per_page)
       .order(Patente.sanitize_sql_for_order("#{field} #{sort}"))

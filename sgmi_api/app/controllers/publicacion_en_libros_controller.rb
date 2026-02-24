@@ -35,7 +35,7 @@ class PublicacionEnLibrosController < ApplicationController
       .query_tables(query)
       .user_visibility(currGrupo)
       .memoria_visibility(params[:memoria_id])
-    count = publicaciones.count
+    count = publicaciones.size
     publicaciones = publicaciones
       .limit(per_page).offset(page * per_page)
       .order(PublicacionEnLibro.sanitize_sql_for_order("#{field} #{sort}"))
