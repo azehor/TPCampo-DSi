@@ -143,7 +143,8 @@ export default function NuevoGrupoDialog({
       const groupId = created?.id;
       // Guardar los investigadores seleccionados
       if (groupId && selectedInvestigadores.length > 0) {
-        await Promise.all(selectedInvestigadores.map((invId) => addInvestigadorToGrupo(groupId, invId)));
+        const investigadoresUnicos = Array.from(new Set(selectedInvestigadores));
+        await Promise.all(investigadoresUnicos.map((invId) => addInvestigadorToGrupo(groupId, invId)));
       }
 
       manejadorDeMensajes({ tipo: "exito", mensaje: "Grupo creado correctamente." });
@@ -300,7 +301,9 @@ export default function NuevoGrupoDialog({
             options={investigadoresDisponibles}
             getOptionLabel={(option: any) => `${option.personal?.nombre ?? ""} ${option.personal?.apellido ?? ""}`.trim()}
             value={investigadoresDisponibles.filter((i) => i.id !== undefined && selectedInvestigadores.includes(i.id))}
-            onChange={(_, value) => setSelectedInvestigadores(value.flatMap((i) => (i.id ? [i.id] : [])))}
+            onChange={(_, value) =>
+              setSelectedInvestigadores(Array.from(new Set(value.flatMap((i) => (i.id ? [i.id] : [])))))
+            }
             isOptionEqualToValue={(option, value) => option.id === value.id}
             filterSelectedOptions
             renderInput={(params) => (

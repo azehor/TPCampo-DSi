@@ -66,8 +66,15 @@ export default function ModificarGrupoDialog({
   });
   const [intentoEnvio, setIntentoEnvio] = useState(false);
 
+  const idsIntegrantesDelGrupo = grupoInvestigadores
+    .map((inv) => inv.id)
+    .filter((id): id is number => id !== undefined);
+
   const investigadoresDisponibles = investigadores.filter(
-    (inv) => inv.id !== form.director_id && inv.id !== form.vicedirector_id
+    (inv) =>
+      inv.id !== form.director_id &&
+      inv.id !== form.vicedirector_id &&
+      !idsIntegrantesDelGrupo.includes(inv.id ?? -1)
   );
 
   const integrantesVisibles = grupoInvestigadores.filter(
@@ -262,6 +269,11 @@ export default function ModificarGrupoDialog({
   const handleAddInvestigador = async () => {
     if (!form.id || !nuevoInvestigadorId) return;
 
+    if (idsIntegrantesDelGrupo.includes(Number(nuevoInvestigadorId))) {
+      manejadorDeMensajes({ tipo: "error", mensaje: "El investigador ya pertenece al grupo." });
+      return;
+    }
+
     try {
       await addInvestigadorToGrupo(form.id, Number(nuevoInvestigadorId));
       const res = await getGrupoInvestigadores(form.id);
@@ -453,6 +465,14 @@ export default function ModificarGrupoDialog({
                 value={investigadoresDisponibles.find((i) => i.id === nuevoInvestigadorId) ?? null}
                 onChange={(_, value) => setNuevoInvestigadorId(value?.id ?? "")}
                 isOptionEqualToValue={(option, value) => option.id === value.id}
+                slotProps={{
+                  paper: {
+                    sx: {
+                      bgcolor: "grey.100",
+                    },
+                  },
+                
+                }}
                 renderInput={(params) => (
                   <TextField {...params} label="Agregar investigador" />
                 )}

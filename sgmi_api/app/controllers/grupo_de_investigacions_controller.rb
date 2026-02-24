@@ -115,7 +115,17 @@ class GrupoDeInvestigacionsController < ApplicationController
     grupo = GrupoDeInvestigacion.find(params[:id])
     investigador = Investigador.find(params[:investigador_id])
 
-    GrupoInvestigador.find_or_create_by!(
+    ya_pertenece = GrupoInvestigador.exists?(
+      grupo_de_investigacion_id: grupo.id,
+      investigador_id: investigador.id
+    )
+
+    if ya_pertenece
+      render json: { error: [ "El investigador ya pertenece al grupo" ] }, status: :unprocessable_entity
+      return
+    end
+
+    GrupoInvestigador.create!(
       grupo_de_investigacion_id: grupo.id,
       investigador_id: investigador.id
     )
@@ -125,6 +135,8 @@ class GrupoDeInvestigacionsController < ApplicationController
     render json: { error: e.message }, status: :not_found
   rescue ActiveRecord::RecordInvalid => e
     render json: { error: e.record.errors.full_messages }, status: :unprocessable_entity
+  rescue ActiveRecord::RecordNotUnique
+    render json: { error: [ "El investigador ya pertenece al grupo" ] }, status: :unprocessable_entity
   end
 
   # DELETE /api/grupo_de_investigacions/:id/investigadores/:investigador_id
