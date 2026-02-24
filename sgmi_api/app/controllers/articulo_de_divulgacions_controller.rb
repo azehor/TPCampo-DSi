@@ -35,7 +35,7 @@ class ArticuloDeDivulgacionsController < ApplicationController
       .query_tables(query)
       .user_visibility(currGrupo)
       .memoria_visibility(params[:memoria_id])
-    count = articulos.count
+    count = articulos.size
     articulos = articulos
       .limit(per_page).offset(page * per_page)
       .order(ArticuloDeDivulgacion.sanitize_sql_for_order("#{field} #{sort}"))
