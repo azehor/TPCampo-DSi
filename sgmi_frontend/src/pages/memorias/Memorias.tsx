@@ -35,6 +35,7 @@ export default function Memorias() {
     try {
       await createMemoria(grupoId, anio);
       await cargarMemorias();
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Memoria creada correctamente." });
       setOpenDialog(false);
     } catch (err) {
       console.error("Error creando memoria:", err);

@@ -6,7 +6,6 @@ import {
   DialogActions,
   TextField,
   Button,
-  Alert,
   CircularProgress,
 } from "@mui/material";
 import { cambiarContrasenia } from "../../services/userService";
@@ -22,32 +21,30 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [intentoEnvio, setIntentoEnvio] = useState(false);
 
   const handleChangePassword = async () => {
-    // Validaciones
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      setError("Todos los campos son requeridos");
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      setError("Las nuevas contraseñas no coinciden");
+    setIntentoEnvio(true);
+    if (!currentPassword.trim() || !newPassword.trim() || !confirmPassword.trim()) {
       return;
     }
 
     if (newPassword.length < 6) {
-      setError("La nueva contraseña debe tener al menos 6 caracteres");
+      manejadorDeMensajes({ tipo: "alerta", mensaje: "La nueva contraseña debe tener al menos 6 caracteres." });
       return;
     }
 
     if (currentPassword === newPassword) {
-      setError("La nueva contraseña debe ser diferente a la actual");
+      manejadorDeMensajes({ tipo: "alerta", mensaje: "La nueva contraseña debe ser diferente a la actual." });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      manejadorDeMensajes({ tipo: "alerta", mensaje: "Las nuevas contraseñas no coinciden." });
       return;
     }
 
     setLoading(true);
-    setError(null);
 
     try {
       const result = await cambiarContrasenia(currentPassword, newPassword);
@@ -58,6 +55,7 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
+        setIntentoEnvio(false);
         onClose();
       }, 1500);
     } catch (err: any) {
@@ -74,7 +72,7 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
     setCurrentPassword("");
     setNewPassword("");
     setConfirmPassword("");
-    setError(null);
+    setIntentoEnvio(false);
     onClose();
   };
 
@@ -82,35 +80,42 @@ const CambiarContraseniaDialog = ({ open, onClose }: CambiarContraseniaDialogPro
     <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
       <DialogTitle>Cambiar Contraseña</DialogTitle>
       <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: 2 }}>
-        {error && <Alert severity="error">{error}</Alert>}
-
         <TextField
           label="Contraseña Actual"
+          required
           type="password"
           fullWidth
           sx={{ mt: 1 }}
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
+          error={intentoEnvio && !currentPassword.trim()}
+          helperText={intentoEnvio && !currentPassword.trim() ? "Campo obligatorio" : ""}
           disabled={loading}
           variant="outlined"
         />
 
         <TextField
           label="Nueva Contraseña"
+          required
           type="password"
           fullWidth
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
+          error={intentoEnvio && !newPassword.trim()}
+          helperText={intentoEnvio && !newPassword.trim() ? "Campo obligatorio" : ""}
           disabled={loading}
           variant="outlined"
         />
 
         <TextField
           label="Confirmar Nueva Contraseña"
+          required
           type="password"
           fullWidth
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
+          error={intentoEnvio && !confirmPassword.trim()}
+          helperText={intentoEnvio && !confirmPassword.trim() ? "Campo obligatorio" : ""}
           disabled={loading}
           variant="outlined"
         />

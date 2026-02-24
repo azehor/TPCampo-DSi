@@ -102,6 +102,7 @@ export default function TrabajosPublicadosLibro() {
   try {
     await deletePublicacionEnLibro({ id });
     await cargarPublicaciones();
+    manejadorDeMensajes({ tipo: "exito", mensaje: "Publicación eliminada correctamente." });
   } catch (error) {
     manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al eliminar la publicación." });
     console.error(error);

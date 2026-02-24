@@ -147,6 +147,7 @@ export default function TrabajosPublicados() {
     try {
       await deleteTrabajoEnRevista({id});
       await cargarPublicaciones();
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Trabajo en revista eliminado correctamente." });
     } catch (error) {
       console.error("Error eliminando trabajo en revista:", error);
       manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al eliminar el trabajo." });

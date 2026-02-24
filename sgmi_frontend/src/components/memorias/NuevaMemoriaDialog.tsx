@@ -41,7 +41,7 @@ export default function NuevaMemoriaDialog({ open, onClose, onConfirm }: Props) 
 
       <DialogContent sx={{ pb: 2}}>
         <Typography variant="body2" sx={{ mb: 1 }}>
-          Año
+          Año *
         </Typography>
         <TextField
           select

@@ -90,6 +90,7 @@ export function AdminPanel() {
       await investigadorService.deleteInvestigador(id);
       setSelectedInvestigador(null);
       fetchInvestigadores();
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Investigador eliminado correctamente." });
     } catch (err: any) {
       manejadorDeMensajes({ tipo: "error", mensaje: `Error al eliminar el investigador: ${err.message}` });
     }
@@ -218,13 +219,17 @@ export function AdminPanel() {
         }}
         onSuccess={() => {
           fetchInvestigadores();
+          manejadorDeMensajes({ tipo: "exito", mensaje: "Investigador modificado correctamente." });
         }}
       />
 
       <CreateInvestigadorDialog
         open={openDialog}
         onClose={handleDialogClose}
-        onSuccess={handleCreateSuccess}
+        onSuccess={() => {
+          handleCreateSuccess();
+          manejadorDeMensajes({ tipo: "exito", mensaje: "Investigador creado correctamente." });
+        }}
       />
     </Box>
   );

@@ -66,6 +66,7 @@ export default function MemoriasEliminadasDialog({
     try {
       await restaurarMemoria(memoriaId);
       setMemorias(memorias.filter((m) => m.id !== memoriaId));
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Memoria recuperada correctamente." });
       onRestore?.();
     } catch (err) {
       console.error("Error recuperando memoria:", err);

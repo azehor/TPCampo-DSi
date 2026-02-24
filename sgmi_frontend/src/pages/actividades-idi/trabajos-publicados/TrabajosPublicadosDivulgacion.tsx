@@ -113,6 +113,7 @@ export default function TrabajosPublicadosDivulgacion() {
               try {
                 await deleteArticulosDivulgacion(params.row.id);
                 await cargarDivulgaciones();
+                manejadorDeMensajes({ tipo: "exito", mensaje: "Artículo de divulgación eliminado correctamente." });
               } catch (error) {
                 manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al eliminar el artículo." });
                 console.error(error);

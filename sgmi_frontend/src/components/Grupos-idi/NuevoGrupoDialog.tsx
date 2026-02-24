@@ -55,6 +55,7 @@ export default function NuevoGrupoDialog({
       objetivo: "",
     }
   );
+  const [intentoEnvio, setIntentoEnvio] = React.useState(false);
 
   // Cargar investigadores
   useEffect(() => {
@@ -113,6 +114,7 @@ export default function NuevoGrupoDialog({
   }, [form.director_id, form.vicedirector_id]);
 
   const handleConfirm = async () => {
+    setIntentoEnvio(true);
     const {
       nombre,
       sigla,
@@ -123,8 +125,7 @@ export default function NuevoGrupoDialog({
       objetivo,
     } = form;
 
-    if (!nombre || !correo_electronico || !director_id || !objetivo || !facultad_id || !vicedirector_id) {
-      manejadorDeMensajes({ tipo: "alerta", mensaje: "Por favor completá todos los campos obligatorios." });
+    if (!nombre.trim() || !correo_electronico.trim() || !facultad_id || !director_id || !vicedirector_id || !objetivo.trim()) {
       return;
     }
 
@@ -134,9 +135,9 @@ export default function NuevoGrupoDialog({
         nombre,
         objetivos: objetivo,
         sigla,
-        facultad_regional_id: facultad_id,
-        director_id,
-        vicedirector_id,
+        facultad_regional_id: Number(facultad_id),
+        director_id: Number(director_id),
+        vicedirector_id: Number(vicedirector_id),
       });
 
       const groupId = created?.id;
@@ -144,6 +145,8 @@ export default function NuevoGrupoDialog({
       if (groupId && selectedInvestigadores.length > 0) {
         await Promise.all(selectedInvestigadores.map((invId) => addInvestigadorToGrupo(groupId, invId)));
       }
+
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Grupo creado correctamente." });
 
       onConfirm(form);
 
@@ -159,6 +162,7 @@ export default function NuevoGrupoDialog({
 
       setSelectedInvestigadores([]);
 
+      setIntentoEnvio(false);
       onClose();
     }catch (err) {
       console.error("Error creando grupo", err);
@@ -184,9 +188,12 @@ export default function NuevoGrupoDialog({
         <Stack spacing={3}>
           {/* Fila 1*/}
           <TextField
-            label="Nombre del Grupo*"
+            label="Nombre del Grupo"
+            required
             value={form.nombre}
             onChange={handleChange("nombre")}
+            error={intentoEnvio && !form.nombre.trim()}
+            helperText={intentoEnvio && !form.nombre.trim() ? "Campo obligatorio" : ""}
             fullWidth
           />
 
@@ -199,9 +206,12 @@ export default function NuevoGrupoDialog({
               fullWidth
             />
             <TextField
-              label="Correo electrónico*"
+              label="Correo electrónico"
+              required
               value={form.correo_electronico}
               onChange={handleChange("correo_electronico")}
+              error={intentoEnvio && !form.correo_electronico.trim()}
+              helperText={intentoEnvio && !form.correo_electronico.trim() ? "Campo obligatorio" : ""}
               fullWidth
               type="email"
             />
@@ -213,12 +223,19 @@ export default function NuevoGrupoDialog({
               options={facultades}
               getOptionLabel={(option) => option.nombre}
               value={facultades.find((f) => f.id === form.facultad_id) ?? null}
-              onChange={(_, value) =>
-                setForm({ ...form, facultad_id: value?.id })
-              }
+              onChange={(_, value) => {
+                setForm({ ...form, facultad_id: value?.id });
+              }}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               renderInput={(params) => (
-                <TextField {...params} label="Facultad Regional*" fullWidth />
+                <TextField
+                  {...params}
+                  label="Facultad Regional"
+                  required
+                  fullWidth
+                  error={intentoEnvio && !form.facultad_id}
+                  helperText={intentoEnvio && !form.facultad_id ? "Campo obligatorio" : ""}
+                />
               )}
             />
 
@@ -226,12 +243,19 @@ export default function NuevoGrupoDialog({
               options={investigadores}
               getOptionLabel={(option: any) => `${option.personal?.nombre ?? ""} ${option.personal?.apellido ?? ""}`.trim()}
               value={investigadores.find((i) => i.id === form.director_id) ?? null}
-              onChange={(_, value) =>
-                setForm({ ...form, director_id: value?.id })
-              }
+              onChange={(_, value) => {
+                setForm({ ...form, director_id: value?.id });
+              }}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               renderInput={(params) => (
-                <TextField {...params} label="Director/a*" fullWidth />
+                <TextField
+                  {...params}
+                  label="Director/a"
+                  required
+                  fullWidth
+                  error={intentoEnvio && !form.director_id}
+                  helperText={intentoEnvio && !form.director_id ? "Campo obligatorio" : ""}
+                />
               )}
             />
 
@@ -239,27 +263,35 @@ export default function NuevoGrupoDialog({
               options={investigadores}
               getOptionLabel={(option: any) => `${option.personal?.nombre ?? ""} ${option.personal?.apellido ?? ""}`.trim()}
               value={investigadores.find((i) => i.id === form.vicedirector_id) ?? null}
-              onChange={(_, value) =>
-                setForm({ ...form, vicedirector_id: value?.id })
-              }
+              onChange={(_, value) => {
+                setForm({ ...form, vicedirector_id: value?.id });
+              }}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               renderInput={(params) => (
-                <TextField {...params} label="Vicedirector/a*" fullWidth />
+                <TextField
+                  {...params}
+                  label="Vicedirector/a"
+                  required
+                  fullWidth
+                  error={intentoEnvio && !form.vicedirector_id}
+                  helperText={intentoEnvio && !form.vicedirector_id ? "Campo obligatorio" : ""}
+                />
               )}
             />
           </Box>
 
           {/* Fila 4*/}
           <TextField
-            label="Objetivo*"
+            label="Objetivo"
+            required
             value={form.objetivo}
             onChange={handleChange("objetivo")}
             fullWidth
             multiline
             rows={3}
             inputProps={{ maxLength: 200 }}
-            helperText={`${form.objetivo.length}/200 caracteres`}
-            FormHelperTextProps={{ sx: { textAlign: "right", mt: 0.5 } }}
+            error={intentoEnvio && !form.objetivo.trim()}
+            helperText={intentoEnvio && !form.objetivo.trim() ? "Campo obligatorio" : ""}
           />
 
           {/* Fila 5*/}
@@ -267,8 +299,8 @@ export default function NuevoGrupoDialog({
             multiple
             options={investigadoresDisponibles}
             getOptionLabel={(option: any) => `${option.personal?.nombre ?? ""} ${option.personal?.apellido ?? ""}`.trim()}
-            value={investigadoresDisponibles.filter((i) => selectedInvestigadores.includes(i.id))}
-            onChange={(_, value) => setSelectedInvestigadores(value.map((i) => i.id))}
+            value={investigadoresDisponibles.filter((i) => i.id !== undefined && selectedInvestigadores.includes(i.id))}
+            onChange={(_, value) => setSelectedInvestigadores(value.flatMap((i) => (i.id ? [i.id] : [])))}
             isOptionEqualToValue={(option, value) => option.id === value.id}
             filterSelectedOptions
             renderInput={(params) => (

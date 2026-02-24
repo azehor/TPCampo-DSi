@@ -64,6 +64,7 @@ export default function ModificarGrupoDialog({
     vicedirector_id: undefined,
     objetivo: "",
   });
+  const [intentoEnvio, setIntentoEnvio] = useState(false);
 
   const investigadoresDisponibles = investigadores.filter(
     (inv) => inv.id !== form.director_id && inv.id !== form.vicedirector_id
@@ -106,6 +107,7 @@ export default function ModificarGrupoDialog({
         }
       }
       loadFullGrupoData();
+      setIntentoEnvio(false);
     }
   }, [initialData, open]);
 
@@ -210,6 +212,7 @@ export default function ModificarGrupoDialog({
   };
 
   const handleConfirm = async () => {
+  setIntentoEnvio(true);
   const {
     nombre,
     correo_electronico,
@@ -221,14 +224,13 @@ export default function ModificarGrupoDialog({
   } = form;
 
   if (
-    !nombre ||
-    !correo_electronico ||
+    !nombre.trim() ||
+    !correo_electronico.trim() ||
     !director_id ||
-    !objetivo ||
+    !objetivo.trim() ||
     !facultad_id ||
     !vicedirector_id
   ) {
-    manejadorDeMensajes({ tipo: "alerta", mensaje: "Por favor completá todos los campos obligatorios." });
     return;
   }
 
@@ -248,6 +250,8 @@ export default function ModificarGrupoDialog({
       vicedirector_id
     });
 
+    manejadorDeMensajes({ tipo: "exito", mensaje: "Grupo modificado correctamente." });
+    setIntentoEnvio(false);
     onConfirm(form);
   } catch (err) {
     console.error(err);
@@ -263,6 +267,7 @@ export default function ModificarGrupoDialog({
       const res = await getGrupoInvestigadores(form.id);
       setGrupoInvestigadores(res);
       setNuevoInvestigadorId("");
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Investigador agregado al grupo." });
     } catch (err) {
       console.error(err);
       const message =
@@ -288,6 +293,7 @@ export default function ModificarGrupoDialog({
       await removeInvestigadorFromGrupo(form.id, investigadorId);
       const res = await getGrupoInvestigadores(form.id);
       setGrupoInvestigadores(res);
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Investigador quitado del grupo." });
     } catch (err) {
       console.error(err);
       manejadorDeMensajes({ tipo: "error", mensaje: "Error al quitar al investigador." });
@@ -311,9 +317,12 @@ export default function ModificarGrupoDialog({
         <Stack spacing={3}>
           {/* Fila 1*/}
           <TextField
-            label="Nombre del Grupo*"
+            label="Nombre del Grupo"
+            required
             value={form.nombre}
             onChange={handleChange("nombre")}
+            error={intentoEnvio && !form.nombre.trim()}
+            helperText={intentoEnvio && !form.nombre.trim() ? "Campo obligatorio" : ""}
             fullWidth
           />
 
@@ -327,8 +336,11 @@ export default function ModificarGrupoDialog({
             />
             <TextField
               label="Correo electrónico*"
+              required
               value={form.correo_electronico}
               onChange={handleChange("correo_electronico")}
+              error={intentoEnvio && !form.correo_electronico.trim()}
+              helperText={intentoEnvio && !form.correo_electronico.trim() ? "Campo obligatorio" : ""}
               fullWidth
               type="email"
             />
@@ -340,12 +352,19 @@ export default function ModificarGrupoDialog({
               options={facultades}
               getOptionLabel={(option) => option.nombre}
               value={facultades.find((f) => f.id === form.facultad_id) ?? null}
-              onChange={(_, value) =>
-                setForm({ ...form, facultad_id: value?.id })
-              }
+              onChange={(_, value) => {
+                setForm({ ...form, facultad_id: value?.id });
+              }}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               renderInput={(params) => (
-                <TextField {...params} label="Facultad Regional*" fullWidth />
+                <TextField
+                  {...params}
+                  label="Facultad Regional"
+                  required
+                  fullWidth
+                  error={intentoEnvio && !form.facultad_id}
+                  helperText={intentoEnvio && !form.facultad_id ? "Campo obligatorio" : ""}
+                />
               )}
             />
 
@@ -360,7 +379,14 @@ export default function ModificarGrupoDialog({
               }}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               renderInput={(params) => (
-                <TextField {...params} label="Director/a*" fullWidth />
+                <TextField
+                  {...params}
+                  label="Director/a"
+                  required
+                  fullWidth
+                  error={intentoEnvio && !form.director_id}
+                  helperText={intentoEnvio && !form.director_id ? "Campo obligatorio" : ""}
+                />
               )}
             />
 
@@ -375,22 +401,30 @@ export default function ModificarGrupoDialog({
               }}
               isOptionEqualToValue={(option, value) => option.id === value.id}
               renderInput={(params) => (
-                <TextField {...params} label="Vicedirector/a*" fullWidth />
+                <TextField
+                  {...params}
+                  label="Vicedirector/a"
+                  required
+                  fullWidth
+                  error={intentoEnvio && !form.vicedirector_id}
+                  helperText={intentoEnvio && !form.vicedirector_id ? "Campo obligatorio" : ""}
+                />
               )}
             />
           </Box>
 
           {/* Fila 4*/}
           <TextField
-            label="Objetivo*"
+            label="Objetivo"
+            required
             value={form.objetivo}
             onChange={handleChange("objetivo")}
             fullWidth
             multiline
             rows={3}
             inputProps={{ maxLength: 200 }}
-            helperText={`${form.objetivo?.length}/200 caracteres`}
-            FormHelperTextProps={{ sx: { textAlign: "right", mt: 0.5 } }}
+            error={intentoEnvio && !form.objetivo.trim()}
+            helperText={intentoEnvio && !form.objetivo.trim() ? "Campo obligatorio" : ""}
           />
 
           {/* Fila 5*/}

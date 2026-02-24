@@ -10,7 +10,6 @@ import {
   Stepper,
   Step,
   StepLabel,
-  Alert,
   CircularProgress,
   MenuItem,
 } from "@mui/material";
@@ -40,7 +39,7 @@ export function EditInvestigadorDialog({
 }: EditInvestigadorDialogProps) {
   const [pasoActivo, setPasoActivo] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [intentoEnvio, setIntentoEnvio] = useState(false);
 
   const [userForm, setUserForm] = useState({
     email: "",
@@ -74,17 +73,15 @@ export function EditInvestigadorDialog({
         dedicacion: investigador.dedicacion,
       });
       setPasoActivo(0);
-      setError(null);
+      setIntentoEnvio(false);
     }
   }, [investigador, open]);
 
   const handleNext = async () => {
-    setError(null);
-
+    setIntentoEnvio(true);
     if (pasoActivo === 0) {
       // Validar Usuario
       if (!userForm.email.trim()) {
-        setError("El email es obligatorio");
         return;
       }
       // Actualizar Usuario
@@ -117,7 +114,6 @@ export function EditInvestigadorDialog({
     } else if (pasoActivo === 1) {
       // Validar Personal
       if (!personalForm.nombre.trim() || !personalForm.apellido.trim()) {
-        setError("Nombre y Apellido son obligatorios");
         return;
       }
       // Actualizar Personal
@@ -154,7 +150,6 @@ export function EditInvestigadorDialog({
     } else if (pasoActivo === 2) {
       // Validar Investigador
       if (!investigadorForm.categoria.trim() || !investigadorForm.dedicacion.trim()) {
-        setError("Categoría y Dedicación son obligatorias");
         return;
       }
       // Actualizar Investigador
@@ -192,18 +187,19 @@ export function EditInvestigadorDialog({
     }
 
     setLoading(false);
+    setIntentoEnvio(false);
     setPasoActivo((prev) => prev + 1);
   };
 
   const handleBack = () => {
     setPasoActivo((prev) => prev - 1);
-    setError(null);
+    setIntentoEnvio(false);
   };
 
   const handleClose = () => {
     if (!loading) {
       setPasoActivo(0);
-      setError(null);
+      setIntentoEnvio(false);
       onClose();
     }
   };
@@ -223,8 +219,6 @@ export function EditInvestigadorDialog({
           </Stepper>
         </Box>
 
-        {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
         {loading && (
           <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
             <CircularProgress />
@@ -236,9 +230,12 @@ export function EditInvestigadorDialog({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               label="Email"
+              required
               type="email"
               value={userForm.email}
               onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+              error={intentoEnvio && !userForm.email.trim()}
+              helperText={intentoEnvio && !userForm.email.trim() ? "Campo obligatorio" : ""}
               fullWidth
             />
           </Box>
@@ -249,14 +246,20 @@ export function EditInvestigadorDialog({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               label="Nombre"
+              required
               value={personalForm.nombre}
               onChange={(e) => setPersonalForm({ ...personalForm, nombre: e.target.value })}
+              error={intentoEnvio && !personalForm.nombre.trim()}
+              helperText={intentoEnvio && !personalForm.nombre.trim() ? "Campo obligatorio" : ""}
               fullWidth
             />
             <TextField
               label="Apellido"
+              required
               value={personalForm.apellido}
               onChange={(e) => setPersonalForm({ ...personalForm, apellido: e.target.value })}
+              error={intentoEnvio && !personalForm.apellido.trim()}
+              helperText={intentoEnvio && !personalForm.apellido.trim() ? "Campo obligatorio" : ""}
               fullWidth
             />
             <TextField
@@ -286,15 +289,21 @@ export function EditInvestigadorDialog({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               label="Categoría"
+              required
               value={investigadorForm.categoria}
               onChange={(e) => setInvestigadorForm({ ...investigadorForm, categoria: e.target.value })}
+              error={intentoEnvio && !investigadorForm.categoria.trim()}
+              helperText={intentoEnvio && !investigadorForm.categoria.trim() ? "Campo obligatorio" : ""}
               fullWidth
             />
             <TextField
               label="Dedicación"
+              required
               select
               value={investigadorForm.dedicacion}
               onChange={(e) => setInvestigadorForm({ ...investigadorForm, dedicacion: e.target.value })}
+              error={intentoEnvio && !investigadorForm.dedicacion.trim()}
+              helperText={intentoEnvio && !investigadorForm.dedicacion.trim() ? "Campo obligatorio" : ""}
               fullWidth
             >
               {TIPOS_DEDICACION.map((option) => (

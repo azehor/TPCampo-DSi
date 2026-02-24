@@ -55,6 +55,7 @@ export default function RevistaABMDialog({
     editorial: "",
     pais_id: "",
   });
+  const [intentoEnvio, setIntentoEnvio] = React.useState(false);
 
   // Cargar revistas cuando cambia paginación
   useEffect(() => {
@@ -107,6 +108,7 @@ export default function RevistaABMDialog({
       editorial: revista.editorial,
       pais_id: (revista.pais_id || revista.pais?.id || "").toString(),
     });
+    setIntentoEnvio(false);
     setMode("edit");
   };
 
@@ -121,6 +123,7 @@ export default function RevistaABMDialog({
       await deleteRevista(id);
       setPaginationModel({ page: 0, pageSize: pageSize });
       await cargarRevistas();
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Revista eliminada correctamente." });
     } catch (error) {
       console.error("Error eliminando revista:", error);
       manejadorDeMensajes({ tipo: "error", mensaje: "Error al eliminar la revista." });
@@ -130,9 +133,9 @@ export default function RevistaABMDialog({
   };
 
   async function handleSave() {
+    setIntentoEnvio(true);
     try {
-      if (!form.nombre || !form.issn || !form.editorial || !form.pais_id) {
-        manejadorDeMensajes({ tipo: "alerta", mensaje: "Completá todos los campos." });
+      if (!form.nombre.trim() || !form.issn.trim() || !form.editorial.trim() || !form.pais_id) {
         return;
       }
 
@@ -145,6 +148,7 @@ export default function RevistaABMDialog({
           editorial: form.editorial,
           pais_id: Number(form.pais_id),
         });
+        manejadorDeMensajes({ tipo: "exito", mensaje: "Revista creada correctamente." });
       } else if (mode === "edit") {
         await updateRevista(Number(form.id), {
           nombre: form.nombre,
@@ -152,10 +156,12 @@ export default function RevistaABMDialog({
           editorial: form.editorial,
           pais_id: Number(form.pais_id),
         });
+        manejadorDeMensajes({ tipo: "exito", mensaje: "Revista modificada correctamente." });
       }
 
       setPaginationModel({ page: 0, pageSize: pageSize });
       resetForm();
+      setIntentoEnvio(false);
       setMode("list");
       onConfirm?.();
     } catch (error) {
@@ -168,6 +174,7 @@ export default function RevistaABMDialog({
 
   const resetForm = () => {
     setForm({ id: "", nombre: "", issn: "", editorial: "", pais_id: "" });
+    setIntentoEnvio(false);
   };
 
   const columns: GridColDef[] = [
@@ -266,22 +273,31 @@ export default function RevistaABMDialog({
           <Stack spacing={3}>
             <TextField
               label="Nombre"
+              required
               value={form.nombre}
               onChange={handleChange("nombre")}
+              error={intentoEnvio && !form.nombre.trim()}
+              helperText={intentoEnvio && !form.nombre.trim() ? "Campo obligatorio" : ""}
               fullWidth
               disabled={loading}
             />
             <TextField
               label="ISSN"
+              required
               value={form.issn}
               onChange={handleChange("issn")}
+              error={intentoEnvio && !form.issn.trim()}
+              helperText={intentoEnvio && !form.issn.trim() ? "Campo obligatorio" : ""}
               fullWidth
               disabled={loading}
             />
             <TextField
               label="Editorial"
+              required
               value={form.editorial}
               onChange={handleChange("editorial")}
+              error={intentoEnvio && !form.editorial.trim()}
+              helperText={intentoEnvio && !form.editorial.trim() ? "Campo obligatorio" : ""}
               fullWidth
               disabled={loading}
             />
@@ -290,12 +306,21 @@ export default function RevistaABMDialog({
               getOptionLabel={(option) => option.nombre}
               value={paises.find((p) => p.id === Number(form.pais_id)) ?? null}
               onChange={(_, value) =>
-                setForm({ ...form, pais_id: value ? String(value.id) : "" })
+                {
+                  setForm({ ...form, pais_id: value ? String(value.id) : "" });
+                }
               }
               isOptionEqualToValue={(option, value) => option.id === value.id}
               disabled={loading}
               renderInput={(params) => (
-                <TextField {...params} label="País" fullWidth />
+                <TextField
+                  {...params}
+                  label="País"
+                  required
+                  fullWidth
+                  error={intentoEnvio && !form.pais_id}
+                  helperText={intentoEnvio && !form.pais_id ? "Campo obligatorio" : ""}
+                />
               )}
             />
           </Stack>
