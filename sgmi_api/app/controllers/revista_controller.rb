@@ -3,16 +3,22 @@ class RevistaController < ApplicationController
 
   # GET /revista
   def index
+    if params.has_key?(:field) && params.has_key?(:sort)
+      field = params[:field]
+      sort = params[:sort]
+    else
+      field = "revista.created_at"
+      sort = "desc"
+    end
     if params.has_key?(:page) && params.has_key?(:limit)
       # Con paginación
       page = params[:page].to_i
       per_page = params[:limit].to_i
       count = Revista.count
       revistas = Revista
-        .order(created_at: :desc)
         .limit(per_page)
         .offset(page * per_page)
-      
+        .order(Revista.sanitize_sql_for_order("#{field} #{sort}"))
       render json: {
         content: revistas.as_json(include: { pais: {} }),
         metadata: {
