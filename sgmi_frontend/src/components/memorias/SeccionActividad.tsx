@@ -77,19 +77,19 @@ export default function SeccionActividad({ memoriaId, finalizada }: { memoriaId:
 
   async function cargarDisponibles() {
     if (tab === 0) {
-      const res = await api.get("/api/trabajo_en_revista", { params: { page: 0, limit: 1000 } })
+      const res = await api.get("/api/trabajo_en_revista", { params: { page: 0, limit: 1000, memoria_id: memoriaId } })
       setTrabajosDisponibles(res.data.content);
     }
     if (tab === 1) {
-      const res = await api.get("/api/publicacion_en_libros", { params: { page: 0, limit: 1000 } })
+      const res = await api.get("/api/publicacion_en_libros", { params: { page: 0, limit: 1000, memoria_id: memoriaId } })
       setTrabajosDisponibles(res.data.content);
     }
     if (tab === 2) {
-      const res = await api.get("/api/articulo_de_divulgacions", { params: { page: 0, limit: 1000 } })
+      const res = await api.get("/api/articulo_de_divulgacions", { params: { page: 0, limit: 1000, memoria_id: memoriaId } })
       setTrabajosDisponibles(res.data.content);
     }
     if (tab === 3) {
-      const res = await api.get("/api/patentes", { params: { page: 0, limit: 1000 } })
+      const res = await api.get("/api/patentes", { params: { page: 0, limit: 1000, memoria_id: memoriaId } })
       setTrabajosDisponibles(res.data.content);
     }
   }

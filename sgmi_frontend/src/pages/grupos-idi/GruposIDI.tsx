@@ -12,8 +12,8 @@ import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import NuevoGrupoDialog from "../../components/Grupos-idi/NuevoGrupoDialog.tsx";
 import ModificarGrupoDialog from "../../components/Grupos-idi/ModificarGrupoDialog.tsx";
 import { mostrarConfirmacion, manejadorDeMensajes } from "../../components/common/ManejadorDeMensajes";
+import { useCurrentUser, isAdmin } from "../../hooks/useCurrentUser";
 
-//function renderBotonAcciones(props Gri)
 export default function GruposIDI() {
   const [rows, setRows] = useState([]);
   const [page, setPage] = useState(0);
@@ -33,6 +33,8 @@ export default function GruposIDI() {
     field: "",
     sort: ""
   }])
+
+  const { user } = useCurrentUser();
 
   async function cargarGrupos() {
     const sortBy = sortingModel[0]?.field || "";
@@ -127,6 +129,7 @@ export default function GruposIDI() {
             <EditIcon />
           </Button>
 
+          {isAdmin(user) && (
           <Button
             size="small"
             color="error"
@@ -134,6 +137,7 @@ export default function GruposIDI() {
           >
             <DeleteIcon />
           </Button>
+          )}
         </Box>
       ),
     },
