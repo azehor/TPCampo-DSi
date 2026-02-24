@@ -29,13 +29,14 @@ class PatentesController < ApplicationController
       field = "patentes.created_at"
       sort = "desc"
     end
-    count = Patente.count
     patentes = Patente
       .joins(:grupo_de_investigacion)
       .select("grupo_de_investigacions.nombre as grupo", :identificador, :titulo, :tipo, :grupo_de_investigacion_id, :id)
       .query_tables(query)
       .user_visibility(currGrupo)
       .memoria_visibility(params[:memoria_id])
+    count = patentes.count
+    patentes = patentes
       .limit(per_page).offset(page * per_page)
       .order(Patente.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {

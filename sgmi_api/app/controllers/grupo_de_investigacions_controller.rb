@@ -26,7 +26,6 @@ class GrupoDeInvestigacionsController < ApplicationController
       field = "grupo_de_investigacions.created_at"
       sort = "desc"
     end
-    count = GrupoDeInvestigacion.count
     grupos = GrupoDeInvestigacion
       .includes(:facultad_regional, [ { director: :personal }, { vicedirector: :personal } ])
       .select("grupo_de_investigacions.nombre as nombre", :sigla, "facultad_regionals.nombre as facultad_regional",
@@ -35,6 +34,8 @@ class GrupoDeInvestigacionsController < ApplicationController
       .query_tables(query)
       .user_visibility(currGrupo)
       .references(:personal)
+    count = grupos.count
+    grupos = grupos
       .limit(per_page).offset(page * per_page)
       .order(GrupoDeInvestigacion.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {

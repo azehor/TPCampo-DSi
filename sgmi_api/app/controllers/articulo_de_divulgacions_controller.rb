@@ -29,13 +29,14 @@ class ArticuloDeDivulgacionsController < ApplicationController
       field = "articulo_de_divulgacions.created_at"
       sort = "desc"
     end
-    count = ArticuloDeDivulgacion.count
     articulos = ArticuloDeDivulgacion
       .joins(:grupo_de_investigacion)
       .select("grupo_de_investigacions.nombre as grupo", :codigo, :titulo, :nombre, :grupo_de_investigacion_id, :id)
       .query_tables(query)
       .user_visibility(currGrupo)
       .memoria_visibility(params[:memoria_id])
+    count = articulos.count
+    articulos = articulos
       .limit(per_page).offset(page * per_page)
       .order(ArticuloDeDivulgacion.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {

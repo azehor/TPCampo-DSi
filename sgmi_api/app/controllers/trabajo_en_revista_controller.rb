@@ -29,13 +29,14 @@ class TrabajoEnRevistaController < ApplicationController
       field = "trabajo_en_revista.created_at"
       sort = "desc"
     end
-    count = TrabajoEnRevista.count
     revistas = TrabajoEnRevista
       .joins(:grupo_de_investigacion, :revista)
       .select("grupo_de_investigacions.nombre as grupo", :codigo, :titulo, :revista_id, :grupo_de_investigacion_id, :id)
       .query_tables(query)
       .user_visibility(currGrupo)
       .memoria_visibility(params[:memoria_id])
+    count = revistas.count
+    revistas = revistas
       .limit(per_page).offset(page * per_page)
       .order(TrabajoEnRevista.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
