@@ -35,6 +35,7 @@ class TrabajoEnRevistaController < ApplicationController
       .select("grupo_de_investigacions.nombre as grupo", :codigo, :titulo, :revista_id, :grupo_de_investigacion_id, :id)
       .query_tables(query)
       .user_visibility(currGrupo)
+      .memoria_visibility(params[:memoria_id])
       .limit(per_page).offset(page * per_page)
       .order(TrabajoEnRevista.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
@@ -96,7 +97,8 @@ class TrabajoEnRevistaController < ApplicationController
         :revista_id,
         :grupo_de_investigacion_id,
         :field,
-        :sort
+        :sort,
+        :memoria_id
       )
     end
 end
