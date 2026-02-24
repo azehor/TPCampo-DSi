@@ -43,6 +43,7 @@ export default function MemoriaAccordion({ memoria, onDelete, onFinalize }: Memo
     setIsDeleting(true);
     try {
       await deleteMemoria(memoria.id);
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Memoria eliminada correctamente." });
       onDelete?.();
     } catch (err) {
       console.error("Error eliminando memoria:", err);
@@ -89,8 +90,8 @@ export default function MemoriaAccordion({ memoria, onDelete, onFinalize }: Memo
             <Typography>{memoria.anio}</Typography>
             {memoria.finalized ? (
               <Typography>Memoria finalizada el {formatDate(memoria.updated_at)}, por {
-                memoria.finalized_by.investigador.personal.nombre + ' ' +
-                memoria.finalized_by.investigador.personal.apellido}</Typography>
+                  (memoria.finalized_by?.investigador?.personal?.nombre || 'Administrador') + ' ' +
+                  (memoria.finalized_by?.investigador?.personal?.apellido || '')}</Typography>
             ) : (
             <div>
               <Button

@@ -123,6 +123,7 @@ export default function PatentesRegistros() {
     try {
       await deletePatente({ id });
       await cargarPatentes();
+        manejadorDeMensajes({ tipo: "exito", mensaje: "Patente eliminada correctamente." });
     } catch (error) {
       console.error("Error al eliminar:", error);
       manejadorDeMensajes({ tipo: "error", mensaje: "Ocurrió un error al eliminar la patente." });

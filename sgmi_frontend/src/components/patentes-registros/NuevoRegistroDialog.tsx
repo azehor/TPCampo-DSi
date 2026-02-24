@@ -39,6 +39,7 @@ export default function NuevoRegistroDialog({
   onConfirm,
 }: Props) {
   const [grupos, setGrupos] = React.useState<Grupo[]>([]);
+  const [intentoEnvio, setIntentoEnvio] = React.useState(false);
 
   const [form, setForm] = React.useState<RegistroData>({
     grupo_id: undefined,
@@ -74,10 +75,10 @@ export default function NuevoRegistroDialog({
     };
 
   const handleConfirm = async () => {
+    setIntentoEnvio(true);
     const { grupo_id, titulo, identificador, tipo } = form;
 
-    if (!grupo_id || !titulo || !identificador || !tipo) {
-      manejadorDeMensajes({ tipo: "alerta", mensaje: "Por favor completá todos los campos." });
+    if (!grupo_id || !titulo.trim() || !identificador.trim() || !tipo) {
       return;
     }
 
@@ -86,9 +87,10 @@ export default function NuevoRegistroDialog({
         identificador,
         titulo,
         tipo: tipo,
-        grupo_de_investigacion_id: grupo_id,
+        grupo_de_investigacion_id: Number(grupo_id),
       });
 
+      manejadorDeMensajes({ tipo: "exito", mensaje: "Patente creada correctamente." });
       onConfirm();
       setForm({
         grupo_id: undefined,
@@ -96,6 +98,7 @@ export default function NuevoRegistroDialog({
         identificador: "",
         tipo: "",
       });
+      setIntentoEnvio(false);
       onClose();
     } catch (err) {
       console.error("Error creando patente", err);
@@ -123,17 +126,29 @@ export default function NuevoRegistroDialog({
             options={grupos}
             getOptionLabel={(option) => option.nombre}
             value={grupos.find((g) => g.id === form.grupo_id) ?? null}
-            onChange={(_, value) =>
-              setForm({ ...form, grupo_id: value?.id })
-            }
+            onChange={(_, value) => {
+              setForm({ ...form, grupo_id: value?.id });
+            }}
             isOptionEqualToValue={(option, value) => option.id === value.id}
-            renderInput={(params) => <TextField {...params} label="Grupo" fullWidth />}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Grupo"
+                fullWidth
+                required
+                error={intentoEnvio && !form.grupo_id}
+                helperText={intentoEnvio && !form.grupo_id ? "Campo obligatorio" : ""}
+              />
+            )}
           />
 
           <TextField
             label="Título"
             value={form.titulo}
             onChange={handleChange("titulo")}
+            required
+            error={intentoEnvio && !form.titulo.trim()}
+            helperText={intentoEnvio && !form.titulo.trim() ? "Campo obligatorio" : ""}
             fullWidth
           />
 
@@ -141,6 +156,9 @@ export default function NuevoRegistroDialog({
             label="Número Identificador"
             value={form.identificador}
             onChange={handleChange("identificador")}
+            required
+            error={intentoEnvio && !form.identificador.trim()}
+            helperText={intentoEnvio && !form.identificador.trim() ? "Campo obligatorio" : ""}
             fullWidth
           />
 
@@ -148,6 +166,9 @@ export default function NuevoRegistroDialog({
             label="Tipo de Registro"
             value={form.tipo}
             onChange={handleChange("tipo")}
+            required
+            error={intentoEnvio && !form.tipo}
+            helperText={intentoEnvio && !form.tipo ? "Campo obligatorio" : ""}
             fullWidth
             select
           >

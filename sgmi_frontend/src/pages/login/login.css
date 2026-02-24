@@ -81,6 +81,23 @@
   height: 20px;
 }
 
+.login-card input.input-error {
+  border-color: #d32f2f;
+}
+
+.helper-text {
+  color: #d32f2f;
+  font-size: 0.75rem;
+  margin-top: -10px;
+  margin-bottom: 0;
+}
+
+.error {
+  color: #d32f2f;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
 /* Botón azul */
 .login-card button {
   width: 100%;

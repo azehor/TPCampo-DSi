@@ -11,7 +11,6 @@ import {
   TextField,
   MenuItem,
   Box,
-  Alert,
 } from "@mui/material";
 import type { User } from "../../models/user.model";
 import * as userService from "../../services/userService";
@@ -35,7 +34,7 @@ export function CreateInvestigadorDialog({
 }: CreateInvestigadorDialogProps) {
   const [pasoActivo, setPasoActivo] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [intentoEnvio, setIntentoEnvio] = useState(false);
 
   // Usuario
   const [userForm, setUserForm] = useState({ email: "", password: "" });
@@ -60,17 +59,17 @@ export function CreateInvestigadorDialog({
   const pasos = ["Usuario", "Personal", "Investigador"];
 
   const handleCreateUser = async () => {
-    if (!userForm.email || !userForm.password) {
-      setError("Email y contraseña son requeridos");
+    setIntentoEnvio(true);
+    if (!userForm.email.trim() || !userForm.password.trim()) {
       return;
     }
 
     setLoading(true);
-    setError(null);
     try {
       const response = await userService.crearUsuario(userForm.email, userForm.password);
       const user = response.user || response;
       setUserCreated(user);
+      setIntentoEnvio(false);
       setPasoActivo(1);
     } catch (err: any) {
       // Capturar errores del servidor
@@ -91,13 +90,12 @@ export function CreateInvestigadorDialog({
   };
 
   const handleCreatePersonal = async () => {
-    if (!personalForm.nombre || !personalForm.apellido) {
-      setError("Nombre y apellido son requeridos");
+    setIntentoEnvio(true);
+    if (!personalForm.nombre.trim() || !personalForm.apellido.trim()) {
       return;
     }
 
     setLoading(true);
-    setError(null);
     try {
       const response = await personalService.createPersonal({
         nombre: personalForm.nombre,
@@ -108,6 +106,7 @@ export function CreateInvestigadorDialog({
       });
       const personal = response.personal || response;
       setPersonalCreated(personal);
+      setIntentoEnvio(false);
       setPasoActivo(2);
     } catch (err: any) {
       let errorMessage = err.message;
@@ -130,18 +129,17 @@ export function CreateInvestigadorDialog({
   };
 
   const handleCreateInvestigador = async () => {
-    if (!investigadorForm.categoria) {
-      setError("Categoría es requerida");
+    setIntentoEnvio(true);
+    if (!investigadorForm.categoria.trim()) {
       return;
     }
 
     if (!personalCreated?.id || !userCreated?.id) {
-      setError("Debe crear Usuario y Personal primero");
+      manejadorDeMensajes({ tipo: "error", mensaje: "Debe crear Usuario y Personal primero." });
       return;
     }
 
     setLoading(true);
-    setError(null);
     try {
       await investigadorService.createInvestigador({
         personal_id: personalCreated.id,
@@ -176,7 +174,7 @@ export function CreateInvestigadorDialog({
 
   const resetForm = () => {
     setPasoActivo(0);
-    setError(null);
+    setIntentoEnvio(false);
     setUserForm({ email: "", password: "" });
     setPersonalForm({ nombre: "", apellido: "", dni: "", horas_semanales: 40, object_type: "Investigador" });
     setInvestigadorForm({ categoria: "", dedicacion: "Simple" });
@@ -208,8 +206,6 @@ export function CreateInvestigadorDialog({
             ))}
           </Stepper>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
           {/* USUARIO */}
           {pasoActivo === 0 && (
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -218,8 +214,11 @@ export function CreateInvestigadorDialog({
                 type="email"
                 name="new-user-email"
                 autoComplete="new-email"
+                required
                 value={userForm.email}
                 onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
+                error={intentoEnvio && !userForm.email.trim()}
+                helperText={intentoEnvio && !userForm.email.trim() ? "Campo obligatorio" : ""}
                 fullWidth
               />
               <TextField
@@ -227,8 +226,11 @@ export function CreateInvestigadorDialog({
                 type="password"
                 name="new-user-password"
                 autoComplete="new-password"
+                required
                 value={userForm.password}
                 onChange={(e) => setUserForm({ ...userForm, password: e.target.value })}
+                error={intentoEnvio && !userForm.password.trim()}
+                helperText={intentoEnvio && !userForm.password.trim() ? "Campo obligatorio" : ""}
                 fullWidth
                 placeholder="••••••••"
               />
@@ -240,17 +242,21 @@ export function CreateInvestigadorDialog({
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <TextField
                 label="Nombre"
+                required
                 value={personalForm.nombre}
                 onChange={(e) => setPersonalForm({ ...personalForm, nombre: e.target.value })}
+                error={intentoEnvio && !personalForm.nombre.trim()}
+                helperText={intentoEnvio && !personalForm.nombre.trim() ? "Campo obligatorio" : ""}
                 fullWidth
-                placeholder="Juan"
               />
               <TextField
                 label="Apellido"
+                required
                 value={personalForm.apellido}
                 onChange={(e) => setPersonalForm({ ...personalForm, apellido: e.target.value })}
+                error={intentoEnvio && !personalForm.apellido.trim()}
+                helperText={intentoEnvio && !personalForm.apellido.trim() ? "Campo obligatorio" : ""}
                 fullWidth
-                placeholder="Pérez"
               />
               <TextField
                 label="DNI"
@@ -284,19 +290,23 @@ export function CreateInvestigadorDialog({
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <TextField
                 label="Categoría"
+                required
                 value={investigadorForm.categoria}
-                onChange={(e) =>
-                  setInvestigadorForm({ ...investigadorForm, categoria: e.target.value })
-                }
+                onChange={(e) => setInvestigadorForm({ ...investigadorForm, categoria: e.target.value })}
+                error={intentoEnvio && !investigadorForm.categoria.trim()}
+                helperText={intentoEnvio && !investigadorForm.categoria.trim() ? "Campo obligatorio" : ""}
                 fullWidth
               />
               <TextField
                 label="Dedicación"
+                required
                 select
                 value={investigadorForm.dedicacion}
                 onChange={(e) =>
                   setInvestigadorForm({ ...investigadorForm, dedicacion: e.target.value })
                 }
+                error={intentoEnvio && !investigadorForm.dedicacion.trim()}
+                helperText={intentoEnvio && !investigadorForm.dedicacion.trim() ? "Campo obligatorio" : ""}
                 fullWidth
               >
                 {DEDICACION_OPTIONS.map((option) => (

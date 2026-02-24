@@ -148,7 +148,7 @@ ActiveRecord::Base.transaction do
 
   paises_records.each_with_index do |pais, idx|
     revistas_seed << {
-      nombre: "Revista #{pais.nombre} de Ingeniería #{idx + 1}",
+      nombre: "Revista #{pais.nombre} de Ingeniería",
       issn: format("%04d-%04d", 6000 + idx, 7000 + idx),
       editorial: "Editorial #{pais.codigo}",
       pais: pais
@@ -158,7 +158,7 @@ ActiveRecord::Base.transaction do
   revistas_records = revistas_seed.map do |r|
     upsert_by(
       Revista,
-      { nombre: r[:nombre] },
+      { issn: r[:issn] },
       { nombre: r[:nombre], issn: r[:issn], editorial: r[:editorial], pais: r[:pais] }
     )
   end
@@ -256,7 +256,7 @@ ActiveRecord::Base.transaction do
       patentes_records << upsert_by(
         Patente,
         { identificador: ident },
-        { identificador: ident, titulo: "#{g.sigla} - Desarrollo #{i + 1}", tipo: tipos_patente.sample(random: rng), grupo_de_investigacion: g }
+        { identificador: ident, titulo: "#{g.sigla} - Desarrollo tecnológico", tipo: tipos_patente.sample(random: rng), grupo_de_investigacion: g }
       )
     end
 
@@ -266,7 +266,7 @@ ActiveRecord::Base.transaction do
       publicaciones_records << upsert_by(
         PublicacionEnLibro,
         { codigo: code },
-        { codigo: code, titulo: "Capítulo #{i + 1} - #{g.sigla}", libro: "Actas UTN #{2018 + i}", capitulo: (i + 1).to_s, grupo_de_investigacion: g }
+        { codigo: code, titulo: "Capítulo sobre #{g.sigla}", libro: "Actas UTN", capitulo: "Capítulo especial", grupo_de_investigacion: g }
       )
     end
 
@@ -276,7 +276,7 @@ ActiveRecord::Base.transaction do
       articulos_records << upsert_by(
         ArticuloDeDivulgacion,
         { codigo: code },
-        { codigo: code, titulo: "Divulgación #{i + 1} - #{g.sigla}", nombre: "Ciencia para Todos UTN", grupo_de_investigacion: g }
+        { codigo: code, titulo: "Divulgación científica - #{g.sigla}", nombre: "Ciencia para Todos UTN", grupo_de_investigacion: g }
       )
     end
 
@@ -288,7 +288,7 @@ ActiveRecord::Base.transaction do
       trabajos_records << upsert_by(
         TrabajoEnRevista,
         { codigo: code },
-        { codigo: code, titulo: "Artículo #{i + 1} sobre #{g.nombre}", revista: revista, grupo_de_investigacion: g }
+        { codigo: code, titulo: "Artículo sobre #{g.nombre}", revista: revista, grupo_de_investigacion: g }
       )
     end
   end

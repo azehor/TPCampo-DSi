@@ -52,9 +52,11 @@ export default function ModificarTrabajoDialog({
   const [revistas, setRevistas] = React.useState<Revista[]>([]);
   const [grupos, setGrupos] = React.useState<Grupo[]>([]);
   const [form, setForm] = React.useState<TrabajoData>(initialData);
+  const [intentoEnvio, setIntentoEnvio] = React.useState(false);
 
   useEffect(() => {
     setForm(initialData);
+    setIntentoEnvio(false);
   }, [initialData]);
 
   // cargar revistas
@@ -79,14 +81,21 @@ export default function ModificarTrabajoDialog({
     };
 
   async function handleSave() {
+    setIntentoEnvio(true);
     try {
-      if (!form.codigo || !form.titulo) {
-        manejadorDeMensajes({ tipo: "alerta", mensaje: "Código y título son obligatorios." });
+      if (!form.codigo.trim() || !form.titulo.trim() || !form.grupo_id) {
         return;
       }
 
-      if (!form.grupo_id) {
-        manejadorDeMensajes({ tipo: "alerta", mensaje: "Debe seleccionar un grupo." });
+      if (form.tipo === "revista" && !form.revista_id) {
+        return;
+      }
+
+      if (form.tipo === "libro" && (!form.libro?.trim() || !form.capitulo?.trim())) {
+        return;
+      }
+
+      if (form.tipo === "divulgacion" && !form.nombre?.trim()) {
         return;
       }
 
@@ -97,38 +106,32 @@ export default function ModificarTrabajoDialog({
           grupo_de_investigacion_id: form.grupo_id,
           revista_id: Number(form.revista_id),
         });
+        manejadorDeMensajes({ tipo: "exito", mensaje: "Trabajo en revista modificado correctamente." });
       }
 
       if (form.tipo === "libro") {
-        if (!form.libro || !form.capitulo) {
-          manejadorDeMensajes({ tipo: "alerta", mensaje: "Faltan datos del libro." });
-          return;
-        }
-
         await updatePublicacionEnLibro(form.id, {
           codigo: form.codigo,
           titulo: form.titulo,
           grupo_de_investigacion_id: form.grupo_id,
-          libro: form.libro,
-          capitulo: form.capitulo,
+          libro: form.libro || "",
+          capitulo: form.capitulo || "",
         });
+        manejadorDeMensajes({ tipo: "exito", mensaje: "Publicación en libro modificada correctamente." });
       }
 
       if (form.tipo === "divulgacion") {
-        if (!form.nombre) {
-          manejadorDeMensajes({ tipo: "alerta", mensaje: "Falta el nombre del artículo." });
-          return;
-        }
-
         await updateArticuloDeDivulgacion(form.id, {
           codigo: form.codigo,
           titulo: form.titulo,
           grupo_de_investigacion_id: form.grupo_id,
-          nombre: form.nombre,
+          nombre: form.nombre || "",
         });
+        manejadorDeMensajes({ tipo: "exito", mensaje: "Artículo de divulgación modificado correctamente." });
       }
 
       onConfirm();
+      setIntentoEnvio(false);
       onClose();
     } catch (err) {
       console.error(err);
@@ -147,26 +150,39 @@ export default function ModificarTrabajoDialog({
             options={grupos}
             getOptionLabel={(option) => option.nombre}
             value={grupos.find((g) => g.id === form.grupo_id) ?? null}
-            onChange={(_, value) =>
-              setForm({ ...form, grupo_id: value?.id ?? 0 })
-            }
+            onChange={(_, value) => {
+              setForm({ ...form, grupo_id: value?.id ?? 0 });
+            }}
             isOptionEqualToValue={(option, value) => option.id === value.id}
             renderInput={(params) => (
-              <TextField {...params} label="Grupo" fullWidth />
+              <TextField
+                {...params}
+                label="Grupo"
+                required
+                fullWidth
+                error={intentoEnvio && !form.grupo_id}
+                helperText={intentoEnvio && !form.grupo_id ? "Campo obligatorio" : ""}
+              />
             )}
           />
 
           <TextField
             label="Código"
+            required
             value={form.codigo}
             onChange={handleChange("codigo")}
+            error={intentoEnvio && !form.codigo.trim()}
+            helperText={intentoEnvio && !form.codigo.trim() ? "Campo obligatorio" : ""}
             fullWidth
           />
 
           <TextField
             label="Título"
+            required
             value={form.titulo}
             onChange={handleChange("titulo")}
+            error={intentoEnvio && !form.titulo.trim()}
+            helperText={intentoEnvio && !form.titulo.trim() ? "Campo obligatorio" : ""}
             fullWidth
           />
 
@@ -177,11 +193,20 @@ export default function ModificarTrabajoDialog({
               getOptionLabel={(option) => option.nombre}
               value={revistas.find((r) => r.id === form.revista_id) ?? null}
               onChange={(_, value) =>
-                setForm({ ...form, revista_id: value?.id })
+                {
+                  setForm({ ...form, revista_id: value?.id });
+                }
               }
               isOptionEqualToValue={(option, value) => option.id === value.id}
               renderInput={(params) => (
-                <TextField {...params} label="Revista" fullWidth />
+                <TextField
+                  {...params}
+                  label="Revista"
+                  required
+                  fullWidth
+                  error={intentoEnvio && !form.revista_id}
+                  helperText={intentoEnvio && !form.revista_id ? "Campo obligatorio" : ""}
+                />
               )}
             />
           )}
@@ -191,15 +216,21 @@ export default function ModificarTrabajoDialog({
             <>
               <TextField
                 label="Título del Libro"
+                required
                 value={form.libro ?? ""}
                 onChange={handleChange("libro")}
+                error={intentoEnvio && !form.libro?.trim()}
+                helperText={intentoEnvio && !form.libro?.trim() ? "Campo obligatorio" : ""}
                 fullWidth
               />
 
               <TextField
                 label="Capítulo"
+                required
                 value={form.capitulo ?? ""}
                 onChange={handleChange("capitulo")}
+                error={intentoEnvio && !form.capitulo?.trim()}
+                helperText={intentoEnvio && !form.capitulo?.trim() ? "Campo obligatorio" : ""}
                 fullWidth
               />
             </>
@@ -209,8 +240,11 @@ export default function ModificarTrabajoDialog({
           {form.tipo === "divulgacion" && (
             <TextField
               label="Nombre del Artículo"
+              required
               value={form.nombre ?? ""}
               onChange={handleChange("nombre")}
+              error={intentoEnvio && !form.nombre?.trim()}
+              helperText={intentoEnvio && !form.nombre?.trim() ? "Campo obligatorio" : ""}
               fullWidth
             />
           )}

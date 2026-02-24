@@ -12,9 +12,15 @@ const LoginPage: React.FC = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [intentoEnvio, setIntentoEnvio] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    setIntentoEnvio(true);
+
+    if (!email.trim() || !password.trim()) {
+      return;
+    }
 
     try {
       await login(email, password);
@@ -33,21 +39,32 @@ const LoginPage: React.FC = () => {
 
           {error && <p className="error">{error}</p>}
 
-          <label>Correo Electrónico</label>
+          <label>Correo Electrónico *</label>
           <input
             type="text"
             placeholder="usuario@ejemplo.com"
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            required
+            className={intentoEnvio && !email.trim() ? "input-error" : ""}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              setError("");
+            }}
           />
+          {intentoEnvio && !email.trim() && <p className="helper-text">Campo obligatorio</p>}
 
-          <label>Contraseña</label>
+          <label>Contraseña *</label>
           <div className="password-wrapper">
             <input
               type={showPassword ? "text" : "password"}
               placeholder="********"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              required
+              className={intentoEnvio && !password.trim() ? "input-error" : ""}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError("");
+              }}
             />
 
             <span
@@ -84,6 +101,7 @@ const LoginPage: React.FC = () => {
               )}
             </span>
           </div>
+          {intentoEnvio && !password.trim() && <p className="helper-text">Campo obligatorio</p>}
 
           <button type="submit">Acceder</button>
 
