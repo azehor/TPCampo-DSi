@@ -65,9 +65,12 @@ ActiveRecord::Base.transaction do
   nombres_extra = %w[Diego Abril Ramiro Julieta Milagros Camila Franco Bautista Eliana Renata Iván Pilar Dante Agustina Nerea]
 
   while personales_source.size < (investigadores_count_target + administrativos_count_target)
-    apellido = apellidos_extra[personales_source.size % apellidos_extra.size]
-    nombre = nombres_extra[personales_source.size % nombres_extra.size]
-    personales_source << ["#{apellido} #{personales_source.size + 1}", nombre]
+    idx = personales_source.size
+    apellido_1 = apellidos_extra[idx % apellidos_extra.size]
+    apellido_2 = apellidos_extra[(idx + 5) % apellidos_extra.size]
+    apellido = "#{apellido_1} #{apellido_2}"
+    nombre = nombres_extra[idx % nombres_extra.size]
+    personales_source << [apellido, nombre]
   end
 
   personales_source.each_with_index do |(apellido, nombre), idx|
