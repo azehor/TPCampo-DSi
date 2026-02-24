@@ -23,4 +23,13 @@ class TrabajoEnRevista < ApplicationRecord
   scope :user_visibility, ->(grupo_id) {
     where(grupo_de_investigacion_id: grupo_id) if grupo_id.present?
   }
+
+  scope :memoria_visibility, ->(memoria_id) {
+    if memoria_id.present?
+      memoria = Memoria.find(memoria_id)
+      anio = memoria.anio
+      grupo_id = memoria.grupo_de_investigacion_id
+      where("extract(year from trabajo_en_revista.created_at) = ?", anio).where(grupo_de_investigacion_id: grupo_id)
+    end
+  }
 end

@@ -35,6 +35,7 @@ class PatentesController < ApplicationController
       .select("grupo_de_investigacions.nombre as grupo", :identificador, :titulo, :tipo, :grupo_de_investigacion_id, :id)
       .query_tables(query)
       .user_visibility(currGrupo)
+      .memoria_visibility(params[:memoria_id])
       .limit(per_page).offset(page * per_page)
       .order(Patente.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
@@ -94,7 +95,8 @@ class PatentesController < ApplicationController
         :grupo_de_investigacion_id,
         :query,
         :field,
-        :sort
+        :sort,
+        :memoria_id
       )
     end
 end

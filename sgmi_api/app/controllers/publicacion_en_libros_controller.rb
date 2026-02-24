@@ -35,6 +35,7 @@ class PublicacionEnLibrosController < ApplicationController
       .select("grupo_de_investigacions.nombre as grupo", :codigo, :titulo, :libro, :capitulo, :grupo_de_investigacion_id, :id)
       .query_tables(query)
       .user_visibility(currGrupo)
+      .memoria_visibility(params[:memoria_id])
       .limit(per_page).offset(page * per_page)
       .order(PublicacionEnLibro.sanitize_sql_for_order("#{field} #{sort}"))
     render json: {
@@ -95,7 +96,8 @@ class PublicacionEnLibrosController < ApplicationController
         :grupo_de_investigacion_id,
         :query,
         :field,
-        :sort
+        :sort,
+        :memoria_id
       )
     end
 end
