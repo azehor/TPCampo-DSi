@@ -30,6 +30,7 @@ interface EditInvestigadorDialogProps {
 
 const pasos = ["Usuario", "Personal", "Investigador"];
 const TIPOS_DEDICACION = ["Simple", "Exclusiva", "Semiexclusiva"];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function EditInvestigadorDialog({
   open,
@@ -81,7 +82,7 @@ export function EditInvestigadorDialog({
     setIntentoEnvio(true);
     if (pasoActivo === 0) {
       // Validar Usuario
-      if (!userForm.email.trim()) {
+      if (!userForm.email.trim() || !EMAIL_REGEX.test(userForm.email.trim())) {
         return;
       }
       // Actualizar Usuario
@@ -234,8 +235,18 @@ export function EditInvestigadorDialog({
               type="email"
               value={userForm.email}
               onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-              error={intentoEnvio && !userForm.email.trim()}
-              helperText={intentoEnvio && !userForm.email.trim() ? "Campo obligatorio" : ""}
+              error={
+                intentoEnvio && (!userForm.email.trim() || !EMAIL_REGEX.test(userForm.email.trim()))
+              }
+              helperText={
+                intentoEnvio
+                  ? !userForm.email.trim()
+                    ? "Campo obligatorio"
+                    : !EMAIL_REGEX.test(userForm.email.trim())
+                      ? "Formato de email inválido"
+                      : ""
+                  : ""
+              }
               fullWidth
             />
           </Box>

@@ -13,9 +13,12 @@ const LoginPage: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [intentoEnvio, setIntentoEnvio] = useState(false);
+  const [iniciandoSesion, setIniciandoSesion] = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (iniciandoSesion) return;
+
     setIntentoEnvio(true);
 
     if (!email.trim() || !password.trim()) {
@@ -23,10 +26,13 @@ const LoginPage: React.FC = () => {
     }
 
     try {
+      setIniciandoSesion(true);
       await login(email, password);
       navigate("/actividades-idi/trabajos-publicados");
     } catch (err) {
       setError("Credenciales incorrectas");
+    } finally {
+      setIniciandoSesion(false);
     }
   }
 
@@ -103,7 +109,16 @@ const LoginPage: React.FC = () => {
           </div>
           {intentoEnvio && !password.trim() && <p className="helper-text">Campo obligatorio</p>}
 
-          <button type="submit">Acceder</button>
+          <button type="submit" disabled={iniciandoSesion}>
+            {iniciandoSesion ? (
+              <>
+                <span className="button-spinner" aria-hidden="true" />
+                Iniciando sesión...
+              </>
+            ) : (
+              "Acceder"
+            )}
+          </button>
 
           <a className="recover-link" href="#">
             Recuperar Clave

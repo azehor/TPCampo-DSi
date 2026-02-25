@@ -27,6 +27,7 @@ const secciones = [
 interface MemoriaAcordionProps {
   memoria: any;
   onDelete?: () => void;
+  onFinalize?: () => void;
 }
 
 export default function MemoriaAccordion({ memoria, onDelete, onFinalize }: MemoriaAcordionProps) {
@@ -54,6 +55,13 @@ export default function MemoriaAccordion({ memoria, onDelete, onFinalize }: Memo
   };
 
   const handleFinalizeClick = async () => {
+    const confirmado = await mostrarConfirmacion({
+      mensaje: `¿Está seguro de que desea finalizar la memoria del año ${memoria.anio}?`,
+      textoConfirmar: "Finalizar",
+    });
+
+    if (!confirmado) return;
+
     try {
       await finalizeMemoria(memoria.id);
       onFinalize?.();

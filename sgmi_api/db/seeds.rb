@@ -102,17 +102,27 @@ ActiveRecord::Base.transaction do
   end
 
   # Para cada investigador creamos un User asociado
+  email_counts = Hash.new(0)
+
   investigadores_records.each do |invest|
     personal = invest.personal
-    base = "#{personal.nombre}.#{personal.apellido}".downcase.gsub(/\s+/, '')
-    domain = "utn.com"
-    email = "#{base}.#{personal.id}@#{domain}"
+    base = "#{personal.nombre}.#{personal.apellido}".to_s.parameterize(separator: ".")
+    base = "investigador" if base.blank?
 
-    user = upsert_by(
-      User,
-      { email: email },
-      { email: email, password: "123456", password_confirmation: "123456", role: "investigador" }
+    email_counts[base] += 1
+    local_part = email_counts[base] == 1 ? base : "#{base}.#{email_counts[base]}"
+
+    domain = "utn.com"
+    email = "#{local_part}@#{domain}"
+
+    user = invest.user || User.find_or_initialize_by(email: email)
+    user.assign_attributes(
+      email: email,
+      password: "123456",
+      password_confirmation: "123456",
+      role: "investigador"
     )
+    user.save!
 
     invest.update!(user: user) if invest.user != user
   end
@@ -246,6 +256,12 @@ ActiveRecord::Base.transaction do
   # Patentes / Publicaciones / Divulgación / Trabajos en revista
   # -------------------------
   tipos_patente = ["Propiedad Industrial", "Propiedad Intelectual"].freeze
+  temas = ["IA", "visión", "IoT", "energías", "analítica", "ciberseguridad", "simulación", "robótica"].freeze
+  enfoques = ["optimización", "modelado", "validación", "arquitectura", "integración", "comparativa", "prototipo", "automatización"].freeze
+  ambitos = ["industria", "salud", "agro", "educación", "telecom", "logística", "manufactura", "público"].freeze
+  colecciones_libro = ["Actas UTN", "Ing. Aplicada", "Innovación Tec.", "Cuadernos I+D", "Sistemas Complejos"].freeze
+  capitulos_libro = ["Fundamentos", "Metodología", "Resultados", "Caso", "Lecciones", "Trabajo futuro"].freeze
+  medios_divulgacion = ["Ciencia para Todos", "Ingeniería Hoy", "Panorama Tecnológico", "Conocimiento Abierto", "Horizonte Científico", "Actualidad I+D"].freeze
 
   patentes_records = []
   publicaciones_records = []
@@ -256,30 +272,58 @@ ActiveRecord::Base.transaction do
     # 8 patentes por grupo
     8.times do |i|
       ident = "#{g.sigla}-PAT-#{2020 + i}"
+      tema = temas[(idx + i) % temas.size]
+      enfoque = enfoques[(idx * 2 + i) % enfoques.size]
+      ambito = ambitos[(idx * 3 + i) % ambitos.size]
+
       patentes_records << upsert_by(
         Patente,
         { identificador: ident },
-        { identificador: ident, titulo: "#{g.sigla} - Desarrollo tecnológico", tipo: tipos_patente.sample(random: rng), grupo_de_investigacion: g }
+        {
+          identificador: ident,
+          titulo: "#{g.sigla} #{tema.capitalize} #{ambito} #{enfoque}",
+          tipo: tipos_patente.sample(random: rng),
+          grupo_de_investigacion: g
+        }
       )
     end
 
     # 8 publicaciones por grupo
     8.times do |i|
       code = "LIB-#{g.sigla}-#{2018 + i}"
+      tema = temas[(idx + i + 1) % temas.size]
+      enfoque = enfoques[(idx + i + 2) % enfoques.size]
+      ambito = ambitos[(idx + i + 3) % ambitos.size]
+
       publicaciones_records << upsert_by(
         PublicacionEnLibro,
         { codigo: code },
-        { codigo: code, titulo: "Capítulo sobre #{g.sigla}", libro: "Actas UTN", capitulo: "Capítulo especial", grupo_de_investigacion: g }
+        {
+          codigo: code,
+          titulo: "#{tema.capitalize} y #{ambito} (#{enfoque})",
+          libro: "#{colecciones_libro[(idx + i) % colecciones_libro.size]} #{2018 + i}",
+          capitulo: capitulos_libro[(idx * 2 + i) % capitulos_libro.size],
+          grupo_de_investigacion: g
+        }
       )
     end
 
     # 8 artículos divulgación por grupo
     8.times do |i|
       code = "DIV-#{g.sigla}-#{2018 + i}"
+      tema = temas[(idx + i + 2) % temas.size]
+      enfoque = enfoques[(idx * 3 + i) % enfoques.size]
+      medio = medios_divulgacion[(idx + i) % medios_divulgacion.size]
+
       articulos_records << upsert_by(
         ArticuloDeDivulgacion,
         { codigo: code },
-        { codigo: code, titulo: "Divulgación científica - #{g.sigla}", nombre: "Ciencia para Todos UTN", grupo_de_investigacion: g }
+        {
+          codigo: code,
+          titulo: "Avances #{tema} #{g.sigla} (#{enfoque})",
+          nombre: "#{medio} UTN",
+          grupo_de_investigacion: g
+        }
       )
     end
 
@@ -287,11 +331,19 @@ ActiveRecord::Base.transaction do
     8.times do |i|
       code = "TR-#{g.sigla}-#{idx + 1}-#{i + 1}"
       revista = revistas_records.sample(random: rng)
+      tema = temas[(idx + i + 3) % temas.size]
+      ambito = ambitos[(idx * 2 + i) % ambitos.size]
+      enfoque = enfoques[(idx + i + 4) % enfoques.size]
 
       trabajos_records << upsert_by(
         TrabajoEnRevista,
         { codigo: code },
-        { codigo: code, titulo: "Artículo sobre #{g.nombre}", revista: revista, grupo_de_investigacion: g }
+        {
+          codigo: code,
+          titulo: "#{tema.capitalize} en #{ambito} - #{g.sigla}",
+          revista: revista,
+          grupo_de_investigacion: g
+        }
       )
     end
   end

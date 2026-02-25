@@ -95,6 +95,8 @@ export default function SeccionActividad({ memoriaId, finalizada }: { memoriaId:
   }
 
   const handleAsociar = async (trabajoId: number) => {
+    if (finalizada) return;
+
     if (tab === 0) await addTrabajoRevistaToMemoria(memoriaId, trabajoId);
     if (tab === 1) await addPublicacionLibroToMemoria(memoriaId, trabajoId);
     if (tab === 2) await addArticuloDivulgacionToMemoria(memoriaId, trabajoId);
@@ -105,6 +107,8 @@ export default function SeccionActividad({ memoriaId, finalizada }: { memoriaId:
   };
 
   const handleDesasociar = async (trabajoId: number) => {
+    if (finalizada) return;
+
     if (tab === 0) await removeTrabajoRevistaFromMemoria(memoriaId, trabajoId);
     if (tab === 1) await removePublicacionLibroFromMemoria(memoriaId, trabajoId);
     if (tab === 2) await removeArticuloDivulgacionFromMemoria(memoriaId, trabajoId);
@@ -212,6 +216,10 @@ export default function SeccionActividad({ memoriaId, finalizada }: { memoriaId:
     ]
   ];
 
+  const columnasActuales = finalizada
+    ? columnas[tab].filter((columna) => columna.field !== "acciones")
+    : columnas[tab];
+
   return (
     <Box sx={{ width: "100%" }}>
       <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -254,7 +262,7 @@ export default function SeccionActividad({ memoriaId, finalizada }: { memoriaId:
             },
           }}
           rows={rows}
-          columns={columnas[tab]}
+          columns={columnasActuales}
           rowCount={count}
           pagination
           paginationMode="server"
@@ -265,13 +273,6 @@ export default function SeccionActividad({ memoriaId, finalizada }: { memoriaId:
           onSortModelChange={(model) => setSortingModel(model)}
           disableColumnMenu
           disableColumnResize
-          initialState={{
-            columns: {
-              columnVisibilityModel: {
-                acciones: !finalizada
-              }
-            }
-          }}
         />
       </Paper>
 

@@ -30,6 +30,15 @@ interface MemoriaEliminada {
   id: number;
   anio: string;
   deleted_at: string;
+  deleted_by?: {
+    investigador?: {
+      personal?: {
+        nombre?: string;
+        apellido?: string;
+        dni?: string;
+      };
+    };
+  };
 }
 
 export default function MemoriasEliminadasDialog({
@@ -106,9 +115,21 @@ export default function MemoriasEliminadasDialog({
               <ListItem key={memoria.id}>
                 <ListItemText
                   primary={`Año ${memoria.anio}`}
-                  secondary={`Eliminada el: ${formatDate(memoria.deleted_at)},
-                            por: ${memoria.deleted_by.investigador.personal.nombre
-                            + ' ' + memoria.deleted_by.investigador.personal.apellido}, DNI: ${memoria.deleted_by.investigador.personal.dni}`}
+                  secondary={`Eliminada el: ${formatDate(memoria.deleted_at)}, por: ${(() => {
+                    const personal = memoria.deleted_by?.investigador?.personal;
+                    if (!personal) {
+                      return "Administrador";
+                    }
+
+                    const nombreCompleto = [personal.nombre, personal.apellido]
+                      .filter(Boolean)
+                      .join(" ")
+                      .trim();
+
+                    return personal.dni
+                      ? `${nombreCompleto || "Investigador"}, DNI: ${personal.dni}`
+                      : nombreCompleto || "Investigador";
+                  })()}`}
                 />
                 <ListItemSecondaryAction>
                   <Tooltip title="Recuperar memoria">
