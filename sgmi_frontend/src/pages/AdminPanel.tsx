@@ -116,7 +116,7 @@ export function AdminPanel() {
         <h1>Panel de Administración - Gestion de Usuarios</h1>
         <Button
           variant="contained"
-          color="success"
+          color="primary"
           startIcon={<AddIcon />}
           onClick={() => setOpenDialog(true)}
         >
