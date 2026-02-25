@@ -9,7 +9,7 @@ import {
   DialogActions,
   TextField,
   Button,
-  MenuItem,
+  Autocomplete,
   Box,
   Stack,
 } from "@mui/material";
@@ -26,7 +26,7 @@ interface Grupo {
 
 interface Memoria {
   id: number;
-  anio: number;
+  anio: number | string;
 }
 
 interface Props {
@@ -42,6 +42,7 @@ export default function ExportarExcelDialog({
 }: Props) {
   const [grupos, setGrupos] = React.useState<Grupo[]>([])
   const [memorias, setMemorias] = React.useState<Memoria[]>([])
+  const [intentoEnvio, setIntentoEnvio] = React.useState(false)
   const [form, setForm] = React.useState<ExportarExcelData>({
     grupo_id: 0,
     anio: 0,
@@ -64,12 +65,12 @@ export default function ExportarExcelDialog({
     cargarGrupos().then((res) => cargarMemorias(res))
   }, [open])
 
-  const cargarMemorias = async (grupo_id) => {
+  const cargarMemorias = async (grupo_id: number) => {
     try {
       const res = await getMemorias(grupo_id);
       setMemorias(res)
       if (res.length > 0) {
-        setForm((prev) => ({...prev, anio: res[0].id}))
+        setForm((prev) => ({...prev, anio: Number(res[0].anio)}))
       }
       console.log(form)
     } catch (e) {
@@ -118,39 +119,51 @@ export default function ExportarExcelDialog({
 
       <DialogContent dividers sx={{ px: 4, pt: 2 }}>
         <Stack spacing={3}>
-          <TextField
-            label="Grupo"
-            value={form.grupo_id}
-            onChange={(e) => {
-              setForm({ ...form, grupo_id: Number(e.target.value) })
-              cargarMemorias(e.target.value)
-            }
-            }
-            fullWidth
-            select
-          >
-            {grupos.map((g) => (
-              <MenuItem key={g.id} value={g.id}>
-                {g.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
+          <Autocomplete
+            options={grupos}
+            getOptionLabel={(option) => option.nombre}
+            value={grupos.find((g) => g.id === form.grupo_id) ?? null}
+            onChange={(_, value) => {
+              const grupoId = value?.id ?? 0;
+              setForm({ ...form, grupo_id: grupoId, anio: 0 });
+              if (grupoId) {
+                void cargarMemorias(grupoId);
+              } else {
+                setMemorias([]);
+              }
+            }}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Grupo *"
+                required
+                fullWidth
+                error={intentoEnvio && !form.grupo_id}
+                helperText={intentoEnvio && !form.grupo_id ? "Campo obligatorio" : ""}
+              />
+            )}
+          />
 
-          <TextField
-            label="Memoria"
-            value={form.anio}
-            onChange={(e) =>
-              setForm({ ...form, anio: Number(e.target.value)})
-            }
-            fullWidth
-            select
-          >
-            {memorias.map((m) => (
-              <MenuItem key={m.anio} value={m.anio}>
-                {m.anio}
-              </MenuItem>
-            ))}
-          </TextField>
+          <Autocomplete
+            options={memorias}
+            getOptionLabel={(option) => String(option.anio)}
+            value={memorias.find((m) => Number(m.anio) === form.anio) ?? null}
+            onChange={(_, value) => {
+              setForm({ ...form, anio: value ? Number(value.anio) : 0 });
+            }}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Memoria *"
+                required
+                fullWidth
+                error={intentoEnvio && !form.anio}
+                helperText={intentoEnvio && !form.anio ? "Campo obligatorio" : ""}
+              />
+            )}
+          />
         </Stack>
       </DialogContent>
 
