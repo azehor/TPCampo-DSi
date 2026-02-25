@@ -1,6 +1,6 @@
 class UsersController < ApplicationController
   # Solo el admin puede crear usuarios
-  before_action :authorize_admin!, only: [ :create ]
+  before_action :authorize_admin!, only: [ :create, :update, :destroy ]
 
   def profile
     user = @current_user.as_json(only: [ :id, :email, :role ])
@@ -31,6 +31,16 @@ class UsersController < ApplicationController
 
     if user.update(user_update_params)
       render json: { message: "Usuario actualizado", user: user }, status: :ok
+    else
+      render json: user.errors, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    user = User.find(params[:id])
+
+    if user.destroy
+      render json: { message: "Usuario eliminado" }, status: :ok
     else
       render json: user.errors, status: :unprocessable_entity
     end

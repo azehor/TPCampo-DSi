@@ -26,6 +26,7 @@ interface CreateInvestigadorDialogProps {
 }
 
 const DEDICACION_OPTIONS = ["Simple", "Exclusiva", "Semiexclusiva"];
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function CreateInvestigadorDialog({
   open,
@@ -60,7 +61,7 @@ export function CreateInvestigadorDialog({
 
   const handleCreateUser = async () => {
     setIntentoEnvio(true);
-    if (!userForm.email.trim() || !userForm.password.trim()) {
+    if (!userForm.email.trim() || !EMAIL_REGEX.test(userForm.email.trim()) || !userForm.password.trim()) {
       return;
     }
 
@@ -217,8 +218,18 @@ export function CreateInvestigadorDialog({
                 required
                 value={userForm.email}
                 onChange={(e) => setUserForm({ ...userForm, email: e.target.value })}
-                error={intentoEnvio && !userForm.email.trim()}
-                helperText={intentoEnvio && !userForm.email.trim() ? "Campo obligatorio" : ""}
+                error={
+                  intentoEnvio && (!userForm.email.trim() || !EMAIL_REGEX.test(userForm.email.trim()))
+                }
+                helperText={
+                  intentoEnvio
+                    ? !userForm.email.trim()
+                      ? "Campo obligatorio"
+                      : !EMAIL_REGEX.test(userForm.email.trim())
+                        ? "Formato de email inválido"
+                        : ""
+                    : ""
+                }
                 fullWidth
               />
               <TextField
